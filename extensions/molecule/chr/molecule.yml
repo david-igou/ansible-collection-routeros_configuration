@@ -1,0 +1,29 @@
+---
+# CHR feasibility scenario — boots a MikroTik CHR VM via the
+# david_igou.molecule_provisioners qemu backend and reaches the RouterOS CLI.
+# Static inventory plus the role's runtime inventory (ansible_host/ansible_port).
+ansible:
+  executor:
+    args:
+      ansible_playbook:
+        - --inventory=inventory/
+        - --inventory=${MOLECULE_EPHEMERAL_DIRECTORY}/inventory/
+  playbooks:
+    create: create.yml
+    destroy: destroy.yml
+    prepare: prepare.yml
+    converge: converge.yml
+    verify: verify.yml
+
+scenario:
+  name: chr
+  test_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+    - verify
+    - destroy
+
+verifier:
+  name: ansible

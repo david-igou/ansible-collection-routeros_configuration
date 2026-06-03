@@ -1,0 +1,15 @@
+---
+# Force the qemu backend for this scenario.
+mp_backend: qemu
+
+mp_defaults:
+  qemu:
+    cpus: 1
+    memory: 512
+    ssh_user: admin
+
+# NOTE: the RouterOS connection (network_cli + community.routeros, admin/empty
+# password) is set at PLAY level in converge.yml / verify.yml, not here. The
+# qemu role writes a runtime inventory with host-level ansible_connection: ssh
+# and key auth, which would override group_vars; play vars override both, while
+# ansible_host / ansible_port still flow through from the runtime inventory.

@@ -1,0 +1,8 @@
+---
+- name: Converge (no-op for the CHR feasibility spike)
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Nothing to configure yet
+      ansible.builtin.debug:
+        msg: "CHR boot validated; configuration is a follow-up."

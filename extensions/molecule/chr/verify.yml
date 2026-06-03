@@ -1,0 +1,34 @@
+---
+- name: Verify Molecule can reach the RouterOS CLI on CHR
+  hosts: molecule
+  gather_facts: false
+  # Connection set at play level so it overrides the qemu role's runtime
+  # inventory (ssh + key auth). ansible_host / ansible_port still come from
+  # the runtime inventory. CHR default auth is admin with an empty password.
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: community.routeros.routeros
+    ansible_user: admin
+    ansible_password: ""
+    ansible_ssh_common_args: >-
+      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+      -o PubkeyAuthentication=no -o PreferredAuthentications=password
+  tasks:
+    - name: Query system resource over the RouterOS CLI
+      community.routeros.command:
+        commands:
+          - /system resource print
+      register: chr_resource
+      retries: 6
+      delay: 10
+      until: chr_resource is succeeded
+
+    - name: Assert the response identifies RouterOS
+      ansible.builtin.assert:
+        that:
+          - chr_resource.stdout | length > 0
+          - chr_resource.stdout[0] is search('version')
+        success_msg: >-
+          RouterOS reachable via qemu provider:
+          {{ chr_resource.stdout[0] | regex_search('version:[^\\n]*') }}
+        fail_msg: "Did not get a RouterOS resource response: {{ chr_resource.stdout | default('<none>') }}"
