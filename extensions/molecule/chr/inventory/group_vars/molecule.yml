@@ -8,8 +8,16 @@ mp_defaults:
     memory: 512
     ssh_user: admin
 
-# NOTE: the RouterOS connection (network_cli + community.routeros, admin/empty
-# password) is set at PLAY level in converge.yml / verify.yml, not here. The
-# qemu role writes a runtime inventory with host-level ansible_connection: ssh
-# and key auth, which would override group_vars; play vars override both, while
-# ansible_host / ansible_port still flow through from the runtime inventory.
+# Password bootstrapped onto the fresh CHR by prepare.yml (CHR ships with an
+# empty admin password, which network_cli refuses). Throwaway, per ephemeral VM.
+chr_admin_password: molecule
+
+# NOTE: the RouterOS connection (network_cli + community.routeros) is set at
+# PLAY level in verify.yml, not here. The qemu role writes a runtime inventory
+# with host-level ansible_connection: ssh + key auth, which would override
+# group_vars; play vars override both, while ansible_host / ansible_port still
+# flow through from the runtime inventory.
+#
+# The `+cet1024w` suffix on the login user disables RouterOS console colors and
+# forces a fixed wide terminal, so RouterOS skips the interactive cursor-probe
+# that otherwise hangs network_cli. (Mirrors igou-inventory group_vars/routeros.yml.)

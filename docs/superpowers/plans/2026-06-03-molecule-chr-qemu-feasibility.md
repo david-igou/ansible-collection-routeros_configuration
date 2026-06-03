@@ -10,6 +10,15 @@
 
 **Reference spec:** `docs/superpowers/specs/2026-06-03-molecule-chr-qemu-feasibility-design.md`
 
+> **STATUS: DONE — `molecule test -s chr` is green.** Two findings changed the
+> plan during execution (see the spec's "Implementation notes"): (1) network_cli
+> refuses CHR's empty password, so `prepare` bootstraps an admin password via
+> `sshpass`; (2) RouterOS 7.x hangs network_cli on an interactive terminal probe
+> unless the login user carries the **`+cet1024w`** suffix (`ansible_user:
+> admin+cet1024w`) — matching `igou-inventory` `group_vars/routeros.yml`. Also
+> requires `ansible-pylibssh` (paramiko can't negotiate RouterOS SSH). The image
+> is fed to the role as a `file://` qcow2 URL.
+
 > **Note on TDD shape:** This is infrastructure glue, not application code. The "test" for each task is running the actual Molecule/QEMU command and observing the expected real-world result (a booted VM, an SSH banner, a RouterOS command response). Each task states the command and the exact expected observation before the implementing change, then validates it.
 
 > **Note on commits:** The workspace is not yet a git repo. Task 0 initializes it so the frequent-commit discipline applies. If the user declines git, skip the `git commit` step in each task.

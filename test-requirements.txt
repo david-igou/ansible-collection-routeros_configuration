@@ -2,3 +2,8 @@
 pytest-ansible
 pytest-xdist
 molecule
+# libssh backend for network_cli — paramiko fails to negotiate RouterOS SSH;
+# the chr molecule scenario connects via community.routeros over libssh.
+ansible-pylibssh
+# Note: the chr scenario also needs the `sshpass` and `qemu`/`genisoimage`
+# system packages (see extensions/molecule/chr/README.md).

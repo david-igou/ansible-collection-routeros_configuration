@@ -1,7 +1,9 @@
 # Molecule + RouterOS CHR over QEMU — Feasibility Spike Design
 
 - **Date:** 2026-06-03
-- **Status:** Approved (design), pending implementation
+- **Status:** Implemented — `molecule test -s chr` green; CHR 7.21.4 boots via the
+  qemu provider and `/system resource print` is reachable through `community.routeros`
+  (network_cli). See implementation notes at the end.
 - **Author:** david_igou (with Claude)
 - **Scope:** One throwaway-but-reusable Molecule scenario that proves the
   `david_igou.molecule_provisioners` **qemu** backend can boot a MikroTik CHR
@@ -154,5 +156,41 @@ each host; the scenario layers the RouterOS-specific connection vars on top.
   legacy `HostKeyAlgorithms`/KEX ssh args — resolved empirically during impl.
 - **No git repo** in this workspace yet — design doc is written but not
   committed (no `.git`). Initialize git separately if version history is wanted.
-```
+
+## Implementation notes (what actually happened)
+
+Outcome: `molecule test -s chr` is green; verify reports
+`RouterOS reachable via qemu provider: version: 7.21.4 (long-term)`.
+
+Reality differed from the design in three ways, all discovered by running it:
+
+1. **Image format gap (as predicted).** CHR ships a *zipped raw* image; the role
+   wants qcow2. `files/stage-chr-image.sh` downloads → unzips → `qemu-img convert`
+   to qcow2, and `inventory/hosts.yml` points `image:` at it via a `file://` URL
+   (the role's `get_url`-based cache ingests it; qcow2 sniffs as
+   `application/x-qemu-disk`, so it skips the xz path).
+
+2. **Readiness gap (as predicted).** The role's prepare uses
+   `wait_for_connection` (needs Python); CHR has none. The scenario prepare does
+   a TCP `wait_for` only, and sets `ansible_connection: local` as a *play var* so
+   the role's runtime-inventory `ansible_connection: ssh` doesn't hijack it.
+
+3. **Auth + terminal (the real surprises).**
+   - Empty-password auth is unusable: network_cli coerces `""` → null and only
+     tries pubkey (which CHR doesn't have). Fix: prepare bootstraps an admin
+     password over the empty-password login via `sshpass`.
+   - network_cli then *authenticated* but hung on RouterOS 7.x's interactive
+     terminal cursor-probe (`\x1b[6n`/`\x1b[c`), which the stock community.routeros
+     terminal plugin never answers. The fix — found in `igou-inventory`
+     `group_vars/routeros.yml` — is the **`+cet1024w` login suffix**
+     (`ansible_user: admin+cet1024w`), which disables console colors and forces a
+     fixed wide terminal so RouterOS skips the probe. This was the original
+     "SSH algorithm negotiation" risk, but the cause was terminal, not crypto.
+   - `paramiko` fails RouterOS negotiation; `ansible-pylibssh` (libssh) is
+     required and is the auto-selected backend.
+
+Validated-but-not-adopted: `community.routeros` **API** (`community.routeros.api`)
+works cleanly over a QMP-added host→8728 port-forward and is the better path for
+declarative config — kept as a follow-up since network_cli matches the
+production inventory and satisfied the success bar.
 

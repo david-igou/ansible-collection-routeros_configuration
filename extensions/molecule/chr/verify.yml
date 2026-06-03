@@ -4,15 +4,16 @@
   gather_facts: false
   # Connection set at play level so it overrides the qemu role's runtime
   # inventory (ssh + key auth). ansible_host / ansible_port still come from
-  # the runtime inventory. CHR default auth is admin with an empty password.
+  # the runtime inventory. The +cet1024w login suffix makes RouterOS skip its
+  # interactive terminal cursor-probe so network_cli doesn't hang.
   vars:
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: community.routeros.routeros
-    ansible_user: admin
-    ansible_password: ""
+    ansible_network_cli_ssh_type: libssh
+    ansible_user: "admin+cet1024w"
+    ansible_password: "{{ chr_admin_password }}"
     ansible_ssh_common_args: >-
       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
-      -o PubkeyAuthentication=no -o PreferredAuthentications=password
   tasks:
     - name: Query system resource over the RouterOS CLI
       community.routeros.command:
@@ -30,5 +31,5 @@
           - chr_resource.stdout[0] is search('version')
         success_msg: >-
           RouterOS reachable via qemu provider:
-          {{ chr_resource.stdout[0] | regex_search('version:[^\\n]*') }}
+          {{ chr_resource.stdout[0] | regex_search('version:[^\\n]*') | trim }}
         fail_msg: "Did not get a RouterOS resource response: {{ chr_resource.stdout | default('<none>') }}"

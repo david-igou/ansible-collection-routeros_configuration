@@ -1,4 +1,6 @@
 ---
+# Installed by molecule's `dependency` step (galaxy) and
+# `ansible-galaxy collection install -r collections.yml`.
 collections:
   - name: https://github.com/david-igou/ansible-collection-molecule_provisioners.git
     type: git

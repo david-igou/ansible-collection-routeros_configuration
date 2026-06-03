@@ -23,8 +23,11 @@
 
 - name: Wait for CHR SSH to accept TCP connections
   hosts: molecule
-  connection: local
   gather_facts: false
+  # Play var (not the `connection:` keyword) so it overrides the runtime
+  # inventory's host-level ansible_connection: ssh. wait_for then runs locally.
+  vars:
+    ansible_connection: local
   tasks:
     - name: Wait for forwarded SSH port (TCP only — CHR has no POSIX shell)
       ansible.builtin.wait_for:
@@ -33,3 +36,34 @@
         timeout: 180
         delay: 5
         sleep: 3
+
+    # CHR boots with an empty admin password, which network_cli refuses (it
+    # coerces "" to null and only attempts pubkey). Bootstrap a known password
+    # over the empty-password login so verify can authenticate. Runs locally
+    # via sshpass against the forwarded port. Tolerant of re-runs (a second
+    # run can't log in with the empty password once it's set — that's fine).
+    - name: Bootstrap a known admin password on the fresh CHR
+      ansible.builtin.command:
+        argv:
+          - sshpass
+          - -p
+          - ""
+          - ssh
+          - -p
+          - "{{ ansible_port | default(2222) }}"
+          - -o
+          - StrictHostKeyChecking=no
+          - -o
+          - UserKnownHostsFile=/dev/null
+          - -o
+          - PreferredAuthentications=password
+          - -o
+          - PubkeyAuthentication=no
+          - -o
+          - ConnectTimeout=15
+          - "admin@{{ ansible_host | default('127.0.0.1') }}"
+          - "/user set [find name=admin] password={{ chr_admin_password }}"
+      delegate_to: localhost
+      register: chr_pw
+      changed_when: chr_pw.rc == 0
+      failed_when: false
