@@ -30,6 +30,66 @@ jobs:
     with:
       collection_pre_install: >-
         git+https://github.com/ansible-collections/ansible.utils.git
+  molecule-qemu:
+    runs-on: ubuntu-latest
+    env:
+      MOLECULE_GLOB: extensions/molecule/*/molecule.yml
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario:
+          - chr
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install host qemu tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            qemu-system-x86 \
+            qemu-utils \
+            cloud-image-utils \
+            genisoimage \
+            ovmf \
+            sshpass \
+            unzip
+
+      - name: Expose Ubuntu OVMF firmware at the path molecule_provisioners expects
+        # Ubuntu ships OVMF at /usr/share/OVMF/; molecule_provisioners defaults
+        # to /usr/share/edk2/ovmf/ (Fedora/RHEL path). The chr scenario is BIOS,
+        # so this only matters if a scenario sets firmware: uefi — wired up
+        # defensively so adding a UEFI scenario doesn't silently break.
+        run: |
+          sudo mkdir -p /usr/share/edk2/ovmf
+          for f in OVMF_CODE OVMF_VARS; do
+            if [ -f "/usr/share/OVMF/${f}_4M.fd" ]; then
+              sudo ln -sf "/usr/share/OVMF/${f}_4M.fd" "/usr/share/edk2/ovmf/${f}.fd"
+            elif [ -f "/usr/share/OVMF/${f}.fd" ]; then
+              sudo ln -sf "/usr/share/OVMF/${f}.fd" "/usr/share/edk2/ovmf/${f}.fd"
+            fi
+          done
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible-core molecule ansible-pylibssh
+          # Runtime deps (community.routeros, ansible.netcommon).
+          ansible-galaxy collection install -r requirements.yml --force
+          # Install the collection itself so FQCN references resolve and
+          # galaxy.yml dependencies are pulled. Test-only deps
+          # (david_igou.molecule_provisioners) are installed by molecule's
+          # own `dependency` step via extensions/molecule/config.yml.
+          ansible-galaxy collection install . --force
+
+      - name: Run molecule ${{ matrix.scenario }}
+        run: molecule test -s ${{ matrix.scenario }}
+
   all_green:
     if: ${{ always() }}
     needs:
@@ -39,6 +99,7 @@ jobs:
       - unit-galaxy
       - unit-source
       - ansible-lint
+      - molecule-qemu
     runs-on: ubuntu-latest
     steps:
       - run: >-
@@ -46,7 +107,8 @@ jobs:
           set([
           '${{ needs.changelog.result }}',
           '${{ needs.sanity.result }}',
-          '${{ needs.unit-galaxy.result }}'
-          '${{ needs.ansible-lint.result }}'
-          '${{ needs.unit-source.result }}'
+          '${{ needs.unit-galaxy.result }}',
+          '${{ needs.ansible-lint.result }}',
+          '${{ needs.unit-source.result }}',
+          '${{ needs.molecule-qemu.result }}'
           ])"

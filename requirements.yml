@@ -1,0 +1,16 @@
+---
+# Runtime collection dependencies for this collection.
+#
+# community.routeros (and its ansible.netcommon transport) is the management
+# interface for RouterOS devices — the core runtime contract of this collection,
+# also declared in galaxy.yml `dependencies`.
+#
+# Test-only dependencies (the molecule provisioners) live in
+# extensions/molecule/requirements-test.yml and are pulled by molecule's
+# `dependency` step via extensions/molecule/config.yml — NOT here, so that
+# consumers installing this collection never auto-pull test tooling.
+collections:
+  - name: community.routeros
+    version: ">=3.0.0"
+  - name: ansible.netcommon
+    version: ">=8.0.0"

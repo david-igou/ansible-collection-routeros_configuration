@@ -1,6 +1,8 @@
 ---
-# Force the qemu backend for this scenario.
-mp_backend: qemu
+# Backend selector. The chr scenario only declares an mp.qemu block, so the
+# default resolves to qemu; the PROVISIONER env var can override for parity with
+# the provisioner collection's documented idiom.
+mp_backend: "{{ lookup('env', 'PROVISIONER') | default('qemu', true) }}"
 
 mp_defaults:
   qemu:

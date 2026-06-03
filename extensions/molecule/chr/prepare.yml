@@ -1,26 +1,8 @@
 ---
-# CHR has no POSIX shell, so we deliberately do NOT import the provisioner's
-# prepare (which runs wait_for_connection / a Python module). Instead we wait
-# on the forwarded SSH TCP port only.
-- name: Stage CHR image (idempotent safety net for re-runs)
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    chr_version: "7.21.4"
-  tasks:
-    - name: Ensure the CHR qcow2 exists (download + unzip + convert if missing)
-      ansible.builtin.command:
-        cmd: "{{ playbook_dir }}/files/stage-chr-image.sh"
-      environment:
-        CHR_VERSION: "{{ chr_version }}"
-      register: stage_result
-      changed_when: false
-
-    - name: Show staged image path
-      ansible.builtin.debug:
-        var: stage_result.stdout
-
+# The image is staged in create.yml (before provisioning). CHR has no POSIX
+# shell, so we deliberately do NOT import the provisioner's prepare (which runs
+# wait_for_connection / a Python module). We TCP-wait on the forwarded SSH port,
+# then bootstrap an admin password.
 - name: Wait for CHR SSH to accept TCP connections
   hosts: molecule
   gather_facts: false

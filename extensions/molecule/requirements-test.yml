@@ -1,0 +1,13 @@
+---
+# Test-only dependencies for the molecule scenarios under
+# extensions/molecule/. Installed by molecule's `dependency` step
+# (configured in extensions/molecule/config.yml). Not used outside testing,
+# and intentionally absent from the root requirements.yml / galaxy.yml so
+# consumers never pull it.
+#
+# Pinned to an exact Galaxy version for determinism: agents and CI resolve
+# bit-identical provisioner behavior regardless of when they run. Bump
+# deliberately.
+collections:
+  - name: david_igou.molecule_provisioners
+    version: 0.0.1-alpha

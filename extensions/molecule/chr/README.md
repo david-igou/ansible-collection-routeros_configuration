@@ -6,10 +6,20 @@ manage RouterOS on it via `community.routeros`.
 
 ## Run
 
+From the **collection root** (so molecule discovers `extensions/molecule/config.yml`):
+
 ```bash
-cd extensions/molecule/chr
-CHR_VERSION=7.21.4 bash files/stage-chr-image.sh   # one-time image staging
-molecule test -s chr
+CHR_VERSION=7.21.4 bash extensions/molecule/chr/files/stage-chr-image.sh  # one-time image staging
+make molecule SCENARIO=chr
+```
+
+`make molecule` installs runtime deps (`community.routeros`, `ansible.netcommon`)
+and lets molecule's `dependency` step install the pinned provisioner from
+`extensions/molecule/requirements-test.yml`. To run molecule directly instead:
+
+```bash
+make install
+MOLECULE_GLOB="extensions/molecule/*/molecule.yml" molecule test -s chr
 ```
 
 `verify.yml` runs `/system resource print` over `community.routeros` (network_cli)
@@ -42,8 +52,10 @@ and asserts on the RouterOS version. A green run ends with, e.g.:
   `unzip`, `sshpass`. KVM (`/dev/kvm`) recommended; falls back to TCG.
 - Python: `ansible-pylibssh` (libssh backend — paramiko fails to negotiate
   RouterOS SSH). See `test-requirements.txt`.
-- Collections: installed from `requirements.yml` (provisioner + community.routeros
-  + ansible.netcommon).
+- Collections: runtime deps (`community.routeros`, `ansible.netcommon`) from the
+  root `requirements.yml`; the pinned `david_igou.molecule_provisioners` from
+  `extensions/molecule/requirements-test.yml` (auto-installed by molecule's
+  `dependency` step). `make molecule` resolves both.
 
 ## Pinned image
 

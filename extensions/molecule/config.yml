@@ -1,0 +1,15 @@
+---
+# Shared base config — molecule auto-discovers this at
+# extensions/molecule/config.yml and deep-merges it into every scenario's
+# molecule.yml. Auto-discovery only fires when molecule is invoked from the
+# collection root with MOLECULE_GLOB=extensions/molecule/*/molecule.yml
+# (see the Makefile `molecule` target and extensions/molecule/README.md).
+#
+# Molecule runs its `dependency` step before each scenario, installing the
+# pinned test-only collections in extensions/molecule/requirements-test.yml via
+# ansible-galaxy. Consumers never need to manually pre-install the provisioner.
+dependency:
+  name: galaxy
+  enabled: true
+  options:
+    requirements-file: extensions/molecule/requirements-test.yml
