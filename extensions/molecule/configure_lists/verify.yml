@@ -1,0 +1,48 @@
+---
+- name: Verify — keyed apply, in-place update, purge
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read /ip/pool after converge
+      community.routeros.api_info: {path: ip pool}
+      delegate_to: localhost
+      connection: local
+      register: pools
+    - name: Assert both pools present with ranges
+      ansible.builtin.assert:
+        that:
+          - pools.result | selectattr('name', 'equalto', 'pool-a') | map(attribute='ranges') | first == '192.168.60.10-192.168.60.50'
+          - pools.result | selectattr('name', 'equalto', 'pool-b') | list | length == 1
+
+    - name: Update pool-a ranges (non-key field) and purge pool-b
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.configure
+      vars:
+        routeros_config:
+          /ip/pool:
+            purge: true
+            data:
+              - name: pool-a
+                ranges: "192.168.70.10-192.168.70.50"
+
+    - name: Read /ip/pool after update+purge
+      community.routeros.api_info: {path: ip pool}
+      delegate_to: localhost
+      connection: local
+      register: pools2
+    - name: Assert pool-a updated IN PLACE (matched by name) and pool-b purged
+      ansible.builtin.assert:
+        that:
+          - pools2.result | selectattr('name', 'equalto', 'pool-a') | list | length == 1
+          - pools2.result | selectattr('name', 'equalto', 'pool-a') | map(attribute='ranges') | first == '192.168.70.10-192.168.70.50'
+          - pools2.result | selectattr('name', 'equalto', 'pool-b') | list | length == 0
+        success_msg: "keyed update-in-place + purge correct"
+        fail_msg: "unexpected: {{ pools2.result }}"

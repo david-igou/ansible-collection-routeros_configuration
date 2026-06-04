@@ -26,74 +26,40 @@ require additional external libraries — check each module's documentation.
 
 ## Roles
 
-Each subsystem role declaratively manages one RouterOS config path. Set its
-`routeros_<path>` variable (a list of desired entries) and run the role; state
-is reconciled idempotently via `community.routeros.api_modify`.
-
-| Role | Manages | Notes |
-| --- | --- | --- |
-| `system_identity` | `/system/identity` | Device name (singleton). |
-| `ip_address` | `/ip/address` | IPv4 addresses. `routeros_ip_address_purge` for exact-state. |
-| `ip_firewall_filter` | `/ip/firewall/filter` | Ordered rules; `_purge`/`_order`/`_content` toggles. |
-
-### Interface & bridge
-
-| Role | Manages |
+| Role | Purpose |
 | --- | --- |
-| `interface_ethernet` | `/interface/ethernet` port fields (modify-only, matched by `default-name`). |
-| `interface_bridge` | `/interface/bridge`. |
-| `interface_bridge_port` | `/interface/bridge/port` membership. |
-| `interface_bridge_vlan` | `/interface/bridge/vlan` table. |
-| `interface_bridge_settings` | `/interface/bridge/settings` (singleton). |
-| `interface_vlan` | `/interface/vlan`. |
-| `interface_bonding` | `/interface/bonding`. |
-| `interface_list` | `/interface/list`. |
-| `interface_list_member` | `/interface/list/member`. |
-| `interface_vrrp` | `/interface/vrrp`. |
-| `interface_vxlan` | `/interface/vxlan`. |
-| `interface_wireguard` | `/interface/wireguard`. |
-| `interface_wireguard_peers` | `/interface/wireguard/peers`. |
-| `interface_gre` | `/interface/gre`. |
-| `interface_eoip` | `/interface/eoip`. |
+| `configure` | Declaratively manage RouterOS from one `routeros_config` data structure (the public entrypoint). |
+| `_reconcile` | Internal engine — reconciles a single path via `community.routeros.api_modify`. Not called directly. |
 
-### IP core
+Set `routeros_config` — a dict keyed by RouterOS **slash path** — and run the
+`configure` role. State is reconciled idempotently in a **canonical dependency
+order** (so `/ip/pool` precedes the `/ip/dhcp-server` that references it, a bridge
+precedes its ports, etc.), regardless of how you author or merge the dict. Any
+path supported by `community.routeros.api_modify` is usable — there is no
+per-path role.
 
-| Role | Manages |
-| --- | --- |
-| `ip_pool` | `/ip/pool`. |
-| `ip_dns` | `/ip/dns` (singleton). |
-| `ip_dns_static` | `/ip/dns/static` records. |
-| `ip_dhcp_server` | `/ip/dhcp-server` instances. |
-| `ip_dhcp_server_network` | `/ip/dhcp-server/network`. |
-| `ip_dhcp_server_lease` | `/ip/dhcp-server/lease` static leases. |
-| `ip_dhcp_server_option` | `/ip/dhcp-server/option`. |
-| `ip_dhcp_client` | `/ip/dhcp-client`. |
-| `ip_dhcp_relay` | `/ip/dhcp-relay`. |
-| `ip_route` | `/ip/route` static routes. |
-| `ip_service` | `/ip/service` (modify-only). |
-| `ip_arp` | `/ip/arp` static entries. |
-| `ip_neighbor_discovery_settings` | `/ip/neighbor/discovery-settings` (singleton). |
-| `ip_settings` | `/ip/settings` (singleton). |
-| `ip_cloud` | `/ip/cloud` (singleton). |
-| `ip_vrf` | `/ip/vrf` instances. |
-| `ip_ssh` | `/ip/ssh` (singleton). |
+```yaml
+routeros_config:
+  /ip/pool:
+    data:
+      - name: lan
+        ranges: "192.168.88.10-192.168.88.254"
+  /ip/firewall/filter:
+    purge: true          # exact-state for this path
+    order: true          # enforce rule order (requires purge)
+    data:
+      - { chain: input, action: accept, comment: est,
+          connection-state: "established,related" }
+      - { chain: input, action: accept, comment: mgmt,
+          protocol: tcp, dst-port: "22,8728" }
+      - { chain: input, action: drop, comment: drop-rest }
+```
 
-### IP firewall
-
-| Role | Manages |
-| --- | --- |
-| `ip_firewall_nat` | `/ip/firewall/nat` (ordered). |
-| `ip_firewall_mangle` | `/ip/firewall/mangle` (ordered). |
-| `ip_firewall_raw` | `/ip/firewall/raw` (ordered). |
-| `ip_firewall_address_list` | `/ip/firewall/address-list`. |
-| `ip_firewall_connection_tracking` | `/ip/firewall/connection/tracking` (singleton). |
-| `ip_firewall_service_port` | `/ip/firewall/service-port` (modify-only). |
-
-All roles share one connection contract through the `routeros_api_*` variables
-(hostname, username, password, tls, validate_certs, port) and delegate
-reconciliation to the internal `_reconcile` engine role. Roles default to
-**additive** behavior (declared entries are added/updated, others untouched);
-opt into exact-state deletion per role with the `*_purge` toggle.
+Each path value takes `data` (required), and optional `purge` (exact-state),
+`order` (enforce entry order; requires purge), and `content`. Connection comes
+from the shared `routeros_api_*` variables. Defaults are **additive**. See
+`roles/configure/README.md` for the schema, the ordering model, and how keyed vs
+keyless (firewall) updates are matched.
 
 ## Using this collection
 

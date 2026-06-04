@@ -1,0 +1,49 @@
+---
+# Canonical apply order for routeros_config paths. Only the RELATIVE order of
+# dependency-related paths matters; independent paths may sit anywhere, and any
+# path NOT listed here is applied last (in declared order). Keys are slash paths
+# (RouterOS notation), matching routeros_config keys.
+rcfg_path_order:
+  - /interface/ethernet
+  - /interface/bonding
+  - /interface/bridge
+  - /interface/vlan
+  - /interface/vxlan
+  - /interface/gre
+  - /interface/eoip
+  - /interface/wireguard
+  - /interface/bridge/settings
+  - /interface/bridge/port
+  - /interface/bridge/vlan
+  - /interface/list
+  - /interface/list/member
+  - /interface/wireguard/peers
+  - /interface/vrrp
+  - /ip/pool
+  - /ip/address
+  - /ip/arp
+  - /ip/vrf
+  - /ip/dhcp-server
+  - /ip/dhcp-server/network
+  - /ip/dhcp-server/option
+  - /ip/dhcp-server/lease
+  - /ip/dhcp-client
+  - /ip/dhcp-relay
+  - /ip/dns
+  - /ip/dns/static
+  - /ip/route
+  - /ip/service
+  - /ip/ssh
+  - /ip/settings
+  - /ip/cloud
+  - /ip/neighbor/discovery-settings
+  - /ip/firewall/address-list
+  - /ip/firewall/connection/tracking
+  - /ip/firewall/service-port
+  - /ip/firewall/filter
+  - /ip/firewall/nat
+  - /ip/firewall/mangle
+  - /ip/firewall/raw
+  # routing: instances before the areas/objects that reference them
+  - /routing/ospf/instance
+  - /routing/ospf/area

@@ -1,7 +1,0 @@
----
-# List of /ip/dhcp-server/network entries, e.g.:
-#   - address: "192.168.88.0/24"
-#     gateway: "192.168.88.1"
-#     dns-server: "192.168.88.1"
-routeros_ip_dhcp_server_network: []
-routeros_ip_dhcp_server_network_purge: false

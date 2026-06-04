@@ -1,7 +1,0 @@
----
-minor_changes:
-  - >-
-    Add the internal ``_reconcile`` engine role and the first declarative
-    subsystem roles ``system_identity``, ``ip_address``, and
-    ``ip_firewall_filter``, each managing one RouterOS path via
-    ``community.routeros.api_modify`` with a per-role molecule scenario.

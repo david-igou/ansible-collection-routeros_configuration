@@ -1,0 +1,27 @@
+---
+# Fast, device-free test of configure's canonical path ordering. Runs only the
+# role's order.yml (via tasks_from) and asserts rcfg_ordered_paths.
+- name: Test configure path ordering
+  hosts: localhost
+  gather_facts: false
+  vars:
+    routeros_config:
+      /ip/dhcp-server/lease: {data: []}
+      /system/identity: {data: []}
+      /ip/pool: {data: []}
+      /ip/dhcp-server: {data: []}
+      /interface/bridge: {data: []}
+  tasks:
+    - name: Compute the ordered paths
+      ansible.builtin.include_role:
+        name: configure
+        tasks_from: order
+
+    - name: Assert dependency order (parents before children) + unlisted last
+      ansible.builtin.assert:
+        that:
+          - rcfg_ordered_paths == [
+              '/interface/bridge', '/ip/pool',
+              '/ip/dhcp-server', '/ip/dhcp-server/lease', '/system/identity']
+        success_msg: "ordering correct: {{ rcfg_ordered_paths }}"
+        fail_msg: "ordering wrong: {{ rcfg_ordered_paths }}"

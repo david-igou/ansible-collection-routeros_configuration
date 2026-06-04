@@ -39,12 +39,17 @@ jobs:
       matrix:
         # Two jobs instead of one-per-scenario. `shared` boots ONE CHR (the
         # `default` scenario owns create/prepare/destroy via molecule's
-        # shared_state) and runs every subsystem-role scenario against it in a
-        # single sequential pass — see extensions/molecule/config.yml. `chr`
-        # (network_cli feasibility, opts out of shared_state) keeps its own VM.
+        # shared_state) and runs the configure scenarios against it in a single
+        # sequential pass — see extensions/molecule/config.yml. `default` MUST be
+        # listed first (it owns create/prepare); scenarios are run in the listed
+        # order, unlike `--all` which sorts by directory. `chr` (network_cli
+        # feasibility, opts out of shared_state) keeps its own VM.
         include:
           - name: shared
-            cmd: molecule test --all --exclude chr --exclude integration_hello_world
+            cmd: >-
+              molecule test -s default -s configure_lists -s configure_singletons
+              -s configure_ordered -s configure_modify_only
+              -s configure_dependency_chain -s configure_full
           - name: chr
             cmd: molecule test -s chr
     steps:

@@ -1,4 +1,0 @@
----
-# /ip/cloud is a singleton path. Single-element list, e.g.
-# [{ddns-update-interval: "none"}]. Empty -> no change.
-routeros_ip_cloud: []

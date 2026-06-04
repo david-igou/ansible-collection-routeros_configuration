@@ -1,6 +1,0 @@
----
-# List of /ip/dns/static entries, e.g.:
-#   - name: router.lan
-#     address: "192.168.88.1"
-routeros_ip_dns_static: []
-routeros_ip_dns_static_purge: false

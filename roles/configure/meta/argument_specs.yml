@@ -1,0 +1,16 @@
+---
+argument_specs:
+  main:
+    short_description: Declaratively manage RouterOS paths from one data structure.
+    description:
+      - Reconciles each path in C(routeros_config) via the internal C(_reconcile)
+        engine, in a canonical dependency order (see C(vars/main.yml)).
+    options:
+      routeros_config:
+        type: dict
+        default: {}
+        description:
+          - Desired state keyed by RouterOS slash path (e.g. C(/ip/pool)). Each
+            value is a dict with C(data) (list, required) and optional C(purge),
+            C(order) (bool), and C(content)
+            (ignore/remove/remove_as_much_as_possible).

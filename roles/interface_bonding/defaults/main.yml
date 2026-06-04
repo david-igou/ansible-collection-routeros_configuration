@@ -1,4 +1,0 @@
----
-# interface bonding entries (see this role's README for an example).
-routeros_interface_bonding: []
-routeros_interface_bonding_purge: false

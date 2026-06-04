@@ -1,0 +1,29 @@
+---
+- name: Verify — singletons applied
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read /system/identity
+      community.routeros.api_info: {path: system identity}
+      delegate_to: localhost
+      connection: local
+      register: ident
+    - name: Read /ip/dns
+      community.routeros.api_info: {path: ip dns}
+      delegate_to: localhost
+      connection: local
+      register: dns
+    - name: Assert identity + dns applied
+      ansible.builtin.assert:
+        that:
+          - ident.result | selectattr('name', 'equalto', 'configure-chr') | list | length == 1
+          - dns.result | selectattr('servers', 'search', '1.1.1.1') | list | length == 1
+        fail_msg: "identity={{ ident.result }} dns={{ dns.result }}"

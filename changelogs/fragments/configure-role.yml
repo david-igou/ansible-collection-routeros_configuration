@@ -1,0 +1,8 @@
+---
+breaking_changes:
+  - >-
+    The 41 per-path roles are replaced by a single ``configure`` role driven by a
+    ``routeros_config`` dict keyed by RouterOS slash path (e.g. ``/ip/pool``).
+    Adding a new path no longer requires a new role; ``configure`` applies all
+    paths in a canonical dependency order. The internal ``_reconcile`` engine is
+    unchanged.

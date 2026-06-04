@@ -1,0 +1,63 @@
+---
+- name: Verify — firewall order + keyless in-place update
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read /ip/firewall/filter
+      community.routeros.api_info: {path: ip firewall filter}
+      delegate_to: localhost
+      connection: local
+      register: fw
+    - name: Collect comments in device order
+      ansible.builtin.set_fact:
+        fw_comments: "{{ fw.result | map(attribute='comment') | list }}"
+    - name: Assert rules in order a<b<c
+      ansible.builtin.assert:
+        that:
+          - fw_comments.index('rule-a') < fw_comments.index('rule-b')
+          - fw_comments.index('rule-b') < fw_comments.index('rule-c')
+
+    - name: Update rule-a's connection-state (keyless, matched by comment)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.configure
+      vars:
+        routeros_config:
+          /ip/firewall/filter:
+            purge: true
+            order: true
+            content: remove_as_much_as_possible
+            data:
+              - chain: input
+                action: accept
+                connection-state: "established"
+                comment: rule-a
+              - chain: input
+                action: accept
+                protocol: tcp
+                dst-port: "22,8728"
+                comment: rule-b
+              - chain: input
+                action: drop
+                comment: rule-c
+
+    - name: Read /ip/firewall/filter after update
+      community.routeros.api_info: {path: ip firewall filter}
+      delegate_to: localhost
+      connection: local
+      register: fw2
+    - name: Assert still 3 rules; rule-a overwritten in place (not duplicated)
+      ansible.builtin.assert:
+        that:
+          - fw2.result | selectattr('comment', 'defined') | selectattr('comment', 'equalto', 'rule-a') | list | length == 1
+          - fw2.result | selectattr('comment', 'equalto', 'rule-a') | map(attribute='connection-state') | first == 'established'
+          - (fw2.result | selectattr('comment', 'in', ['rule-a', 'rule-b', 'rule-c']) | list | length) == 3
+        success_msg: "keyless rule updated in place by comment; order preserved"
+        fail_msg: "unexpected: {{ fw2.result }}"

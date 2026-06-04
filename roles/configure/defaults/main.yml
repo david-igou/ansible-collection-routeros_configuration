@@ -1,0 +1,7 @@
+---
+# Desired RouterOS state, keyed by slash path (RouterOS notation). Each value:
+#   data:    list of entry dicts (required)
+#   purge:   bool — remove on-device entries not in data (default false)
+#   order:   bool — enforce entry order (requires purge; default false)
+#   content: ignore | remove | remove_as_much_as_possible (default ignore)
+routeros_config: {}

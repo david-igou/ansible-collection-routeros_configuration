@@ -41,8 +41,14 @@ install: ## Install runtime collection dependencies (community.routeros, ansible
 # then the standalone `chr` scenario. The shared pass excludes `chr` (network_cli,
 # opts out of shared_state) and `integration_hello_world` (localhost smoke).
 molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the shared pass + chr)
+# `default` MUST be listed first: under shared_state it owns create/prepare, and
+# molecule runs explicitly-listed scenarios in the given order (whereas `--all`
+# sorts by directory, which would put configure_* before default and converge
+# against an un-prepared CHR).
 ifeq ($(SCENARIO),)
-	molecule test --all --exclude chr --exclude integration_hello_world
+	molecule test -s default -s configure_lists -s configure_singletons \
+		-s configure_ordered -s configure_modify_only \
+		-s configure_dependency_chain -s configure_full
 	molecule test -s chr
 else
 	molecule test -s $(SCENARIO)

@@ -1,7 +1,0 @@
----
-# Ordered list of /ip/firewall/raw rules. Order matters; set _order: true
-# (which also requires _purge: true) to enforce it exactly.
-routeros_ip_firewall_raw: []
-routeros_ip_firewall_raw_purge: false
-routeros_ip_firewall_raw_order: false
-routeros_ip_firewall_raw_content: remove_as_much_as_possible
