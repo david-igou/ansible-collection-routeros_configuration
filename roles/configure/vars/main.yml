@@ -44,3 +44,6 @@ rcfg_path_order:
   - /ip/firewall/nat
   - /ip/firewall/mangle
   - /ip/firewall/raw
+  # routing: instances before the areas/objects that reference them
+  - /routing/ospf/instance
+  - /routing/ospf/area

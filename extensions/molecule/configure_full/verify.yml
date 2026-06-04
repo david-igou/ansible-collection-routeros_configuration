@@ -1,0 +1,55 @@
+---
+# Spot-check across pattern classes; the comprehensive guarantees are the
+# converge succeeding (cross-path ordering) and the idempotence step (every entry
+# reconciled cleanly), both exercised by the centralised test_sequence.
+- name: Verify — representative state from the comprehensive apply
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read /ip/pool (keyed list)
+      community.routeros.api_info: {path: ip pool}
+      delegate_to: localhost
+      connection: local
+      register: pool
+    - name: Read /ip/firewall/filter (keyless ordered)
+      community.routeros.api_info: {path: ip firewall filter}
+      delegate_to: localhost
+      connection: local
+      register: fw
+    - name: Read /interface/bridge/port (dependency child)
+      community.routeros.api_info: {path: interface bridge port}
+      delegate_to: localhost
+      connection: local
+      register: ports
+    - name: Read /ip/dhcp-server/lease (deep dependency child)
+      community.routeros.api_info: {path: ip dhcp-server lease}
+      delegate_to: localhost
+      connection: local
+      register: leases
+    - name: Read /system/identity (singleton)
+      community.routeros.api_info: {path: system identity}
+      delegate_to: localhost
+      connection: local
+      register: ident
+
+    - name: Collect firewall comments in device order
+      ansible.builtin.set_fact:
+        fc: "{{ fw.result | map(attribute='comment') | list }}"
+    - name: Assert representative objects across pattern classes
+      ansible.builtin.assert:
+        that:
+          - pool.result | selectattr('name', 'equalto', 'full-pool') | list | length == 1
+          - ident.result | selectattr('name', 'equalto', 'full-test') | list | length == 1
+          - fc.index('f-a') < fc.index('f-b') and fc.index('f-b') < fc.index('f-c')
+          - ports.result | selectattr('bridge', 'equalto', 'full-br') | list | length == 2
+          - leases.result | selectattr('address', 'equalto', '192.168.80.100') | list | length == 1
+        success_msg: "comprehensive apply verified: keyed/singleton/ordered/dependency-chain all present"
+        fail_msg: "pool={{ pool.result }} ident={{ ident.result }} fw={{ fc }} ports={{ ports.result }} leases={{ leases.result }}"

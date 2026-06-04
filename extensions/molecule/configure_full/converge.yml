@@ -1,0 +1,333 @@
+---
+# Comprehensive scenario: apply a representative valid entry for (most of) the
+# api_modify paths a stock CHR can configure, in one configure call, with keys
+# deliberately NOT in dependency order — configure must re-sort them. The
+# converge succeeding proves cross-path ordering; the idempotence step proves
+# every entry reconciles cleanly. Paths a bare CHR cannot cleanly create are
+# documented in EXCLUSIONS.md (no silent caps).
+- name: Converge — every cleanly-creatable CHR path via configure
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_config:
+      # --- singletons / settings (idempotent-safe fields) ---
+      /system/identity:
+        data:
+          - name: full-test
+      /ip/dns:
+        data:
+          - servers: "9.9.9.9"
+            allow-remote-requests: false
+      /ip/settings:
+        data:
+          - tcp-syncookies: true
+      /ip/ssh:
+        data:
+          - strong-crypto: true
+      /ip/cloud:
+        data:
+          - update-time: false
+      /ip/neighbor/discovery-settings:
+        data:
+          - discover-interface-list: none
+      /ip/firewall/connection/tracking:
+        data:
+          - loose-tcp-tracking: false
+      /interface/bridge/settings:
+        data:
+          - use-ip-firewall: true
+      /ipv6/settings:
+        data:
+          - disable-ipv6: false
+      /system/note:
+        data:
+          - note: "managed by configure"
+            show-at-login: false
+      /system/clock:
+        data:
+          - time-zone-name: "UTC"
+      /ip/proxy:
+        data:
+          - enabled: false
+      /ip/upnp:
+        data:
+          - enabled: false
+      /ip/smb:
+        data:
+          - enabled: false
+      /ip/socks:
+        data:
+          - enabled: false
+      /tool/romon:
+        data:
+          - enabled: false
+      /tool/bandwidth-server:
+        data:
+          - enabled: false
+      /ip/traffic-flow:
+        data:
+          - enabled: false
+      /interface/detect-internet:
+        data:
+          - detect-interface-list: none
+      /user/aaa:
+        data:
+          - use-radius: false
+      /snmp:
+        data:
+          - enabled: false
+      /radius/incoming:
+        data:
+          - accept: false
+      /system/ntp/server:
+        data:
+          - enabled: false
+      /system/package/update:
+        data:
+          - channel: stable
+      /system/leds/settings:
+        data:
+          - all-leds-off: never
+      /user/settings:
+        data:
+          - minimum-password-length: 0
+      /ipv6/nd/prefix/default:
+        data:
+          - preferred-lifetime: "1w"
+      /system/watchdog:
+        data:
+          - auto-send-supout: false
+
+      # --- firewall (keyless ordered; comments as pseudo-keys) ---
+      /ip/firewall/filter:
+        purge: true
+        order: true
+        content: remove_as_much_as_possible
+        data:
+          - chain: input
+            action: accept
+            connection-state: "established,related"
+            comment: f-a
+          - chain: input
+            action: accept
+            protocol: tcp
+            dst-port: "22,8728"
+            comment: f-b
+          - chain: input
+            action: drop
+            comment: f-c
+      /ip/firewall/nat:
+        data:
+          - chain: srcnat
+            action: masquerade
+            out-interface: ether3
+            comment: n-a
+      /ip/firewall/mangle:
+        data:
+          - chain: prerouting
+            action: accept
+            comment: m-a
+      /ip/firewall/raw:
+        data:
+          - chain: prerouting
+            action: accept
+            comment: r-a
+      /ip/firewall/address-list:
+        data:
+          - list: full-block
+            address: "192.0.2.0/24"
+      /ip/firewall/layer7-protocol:
+        data:
+          - name: full-l7
+            regexp: "test"
+      /ip/firewall/service-port:
+        data:
+          - name: ftp
+            disabled: true
+      /ipv6/firewall/filter:
+        data:
+          - chain: input
+            action: accept
+            comment: f6-a
+      /ipv6/firewall/nat:
+        data:
+          - chain: srcnat
+            action: accept
+            comment: n6-a
+      /ipv6/firewall/mangle:
+        data:
+          - chain: prerouting
+            action: accept
+            comment: m6-a
+      /ipv6/firewall/raw:
+        data:
+          - chain: prerouting
+            action: accept
+            comment: r6-a
+      /ipv6/firewall/address-list:
+        data:
+          - list: full-block6
+            address: "2001:db8::/32"
+
+      # --- dependency chains (authored out of order on purpose) ---
+      /ip/dhcp-server/lease:
+        data:
+          - server: full-dhcp
+            address: "192.168.80.100"
+            mac-address: "00:11:22:33:80:01"
+      /interface/bridge/port:
+        data:
+          - bridge: full-br
+            interface: ether7
+          - bridge: full-br
+            interface: ether8
+      /ip/dhcp-server:
+        data:
+          - name: full-dhcp
+            interface: ether3
+            address-pool: full-pool
+            disabled: true
+      /ip/dhcp-server/network:
+        data:
+          - address: "192.168.80.0/24"
+            gateway: "192.168.80.1"
+      /ip/dhcp-server/option:
+        data:
+          - name: full-opt
+            code: 66
+            value: "'192.168.80.1'"
+      /interface/list/member:
+        data:
+          - list: FULL-LST
+            interface: ether3
+      /interface/bridge:
+        data:
+          - name: full-br
+      /interface/bridge/vlan:
+        data:
+          - bridge: full-br
+            vlan-ids: "80"
+            tagged: full-br
+      /ip/pool:
+        data:
+          - name: full-pool
+            ranges: "192.168.80.10-192.168.80.50"
+      /interface/list:
+        data:
+          - name: FULL-LST
+      /interface/wireguard:
+        data:
+          - name: full-wg
+      /interface/wireguard/peers:
+        data:
+          - interface: full-wg
+            public-key: "JRI5Acni4bnH0+L0wA0sFV0iHs3J0jVnp3hQ8j0wYy0="
+            allowed-address: "10.20.0.0/24"
+      /routing/ospf/instance:
+        data:
+          - name: full-ospf
+      /routing/ospf/area:
+        data:
+          - name: full-area
+            instance: full-ospf
+
+      # --- interfaces / addressing ---
+      /interface/ethernet:
+        data:
+          - default-name: ether3
+            comment: full-managed
+      /interface/vlan:
+        data:
+          - name: full-vlan
+            interface: ether4
+            vlan-id: 80
+      /interface/vrrp:
+        data:
+          - name: full-vrrp
+            interface: ether4
+            vrid: 80
+      /interface/bonding:
+        data:
+          - name: full-bond
+            slaves: "ether5,ether6"
+      /interface/gre:
+        data:
+          - name: full-gre
+            remote-address: "203.0.113.9"
+      /interface/eoip:
+        data:
+          - name: full-eoip
+            remote-address: "203.0.113.10"
+            tunnel-id: 80
+      /interface/gre6:
+        data:
+          - name: full-gre6
+            remote-address: "2001:db8::9"
+      /ip/address:
+        data:
+          - address: "192.168.81.1/24"
+            interface: ether4
+      /ip/arp:
+        data:
+          - address: "192.168.81.9"
+            mac-address: "00:11:22:33:81:09"
+            interface: ether4
+
+      # --- dhcp client/relay (disabled; dedicated ports) ---
+      /ip/dhcp-client:
+        data:
+          - interface: ether9
+            disabled: true
+            add-default-route: false
+      /ip/dhcp-relay:
+        data:
+          - name: full-relay
+            interface: ether10
+            dhcp-server: "192.168.80.1"
+            disabled: true
+
+      # --- modify-only ---
+      /ip/service:
+        data:
+          - name: telnet
+            disabled: true
+
+      # --- independent lists ---
+      /ppp/profile:
+        data:
+          - name: full-ppp
+      /ppp/secret:
+        data:
+          - name: full-secret
+            password: "x"
+      /queue/type:
+        data:
+          - name: full-qtype
+            kind: pfifo
+      /queue/simple:
+        data:
+          - name: full-q
+            target: "192.168.81.0/24"
+      /queue/tree:
+        data:
+          - name: full-qtree
+            parent: global
+      /system/scheduler:
+        data:
+          - name: full-sched
+            on-event: ":log info full"
+            interval: "1d"
+      /system/script:
+        data:
+          - name: full-script
+            source: ":log info full"
+      /system/logging/action:
+        data:
+          - name: fulllog
+            target: memory
+      /snmp/community:
+        data:
+          - name: full-snmp
+            addresses: "0.0.0.0/0"
+  roles:
+    - role: david_igou.routeros_configuration.configure
