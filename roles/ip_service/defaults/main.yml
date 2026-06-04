@@ -1,0 +1,6 @@
+---
+# Modify-only list of /ip/service entries (built-in services keyed by name).
+# Cannot add/remove; only change fields like disabled/port, e.g.:
+#   - name: telnet
+#     disabled: true
+routeros_ip_service: []
