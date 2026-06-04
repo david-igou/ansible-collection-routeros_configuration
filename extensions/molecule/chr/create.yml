@@ -1,26 +1,7 @@
 ---
-# Stage the CHR image BEFORE the provisioner create runs — the qemu role
-# ingests it via a file:// URL (inventory/hosts.yml), so it must exist first.
-# CHR ships a zipped raw .img; the helper converts it to qcow2 (idempotent,
-# cached). This makes the scenario self-staging: no manual step, locally or CI.
-- name: Stage the CHR qcow2 image before provisioning
-  hosts: localhost
-  connection: local
-  gather_facts: false
-  vars:
-    chr_version: "7.21.4"
-  tasks:
-    - name: Ensure the CHR qcow2 exists (download + unzip + convert if missing)
-      ansible.builtin.command:
-        cmd: "{{ playbook_dir }}/files/stage-chr-image.sh"
-      environment:
-        CHR_VERSION: "{{ chr_version }}"
-      register: stage_result
-      changed_when: false
-
-    - name: Show staged image path
-      ansible.builtin.debug:
-        var: stage_result.stdout
-
+# CHR's zipped raw .img is ingested directly by the qemu role's image cache
+# (download -> unzip -> qemu-img convert raw->qcow2), driven by the .img.zip
+# URL in inventory/hosts.yml. No pre-staging step needed (requires
+# david_igou.molecule_provisioners >= 0.0.2-alpha).
 - name: Provision molecule instances
   import_playbook: david_igou.molecule_provisioners.create

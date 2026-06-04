@@ -9,9 +9,11 @@ manage RouterOS on it via `community.routeros`.
 From the **collection root** (so molecule discovers `extensions/molecule/config.yml`):
 
 ```bash
-CHR_VERSION=7.21.4 bash extensions/molecule/chr/files/stage-chr-image.sh  # one-time image staging
 make molecule SCENARIO=chr
 ```
+
+The CHR image is fetched and converted automatically on first run — the qemu
+role ingests the `.img.zip` directly (no manual staging step).
 
 `make molecule` installs runtime deps (`community.routeros`, `ansible.netcommon`)
 and lets molecule's `dependency` step install the pinned provisioner from
@@ -29,10 +31,11 @@ and asserts on the RouterOS version. A green run ends with, e.g.:
 
 ## How it works
 
-- **Image** — CHR ships a zipped *raw* `.img`; the qemu role consumes qcow2.
-  `files/stage-chr-image.sh` downloads, unzips, and `qemu-img convert`s it to
-  `~/.cache/chr-images/chr-<ver>.qcow2`, which `inventory/hosts.yml` references
-  via a `file://` URL.
+- **Image** — CHR ships a zipped *raw* `.img`. `inventory/hosts.yml` points
+  `mp.qemu.image` straight at the MikroTik `.img.zip` URL; the qemu role's image
+  cache (≥ 0.0.2-alpha) downloads it, sniffs the content type, unzips it, and
+  `qemu-img convert`s the raw disk to qcow2 — cached and idempotent, no manual
+  staging.
 - **Boot** — `create.yml` dispatches to the provisioner's qemu role (SLIRP
   networking, host `2222+index` → guest `22`).
 - **prepare.yml** — does *not* import the provisioner prepare (its
@@ -59,8 +62,8 @@ and asserts on the RouterOS version. A green run ends with, e.g.:
 
 ## Pinned image
 
-CHR `7.21.4` from <https://mikrotik.com/download/chr>. Bump `CHR_VERSION` in
-`files/stage-chr-image.sh`, `inventory/hosts.yml`, and `prepare.yml` together.
+CHR `7.21.4` from <https://mikrotik.com/download/chr>. Bump the version by
+editing the `image:` URL in `inventory/hosts.yml`.
 
 ## Known limitations / follow-ups
 
