@@ -1,0 +1,15 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dns/static declaratively.
+    options:
+      routeros_ip_dns_static:
+        type: list
+        elements: dict
+        default: []
+        description: Static DNS records (name, address, cname, type, ...).
+      routeros_ip_dns_static_purge:
+        type: bool
+        default: false
+        description: >-
+          Remove records not present in routeros_ip_dns_static.
