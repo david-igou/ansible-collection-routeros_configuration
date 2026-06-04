@@ -1,11 +1,21 @@
 ---
-# These roles intentionally share a variable namespace rather than using a
-# per-role prefix:
-#   routeros_<path>  — user-facing desired-state vars, consistent across roles
-#   routeros_api_*   — the shared connection contract every role authenticates with
-#   rcfg_*           — private inputs passed into the internal _reconcile engine
-# This is a deliberate design decision (see
-# docs/superpowers/specs/2026-06-04-routeros-config-roles-architecture-design.md),
-# so ansible-lint's per-role-prefix requirement does not apply here.
+# extensions/ holds molecule test scaffolding whose playbooks import the
+# test-only david_igou.molecule_provisioners collection. That collection is not
+# installed in the lint environment, so ansible-lint's --syntax-check trips
+# internal-error on those playbooks. This code is validated by actually running
+# the molecule scenarios, not by static lint.
+exclude_paths:
+  - extensions/
+
 skip_list:
+  # The roles deliberately share a variable namespace rather than using a
+  # per-role prefix:
+  #   routeros_<path>  — user-facing desired-state vars, consistent across roles
+  #   routeros_api_*   — the shared connection contract every role authenticates with
+  #   rcfg_*           — private inputs passed into the internal _reconcile engine
+  # See docs/superpowers/specs/2026-06-04-routeros-config-roles-architecture-design.md.
   - var-naming[no-role-prefix]
+  # _reconcile is an intentionally-internal engine role; the leading underscore
+  # signals "not a user entrypoint". Ansible has no role-privacy mechanism, so
+  # this is conveyed by name + docs rather than the role-name pattern rule.
+  - role-name
