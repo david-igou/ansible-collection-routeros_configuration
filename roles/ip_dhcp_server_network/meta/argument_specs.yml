@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dhcp-server/network declaratively.
+    options:
+      routeros_ip_dhcp_server_network:
+        type: list
+        elements: dict
+        default: []
+        description: DHCP network entries (address, gateway, dns-server, ...).
+      routeros_ip_dhcp_server_network_purge:
+        type: bool
+        default: false
+        description: Remove networks not present in the list.
