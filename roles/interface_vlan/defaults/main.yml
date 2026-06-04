@@ -1,0 +1,4 @@
+---
+# interface vlan entries (see this role's README for an example).
+routeros_interface_vlan: []
+routeros_interface_vlan_purge: false

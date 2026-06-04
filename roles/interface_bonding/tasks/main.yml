@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.interface_bonding
+- name: "Reconcile interface bonding"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: interface bonding
+    rcfg_data: "{{ routeros_interface_bonding }}"
+    rcfg_purge: "{{ routeros_interface_bonding_purge | default(false) }}"
+    rcfg_order: false

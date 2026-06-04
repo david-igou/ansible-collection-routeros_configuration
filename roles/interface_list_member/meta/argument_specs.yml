@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/list/member declaratively.
+    options:
+      routeros_interface_list_member:
+        type: list
+        elements: dict
+        default: []
+        description: Interface list memberships.
+      routeros_interface_list_member_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

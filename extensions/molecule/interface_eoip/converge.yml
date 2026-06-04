@@ -1,0 +1,9 @@
+---
+- name: Converge — eoip-test tunnel
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_interface_eoip:
+      - {name: eoip-test, remote-address: "203.0.113.5", tunnel-id: 1}
+  roles:
+    - role: david_igou.routeros_configuration.interface_eoip

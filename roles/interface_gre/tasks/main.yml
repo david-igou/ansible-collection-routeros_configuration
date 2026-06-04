@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.interface_gre
+- name: "Reconcile interface gre"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: interface gre
+    rcfg_data: "{{ routeros_interface_gre }}"
+    rcfg_purge: "{{ routeros_interface_gre_purge | default(false) }}"
+    rcfg_order: false

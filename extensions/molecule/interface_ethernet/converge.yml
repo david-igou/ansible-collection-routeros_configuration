@@ -1,0 +1,9 @@
+---
+- name: Converge — set a comment + mtu on ether3
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_interface_ethernet:
+      - {name: ether3, comment: "managed-by-ansible", mtu: 1400}
+  roles:
+    - role: david_igou.routeros_configuration.interface_ethernet

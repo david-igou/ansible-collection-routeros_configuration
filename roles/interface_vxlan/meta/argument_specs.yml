@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/vxlan declaratively.
+    options:
+      routeros_interface_vxlan:
+        type: list
+        elements: dict
+        default: []
+        description: VXLAN tunnel interfaces.
+      routeros_interface_vxlan_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

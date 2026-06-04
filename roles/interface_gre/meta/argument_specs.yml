@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/gre declaratively.
+    options:
+      routeros_interface_gre:
+        type: list
+        elements: dict
+        default: []
+        description: GRE tunnel interfaces.
+      routeros_interface_gre_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

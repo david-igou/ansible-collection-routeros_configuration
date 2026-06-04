@@ -1,0 +1,22 @@
+---
+- name: Verify — bridge VLAN 20 present on br-test
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read interface bridge vlan over the API
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: interface bridge vlan
+      delegate_to: localhost
+      connection: local
+      register: q
+    - name: Assert VLAN 20 present on br-test
+      ansible.builtin.assert:
+        that:
+          - q.result | selectattr('bridge','equalto','br-test') | selectattr('vlan-ids','equalto','20') | list | length == 1
+        fail_msg: "bridge vlan missing: {{ q.result }}"

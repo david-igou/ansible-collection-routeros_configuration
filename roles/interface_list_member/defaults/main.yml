@@ -1,0 +1,4 @@
+---
+# interface list member entries (see this role's README for an example).
+routeros_interface_list_member: []
+routeros_interface_list_member_purge: false

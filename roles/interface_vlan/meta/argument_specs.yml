@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/vlan declaratively.
+    options:
+      routeros_interface_vlan:
+        type: list
+        elements: dict
+        default: []
+        description: 802.1Q VLAN interfaces.
+      routeros_interface_vlan_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.
