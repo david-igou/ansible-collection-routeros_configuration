@@ -36,3 +36,12 @@ resolves everything.
 | Scenario | Backend | What it proves |
 | --- | --- | --- |
 | `chr` | qemu | A MikroTik CHR VM boots via the qemu provider and RouterOS is reachable over `community.routeros` (network_cli). See `chr/README.md`. |
+| `system_identity` | qemu | The `system_identity` role applies a singleton `/system/identity` over the binary API; idempotent; verified via `api_info`. Also proves the shared API-over-SLIRP bootstrap (`utils/`). |
+| `ip_address` | qemu | The `ip_address` role applies a list of `/ip/address` entries additively, and `_purge: true` removes entries dropped from the declared list. |
+| `ip_firewall_filter` | qemu | The `ip_firewall_filter` role applies an ordered `/ip/firewall/filter` rule set with purge + order + content management; verify asserts on-device order. |
+
+Scenarios `system_identity`, `ip_address`, and `ip_firewall_filter` share their
+CHR bootstrap (create/prepare/destroy, inventory, connection vars) from
+`extensions/molecule/utils/`; each carries only its own `converge.yml` /
+`verify.yml`. The binary API (port 8728) is exposed to the controller through a
+dedicated SLIRP `hostfwd` on its own subnet — see `utils/inventory/hosts.yml`.

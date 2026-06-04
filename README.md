@@ -24,6 +24,24 @@ require additional external libraries — check each module's documentation.
 <!--start collection content-->
 <!--end collection content-->
 
+## Roles
+
+Each subsystem role declaratively manages one RouterOS config path. Set its
+`routeros_<path>` variable (a list of desired entries) and run the role; state
+is reconciled idempotently via `community.routeros.api_modify`.
+
+| Role | Manages | Notes |
+| --- | --- | --- |
+| `system_identity` | `/system/identity` | Device name (singleton). |
+| `ip_address` | `/ip/address` | IPv4 addresses. `routeros_ip_address_purge` for exact-state. |
+| `ip_firewall_filter` | `/ip/firewall/filter` | Ordered rules; `_purge`/`_order`/`_content` toggles. |
+
+All roles share one connection contract through the `routeros_api_*` variables
+(hostname, username, password, tls, validate_certs, port) and delegate
+reconciliation to the internal `_reconcile` engine role. Roles default to
+**additive** behavior (declared entries are added/updated, others untouched);
+opt into exact-state deletion per role with the `*_purge` toggle.
+
 ## Using this collection
 
 ```bash
