@@ -33,10 +33,17 @@ install: ## Install runtime collection dependencies (community.routeros, ansible
 # collections the scenario needs: runtime deps here, and the pinned provisioner
 # via molecule's own `dependency` step (extensions/molecule/config.yml ->
 # requirements-test.yml). No manual ansible-galaxy calls required.
-molecule: install ## Run molecule test (SCENARIO=<name> for one, omit for --all)
-	molecule test \
-		$(if $(SCENARIO),-s $(SCENARIO),--all --continue-on-failure) \
-		--report
+# With no SCENARIO: run the shared-state pass (all subsystem-role scenarios on a
+# single CHR via the `default` scenario — see extensions/molecule/config.yml),
+# then the standalone `chr` scenario. The shared pass excludes `chr` (network_cli,
+# opts out of shared_state) and `integration_hello_world` (localhost smoke).
+molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the shared pass + chr)
+ifeq ($(SCENARIO),)
+	molecule test --all --exclude chr --exclude integration_hello_world
+	molecule test -s chr
+else
+	molecule test -s $(SCENARIO)
+endif
 
 test: molecule ## Run the molecule test suite
 
