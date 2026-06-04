@@ -1,5 +1,5 @@
 ---
-- name: Verify — ether3 and ether4 are ports of br-test
+- name: Verify — ether7 and ether8 are ports of br-test
   hosts: molecule
   gather_facts: false
   tasks:
@@ -18,6 +18,6 @@
     - name: Assert both ports present on br-test
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('bridge','equalto','br-test') | selectattr('interface','equalto','ether3') | list | length == 1
-          - q.result | selectattr('bridge','equalto','br-test') | selectattr('interface','equalto','ether4') | list | length == 1
+          - q.result | selectattr('bridge','equalto','br-test') | selectattr('interface','equalto','ether7') | list | length == 1
+          - q.result | selectattr('bridge','equalto','br-test') | selectattr('interface','equalto','ether8') | list | length == 1
         fail_msg: "ports missing: {{ q.result }}"

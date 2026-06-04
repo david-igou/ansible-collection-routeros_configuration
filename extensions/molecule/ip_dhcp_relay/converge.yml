@@ -1,11 +1,11 @@
 ---
-- name: Converge — add a (disabled) dhcp-relay on ether5
+- name: Converge — add a (disabled) dhcp-relay on ether10
   hosts: molecule
   gather_facts: false
   vars:
     routeros_ip_dhcp_relay:
       - name: relay-test
-        interface: ether5
+        interface: ether10
         dhcp-server: "192.168.60.1"
         disabled: true
   roles:

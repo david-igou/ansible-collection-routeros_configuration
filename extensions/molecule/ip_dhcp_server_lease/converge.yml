@@ -19,7 +19,7 @@
       delegate_to: localhost
       connection: local
 
-    - name: Prereq — create a (disabled) dhcp-server on ether3
+    - name: Prereq — create a (disabled) dhcp-server on ether4
       community.routeros.api_modify:
         hostname: "{{ routeros_api_hostname }}"
         username: "{{ routeros_api_username }}"
@@ -31,7 +31,7 @@
         handle_absent_entries: ignore
         data:
           - name: lease-srv
-            interface: ether3
+            interface: ether4
             address-pool: pool-lease
             disabled: true
       delegate_to: localhost
