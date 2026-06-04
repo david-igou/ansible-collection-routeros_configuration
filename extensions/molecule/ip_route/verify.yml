@@ -1,0 +1,26 @@
+---
+- name: Verify — static route present
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read /ip/route over the API
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip route
+      delegate_to: localhost
+      connection: local
+      register: q
+
+    - name: Assert the blackhole route was added
+      ansible.builtin.assert:
+        that:
+          - >-
+            q.result | selectattr('comment', 'defined')
+            | selectattr('comment', 'equalto', 'route-test')
+            | list | length == 1
+        fail_msg: "route-test not found: {{ q.result }}"

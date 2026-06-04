@@ -1,0 +1,15 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/route declaratively.
+    options:
+      routeros_ip_route:
+        type: list
+        elements: dict
+        default: []
+        description: Static route entries (dst-address, gateway, distance, ...).
+      routeros_ip_route_purge:
+        type: bool
+        default: false
+        description: >-
+          Remove routes not present in routeros_ip_route (use with care).

@@ -1,0 +1,11 @@
+---
+- name: Converge — add a blackhole static route
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ip_route:
+      - dst-address: "10.99.0.0/24"
+        blackhole: true
+        comment: "route-test"
+  roles:
+    - role: david_igou.routeros_configuration.ip_route
