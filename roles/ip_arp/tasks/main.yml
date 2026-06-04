@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_arp
+- name: "Reconcile ip arp"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip arp
+    rcfg_data: "{{ routeros_ip_arp }}"
+    rcfg_purge: "{{ routeros_ip_arp_purge | default(false) }}"
+    rcfg_order: false
