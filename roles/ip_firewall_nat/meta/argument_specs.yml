@@ -1,0 +1,23 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/firewall/nat declaratively (ordered).
+    options:
+      routeros_ip_firewall_nat:
+        type: list
+        elements: dict
+        default: []
+        description: Ordered NAT rules (chain, action, ...).
+      routeros_ip_firewall_nat_purge:
+        type: bool
+        default: false
+        description: Remove rules not present in the list.
+      routeros_ip_firewall_nat_order:
+        type: bool
+        default: false
+        description: Enforce rule order. Requires _purge true.
+      routeros_ip_firewall_nat_content:
+        type: str
+        default: remove_as_much_as_possible
+        choices: [ignore, remove, remove_as_much_as_possible]
+        description: How to treat fields not present in a matched rule.
