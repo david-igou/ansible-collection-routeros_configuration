@@ -4,6 +4,8 @@
   gather_facts: false
   vars:
     routeros_interface_bonding:
-      - {name: bond-test, slaves: "ether5,ether6", mode: balance-rr}
+      - name: bond-test
+        slaves: "ether5,ether6"
+        mode: balance-rr
   roles:
     - role: david_igou.routeros_configuration.interface_bonding

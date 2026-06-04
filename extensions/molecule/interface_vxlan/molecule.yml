@@ -1,17 +1,7 @@
 ---
-ansible:
-  executor:
-    args:
-      ansible_playbook:
-        - --inventory=../utils/inventory/
-        - --inventory=${MOLECULE_EPHEMERAL_DIRECTORY}/inventory/
-  playbooks:
-    create: ../utils/playbooks/create.yml
-    destroy: ../utils/playbooks/destroy.yml
-    prepare: ../utils/playbooks/prepare.yml
-    converge: converge.yml
-    verify: verify.yml
-
+# Provisioner wiring (inventory + create/destroy/prepare/converge/verify
+# playbooks) is centralised in extensions/molecule/config.yml and merged in by
+# molecule. This file only declares what is unique to the scenario.
 scenario:
   name: interface_vxlan
   test_sequence:

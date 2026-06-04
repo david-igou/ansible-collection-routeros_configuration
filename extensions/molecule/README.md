@@ -42,8 +42,13 @@ resolves everything.
 
 Scenarios `system_identity`, `ip_address`, `ip_firewall_filter`, and the 15
 `interface_*` roles share their CHR bootstrap (create/prepare/destroy, inventory,
-connection vars) from `extensions/molecule/utils/`; each carries only its own
-`converge.yml` / `verify.yml`. The binary API (port 8728) is exposed to the
+connection vars) from `extensions/molecule/utils/`. The provisioner wiring that
+points at those shared playbooks lives once in `extensions/molecule/config.yml`
+and is merged into every scenario, so each scenario's `molecule.yml` declares
+only its name — it carries just its own `converge.yml` / `verify.yml`. (The
+`chr` scenario keeps its own `molecule.yml` block because it uses a local
+inventory and create/destroy playbooks; molecule's per-key merge lets those
+override the shared defaults.) The binary API (port 8728) is exposed to the
 controller through a dedicated SLIRP `hostfwd` on its own subnet, and the shared
 host now provides 8 ether NICs (ether1 SSH, ether2 API, ether3–8 spare) so
 interface/bridge/bonding/vlan scenarios have ports to bind — see

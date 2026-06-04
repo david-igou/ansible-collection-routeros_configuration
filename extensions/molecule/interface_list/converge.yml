@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     routeros_interface_list:
-      - {name: WAN}
-      - {name: LAN}
+      - name: WAN
+      - name: LAN
   roles:
     - role: david_igou.routeros_configuration.interface_list

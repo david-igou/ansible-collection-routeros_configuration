@@ -14,7 +14,8 @@
         path: interface wireguard
         handle_absent_entries: ignore
         data:
-          - {name: wg-test, listen-port: 13231}
+          - name: wg-test
+            listen-port: 13231
       delegate_to: localhost
       connection: local
 

@@ -4,7 +4,9 @@
   gather_facts: false
   vars:
     routeros_interface_bridge:
-      - {name: br-lan, comment: "lan"}
-      - {name: br-dmz, comment: "dmz"}
+      - name: br-lan
+        comment: "lan"
+      - name: br-dmz
+        comment: "dmz"
   roles:
     - role: david_igou.routeros_configuration.interface_bridge

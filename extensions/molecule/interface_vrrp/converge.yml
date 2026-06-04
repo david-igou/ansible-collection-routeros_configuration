@@ -4,6 +4,8 @@
   gather_facts: false
   vars:
     routeros_interface_vrrp:
-      - {name: vrrp-test, interface: ether3, vrid: 7}
+      - name: vrrp-test
+        interface: ether3
+        vrid: 7
   roles:
     - role: david_igou.routeros_configuration.interface_vrrp

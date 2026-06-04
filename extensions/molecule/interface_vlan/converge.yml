@@ -4,6 +4,8 @@
   gather_facts: false
   vars:
     routeros_interface_vlan:
-      - {name: vlan30, vlan-id: 30, interface: ether3}
+      - name: vlan30
+        vlan-id: 30
+        interface: ether3
   roles:
     - role: david_igou.routeros_configuration.interface_vlan

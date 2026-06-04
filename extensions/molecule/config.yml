@@ -13,3 +13,27 @@ dependency:
   enabled: true
   options:
     requirements-file: extensions/molecule/requirements-test.yml
+
+# Shared provisioner wiring for the subsystem-role scenarios. Centralised here
+# so the per-scenario molecule.yml files only declare what differs (the scenario
+# name). Playbook paths are resolved relative to each scenario's OWN directory —
+# molecule's provisioner.abs_path() joins them onto scenario.directory, not onto
+# this file's location — so `converge.yml`/`verify.yml` pick up each scenario's
+# local copy while create/destroy/prepare share the utils playbooks.
+#
+# The chr scenario keeps its own ansible block: merge_dicts() applies a
+# scenario's molecule.yml on top of this base, replacing the inventory list
+# wholesale and overriding playbook paths per key, so chr's local
+# inventory/create/destroy win without affecting these defaults.
+ansible:
+  executor:
+    args:
+      ansible_playbook:
+        - --inventory=../utils/inventory/
+        - --inventory=${MOLECULE_EPHEMERAL_DIRECTORY}/inventory/
+  playbooks:
+    create: ../utils/playbooks/create.yml
+    destroy: ../utils/playbooks/destroy.yml
+    prepare: ../utils/playbooks/prepare.yml
+    converge: converge.yml
+    verify: verify.yml

@@ -14,7 +14,7 @@
         path: interface list
         handle_absent_entries: ignore
         data:
-          - {name: WAN}
+          - name: WAN
       delegate_to: localhost
       connection: local
 
@@ -23,4 +23,5 @@
         name: david_igou.routeros_configuration.interface_list_member
       vars:
         routeros_interface_list_member:
-          - {list: WAN, interface: ether3}
+          - list: WAN
+            interface: ether3

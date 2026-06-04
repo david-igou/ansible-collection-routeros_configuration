@@ -4,6 +4,7 @@
   gather_facts: false
   vars:
     routeros_interface_gre:
-      - {name: gre-test, remote-address: "203.0.113.5"}
+      - name: gre-test
+        remote-address: "203.0.113.5"
   roles:
     - role: david_igou.routeros_configuration.interface_gre

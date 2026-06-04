@@ -14,7 +14,7 @@
         path: interface bridge
         handle_absent_entries: ignore
         data:
-          - {name: br-test}
+          - name: br-test
       delegate_to: localhost
       connection: local
 
@@ -23,4 +23,6 @@
         name: david_igou.routeros_configuration.interface_bridge_vlan
       vars:
         routeros_interface_bridge_vlan:
-          - {bridge: br-test, vlan-ids: "20", tagged: "br-test"}
+          - bridge: br-test
+            vlan-ids: "20"
+            tagged: "br-test"

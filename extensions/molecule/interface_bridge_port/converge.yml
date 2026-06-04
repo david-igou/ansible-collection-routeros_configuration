@@ -14,7 +14,7 @@
         path: interface bridge
         handle_absent_entries: ignore
         data:
-          - {name: br-test}
+          - name: br-test
       delegate_to: localhost
       connection: local
 
@@ -23,5 +23,7 @@
         name: david_igou.routeros_configuration.interface_bridge_port
       vars:
         routeros_interface_bridge_port:
-          - {bridge: br-test, interface: ether3}
-          - {bridge: br-test, interface: ether4}
+          - bridge: br-test
+            interface: ether3
+          - bridge: br-test
+            interface: ether4

@@ -4,6 +4,7 @@
   gather_facts: false
   vars:
     routeros_interface_vxlan:
-      - {name: vxlan-test, vni: 100}
+      - name: vxlan-test
+        vni: 100
   roles:
     - role: david_igou.routeros_configuration.interface_vxlan
