@@ -7,14 +7,40 @@ This repository contains the `david_igou.routeros_configuration` Ansible Collect
 
 ## External requirements
 
-Some modules and plugins require external libraries. Please check the
-requirements for each plugin or module you use in the documentation to find out
-which requirements are needed.
+The roles in this collection manage RouterOS declaratively over the **binary
+API** via `community.routeros.api_modify`/`api_info`. This requires:
+
+- The **`librouteros`** Python library on the Ansible controller
+  (`pip install librouteros`).
+- The device's **`api`** service enabled (port 8728), or **`api-ssl`** (port
+  8729) for TLS — strongly preferred in production.
+
+Connection details are supplied once through the shared `routeros_api_*`
+variables (see the internal `_reconcile` role). Other modules and plugins may
+require additional external libraries — check each module's documentation.
 
 ## Included content
 
 <!--start collection content-->
 <!--end collection content-->
+
+## Roles
+
+Each subsystem role declaratively manages one RouterOS config path. Set its
+`routeros_<path>` variable (a list of desired entries) and run the role; state
+is reconciled idempotently via `community.routeros.api_modify`.
+
+| Role | Manages | Notes |
+| --- | --- | --- |
+| `system_identity` | `/system/identity` | Device name (singleton). |
+| `ip_address` | `/ip/address` | IPv4 addresses. `routeros_ip_address_purge` for exact-state. |
+| `ip_firewall_filter` | `/ip/firewall/filter` | Ordered rules; `_purge`/`_order`/`_content` toggles. |
+
+All roles share one connection contract through the `routeros_api_*` variables
+(hostname, username, password, tls, validate_certs, port) and delegate
+reconciliation to the internal `_reconcile` engine role. Roles default to
+**additive** behavior (declared entries are added/updated, others untouched);
+opt into exact-state deletion per role with the `*_purge` toggle.
 
 ## Using this collection
 

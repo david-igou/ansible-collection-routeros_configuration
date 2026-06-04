@@ -1,0 +1,43 @@
+---
+argument_specs:
+  main:
+    short_description: Reconcile one RouterOS config path declaratively via the API.
+    description:
+      - Internal engine role. Subsystem roles include it with rcfg_* set.
+    options:
+      rcfg_path:
+        type: str
+        required: true
+        description: Space-separated RouterOS path, e.g. "ip firewall filter".
+      rcfg_data:
+        type: list
+        elements: dict
+        required: true
+        description: Desired list of entry dicts for the path.
+      rcfg_purge:
+        type: bool
+        default: false
+        description: Remove device entries not present in rcfg_data (exact-state).
+      rcfg_order:
+        type: bool
+        default: false
+        description: Enforce entry order. Requires rcfg_purge.
+      rcfg_content:
+        type: str
+        default: ignore
+        choices: [ignore, remove, remove_as_much_as_possible]
+        description: How to treat entry fields not present in rcfg_data.
+      routeros_api_hostname:
+        type: str
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+      routeros_api_password:
+        type: str
+      routeros_api_tls:
+        type: bool
+      routeros_api_validate_certs:
+        type: bool
+      routeros_api_port:
+        type: raw
+        description: TCP port; empty lets the module choose from tls.

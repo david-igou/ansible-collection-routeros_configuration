@@ -1,0 +1,6 @@
+---
+# List of /ip/address entries, e.g.:
+#   - {address: "192.168.88.1/24", interface: "ether1"}
+routeros_ip_address: []
+# Set true to delete device addresses not present above (exact-state).
+routeros_ip_address_purge: false

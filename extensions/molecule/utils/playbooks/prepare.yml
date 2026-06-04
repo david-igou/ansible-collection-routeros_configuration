@@ -1,0 +1,89 @@
+---
+# Bootstrap the fresh CHR so the binary API is reachable from the controller:
+#   1. TCP-wait on the forwarded SSH port (CHR has no POSIX shell).
+#   2. Set a known admin password over the empty-password login.
+#   3. Over SSH (now authenticated), enable the api service and a dhcp-client on
+#      ether2 (the apinet hostfwd NIC) so 127.0.0.1:8728 reaches a live address.
+#   4. TCP-wait on the forwarded API port so converge doesn't race the boot.
+- name: Prepare CHR for binary-API configuration
+  hosts: molecule
+  gather_facts: false
+  vars:
+    ansible_connection: local
+  tasks:
+    - name: Wait for forwarded SSH port (TCP only — CHR has no POSIX shell)
+      ansible.builtin.wait_for:
+        host: "{{ ansible_host | default('127.0.0.1') }}"
+        port: "{{ ansible_port | default(2222) }}"
+        timeout: 180
+        delay: 5
+        sleep: 3
+
+    - name: Bootstrap a known admin password over the empty-password login
+      ansible.builtin.command:
+        argv:
+          - sshpass
+          - -p
+          - ""
+          - ssh
+          - -p
+          - "{{ ansible_port | default(2222) }}"
+          - -o
+          - StrictHostKeyChecking=no
+          - -o
+          - UserKnownHostsFile=/dev/null
+          - -o
+          - PreferredAuthentications=password
+          - -o
+          - PubkeyAuthentication=no
+          - -o
+          - ConnectTimeout=15
+          - "admin@{{ ansible_host | default('127.0.0.1') }}"
+          - "/user set [find name=admin] password={{ chr_admin_password }}"
+      delegate_to: localhost
+      register: chr_pw
+      # The forwarded SSH port accepts TCP before RouterOS's login subsystem is
+      # ready, so the empty-password login can race and fail. Retry until it
+      # lands (fresh VM => password is still empty until this succeeds once).
+      until: chr_pw.rc == 0
+      retries: 18
+      delay: 5
+      changed_when: chr_pw.rc == 0
+
+    - name: Enable the api service and a dhcp-client on the apinet NIC (ether2)
+      ansible.builtin.command:
+        argv:
+          - sshpass
+          - -p
+          - "{{ chr_admin_password }}"
+          - ssh
+          - -p
+          - "{{ ansible_port | default(2222) }}"
+          - -o
+          - StrictHostKeyChecking=no
+          - -o
+          - UserKnownHostsFile=/dev/null
+          - -o
+          - PreferredAuthentications=password
+          - -o
+          - PubkeyAuthentication=no
+          - -o
+          - ConnectTimeout=15
+          - "admin+cet1024w@{{ ansible_host | default('127.0.0.1') }}"
+          - "{{ item }}"
+      loop:
+        - "/ip service set api disabled=no"
+        - "/ip dhcp-client add interface=ether2 disabled=no"
+      delegate_to: localhost
+      register: chr_api
+      changed_when: chr_api.rc == 0
+      failed_when: false
+
+    - name: Wait for the forwarded API port (8728) to accept connections
+      ansible.builtin.wait_for:
+        host: "127.0.0.1"
+        port: 8728
+        timeout: 120
+        delay: 5
+        sleep: 3
+      delegate_to: localhost

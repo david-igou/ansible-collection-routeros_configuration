@@ -1,6 +1,0 @@
----
-# tasks file for david_igou.routeros_configuration.run
-
-- name: Display the value of run_my_variable
-  ansible.builtin.debug:
-    msg: "The value of run_my_variable is {{ run_my_variable }}"

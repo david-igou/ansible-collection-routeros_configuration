@@ -1,0 +1,25 @@
+---
+# Backend selector for david_igou.molecule_provisioners. These scenarios only
+# declare an mp.qemu block, so the default resolves to qemu; PROVISIONER env var
+# can override.
+mp_backend: "{{ lookup('env', 'PROVISIONER') | default('qemu', true) }}"
+
+mp_defaults:
+  qemu:
+    cpus: 1
+    memory: 512
+    ssh_user: admin
+
+# Throwaway admin password bootstrapped onto the fresh CHR by prepare.yml.
+chr_admin_password: molecule
+
+# The RouterOS binary API is reached from the CONTROLLER (api_modify runs with
+# connection: local), via the SLIRP hostfwd on 127.0.0.1:8728 — NOT the device's
+# own name. So override routeros_api_hostname/port here. Plaintext API (tls
+# false, 8728) is fine for the ephemeral test VM; production should use TLS/8729.
+routeros_api_hostname: "127.0.0.1"
+routeros_api_port: 8728
+routeros_api_username: admin
+routeros_api_password: "{{ chr_admin_password }}"
+routeros_api_tls: false
+routeros_api_validate_certs: false

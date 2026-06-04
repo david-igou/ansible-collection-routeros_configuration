@@ -1,0 +1,27 @@
+---
+# tasks file for david_igou.routeros_configuration._reconcile
+
+- name: "Assert ensure_order implies purge for '{{ rcfg_path }}'"
+  ansible.builtin.assert:
+    that:
+      - not (rcfg_order | bool) or (rcfg_purge | bool)
+    fail_msg: >-
+      rcfg_order requires rcfg_purge: api_modify's ensure_order needs
+      handle_absent_entries=remove (path '{{ rcfg_path }}').
+    quiet: true
+
+- name: "Reconcile RouterOS path '{{ rcfg_path }}'"
+  community.routeros.api_modify:
+    hostname: "{{ routeros_api_hostname }}"
+    username: "{{ routeros_api_username }}"
+    password: "{{ routeros_api_password }}"
+    tls: "{{ routeros_api_tls | bool }}"
+    validate_certs: "{{ routeros_api_validate_certs | bool }}"
+    port: "{{ routeros_api_port | default(omit, true) }}"
+    path: "{{ rcfg_path }}"
+    data: "{{ rcfg_data }}"
+    handle_absent_entries: "{{ 'remove' if (rcfg_purge | bool) else 'ignore' }}"
+    handle_entries_content: "{{ rcfg_content }}"
+    ensure_order: "{{ rcfg_order | bool }}"
+  delegate_to: localhost
+  connection: local

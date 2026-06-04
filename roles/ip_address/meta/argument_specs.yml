@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/address declaratively.
+    options:
+      routeros_ip_address:
+        type: list
+        elements: dict
+        default: []
+        description: IPv4 address entries (address, interface, ...).
+      routeros_ip_address_purge:
+        type: bool
+        default: false
+        description: Remove addresses not present in routeros_ip_address.
