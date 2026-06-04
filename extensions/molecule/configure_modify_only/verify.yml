@@ -1,0 +1,23 @@
+---
+- name: Verify — telnet service disabled
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read /ip/service
+      community.routeros.api_info: {path: ip service}
+      delegate_to: localhost
+      connection: local
+      register: svc
+    - name: Assert telnet disabled
+      ansible.builtin.assert:
+        that:
+          - svc.result | selectattr('name', 'equalto', 'telnet') | selectattr('disabled', 'equalto', true) | list | length == 1
+        fail_msg: "telnet not disabled: {{ svc.result | selectattr('name', 'equalto', 'telnet') | list }}"

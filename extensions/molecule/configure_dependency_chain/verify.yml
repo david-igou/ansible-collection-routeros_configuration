@@ -1,0 +1,36 @@
+---
+- name: Verify — all dependent objects exist (ordering worked)
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port }}"
+  tasks:
+    - name: Read bridge ports
+      community.routeros.api_info: {path: interface bridge port}
+      delegate_to: localhost
+      connection: local
+      register: ports
+    - name: Read dhcp-server lease
+      community.routeros.api_info: {path: ip dhcp-server lease}
+      delegate_to: localhost
+      connection: local
+      register: leases
+    - name: Read interface list member
+      community.routeros.api_info: {path: interface list member}
+      delegate_to: localhost
+      connection: local
+      register: members
+    - name: Assert the full chains were created (so parents preceded children)
+      ansible.builtin.assert:
+        that:
+          - ports.result | selectattr('bridge', 'equalto', 'br-dep') | list | length == 2
+          - leases.result | selectattr('address', 'equalto', '192.168.62.100') | list | length == 1
+          - members.result | selectattr('list', 'equalto', 'WAN-dep') | list | length == 1
+        success_msg: "ordering created bridge->ports, pool->server->lease, list->member"
+        fail_msg: "ordering failed: ports={{ ports.result }} leases={{ leases.result }} members={{ members.result }}"

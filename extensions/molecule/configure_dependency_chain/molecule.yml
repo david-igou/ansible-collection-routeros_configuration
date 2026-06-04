@@ -1,0 +1,5 @@
+---
+# Provisioner wiring, test_sequence, and verifier are centralised in
+# extensions/molecule/config.yml. This file declares only the scenario name.
+scenario:
+  name: configure_dependency_chain

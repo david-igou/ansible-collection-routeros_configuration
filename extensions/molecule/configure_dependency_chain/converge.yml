@@ -1,0 +1,39 @@
+---
+- name: Converge — dependency chains in shuffled key order via configure
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_config:
+      /ip/dhcp-server/lease:
+        data:
+          - server: dhcp-dep
+            address: "192.168.62.100"
+            mac-address: "00:11:22:33:44:99"
+      /interface/bridge/port:
+        data:
+          - bridge: br-dep
+            interface: ether7
+          - bridge: br-dep
+            interface: ether8
+      /ip/dhcp-server:
+        data:
+          - name: dhcp-dep
+            interface: ether3
+            address-pool: pool-dep
+            disabled: true
+      /interface/list/member:
+        data:
+          - list: WAN-dep
+            interface: ether3
+      /interface/bridge:
+        data:
+          - name: br-dep
+      /ip/pool:
+        data:
+          - name: pool-dep
+            ranges: "192.168.62.10-192.168.62.50"
+      /interface/list:
+        data:
+          - name: WAN-dep
+  roles:
+    - role: david_igou.routeros_configuration.configure

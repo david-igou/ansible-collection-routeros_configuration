@@ -1,0 +1,25 @@
+---
+- name: Converge — ordered firewall filter via configure
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_config:
+      /ip/firewall/filter:
+        purge: true
+        order: true
+        content: remove_as_much_as_possible
+        data:
+          - chain: input
+            action: accept
+            connection-state: "established,related"
+            comment: rule-a
+          - chain: input
+            action: accept
+            protocol: tcp
+            dst-port: "22,8728"
+            comment: rule-b
+          - chain: input
+            action: drop
+            comment: rule-c
+  roles:
+    - role: david_igou.routeros_configuration.configure
