@@ -1,0 +1,9 @@
+---
+# Sets rcfg_ordered_paths: routeros_config keys re-sorted into canonical
+# dependency order. Uses select/reject (order-preserving) — NOT
+# intersect/difference (set ops, order undefined).
+- name: Order the requested paths by dependency
+  ansible.builtin.set_fact:
+    rcfg_ordered_paths: >-
+      {{ (rcfg_path_order | select('in', routeros_config.keys() | list) | list)
+         + (routeros_config.keys() | list | reject('in', rcfg_path_order) | list) }}
