@@ -1,0 +1,4 @@
+---
+# /ip/ssh is a singleton path. Single-element list, e.g.
+# [{strong-crypto: true}]. Empty -> no change.
+routeros_ip_ssh: []
