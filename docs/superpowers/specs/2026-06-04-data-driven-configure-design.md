@@ -77,11 +77,13 @@ options from `routeros_config`.
 # Requested paths, re-sorted into canonical dependency order: the paths that
 # appear in rcfg_path_order first (in that order), then any remaining requested
 # paths (dependency-independent) in declared order.
+# Use select/reject (order-preserving list filters), NOT intersect/difference
+# (set operations — order is undefined and would defeat the canonical ordering).
 - name: Order the requested paths by dependency
   ansible.builtin.set_fact:
     rcfg_ordered_paths: >-
-      {{ (rcfg_path_order | intersect(routeros_config.keys() | list))
-         + (routeros_config.keys() | list | difference(rcfg_path_order)) }}
+      {{ (rcfg_path_order | select('in', routeros_config.keys() | list) | list)
+         + (routeros_config.keys() | list | reject('in', rcfg_path_order) | list) }}
 
 - name: "Reconcile {{ rcfg_key }}"
   ansible.builtin.include_role:
@@ -90,22 +92,29 @@ options from `routeros_config`.
   loop_control:
     loop_var: rcfg_key
   vars:
-    rcfg_path: "{{ rcfg_key }}"
+    # Keys are slash paths (RouterOS notation, e.g. /ip/firewall/filter);
+    # api_modify wants a space-separated path, so convert: /ip/dhcp-server ->
+    # "ip dhcp-server" (leading slash trimmed, inner slashes -> spaces, hyphens
+    # preserved).
+    rcfg_path: "{{ rcfg_key | replace('/', ' ') | trim }}"
     rcfg_data: "{{ routeros_config[rcfg_key].data }}"
     rcfg_purge: "{{ routeros_config[rcfg_key].purge | default(false) }}"
     rcfg_order: "{{ routeros_config[rcfg_key].order | default(false) }}"
     rcfg_content: "{{ routeros_config[rcfg_key].content | default('ignore') }}"
 ```
 
-`rcfg_ordered_paths` is an ordered **list of path keys**; the loop dereferences
-each path's options from `routeros_config[rcfg_key]`. Paths present in
-`routeros_config` but absent from `rcfg_path_order` fall to the **end**, in
-declared order — they are dependency-independent by assumption.
+Keys are **slash paths** (`/ip/firewall/filter`) — unquoted YAML, matching
+RouterOS's own CLI/doc notation. `rcfg_ordered_paths` is an ordered **list of
+those keys**; the loop converts each to the space-separated form `api_modify`
+expects and dereferences its options from `routeros_config[rcfg_key]`. Paths
+present in `routeros_config` but absent from `rcfg_path_order` fall to the
+**end**, in declared order — they are dependency-independent by assumption.
 
 ## Input contract
 
-`routeros_config` — a dict keyed by the space-separated `api_modify` path. Each
-value is a dict:
+`routeros_config` — a dict keyed by the RouterOS **slash path** (e.g.
+`/ip/firewall/filter`; unquoted, matches CLI/doc notation, converted to the
+space-separated `api_modify` form internally). Each value is a dict:
 
 | Key | Type | Default | Meaning |
 |---|---|---|---|
@@ -116,15 +125,15 @@ value is a dict:
 
 ```yaml
 routeros_config:
-  "ip pool":
+  /ip/pool:
     data:
       - name: lan
         ranges: "192.168.88.10-192.168.88.254"
-  "ip dns":
+  /ip/dns:
     data:
       - servers: "1.1.1.1,8.8.8.8"
         allow-remote-requests: false
-  "ip firewall filter":
+  /ip/firewall/filter:
     purge: true
     order: true
     data:
@@ -168,51 +177,51 @@ authored or merged across `group_vars`/`host_vars`:
 # follow another.
 rcfg_path_order:
   # 1. interfaces (parents first)
-  - interface ethernet
-  - interface bonding
-  - interface bridge
-  - interface vlan
-  - interface vxlan
-  - interface gre
-  - interface eoip
-  - interface wireguard
+  - /interface/ethernet
+  - /interface/bonding
+  - /interface/bridge
+  - /interface/vlan
+  - /interface/vxlan
+  - /interface/gre
+  - /interface/eoip
+  - /interface/wireguard
   # 2. interface membership / sub-objects (need their parent above)
-  - interface bridge settings
-  - interface bridge port
-  - interface bridge vlan
-  - interface list
-  - interface list member
-  - interface wireguard peers
-  - interface vrrp
+  - /interface/bridge/settings
+  - /interface/bridge/port
+  - /interface/bridge/vlan
+  - /interface/list
+  - /interface/list/member
+  - /interface/wireguard/peers
+  - /interface/vrrp
   # 3. IP addressing (needs interfaces)
-  - ip pool
-  - ip address
-  - ip arp
-  - ip vrf
+  - /ip/pool
+  - /ip/address
+  - /ip/arp
+  - /ip/vrf
   # 4. IP services (dhcp-server needs pool + interface; lease/network/option need the server)
-  - ip dhcp-server
-  - ip dhcp-server network
-  - ip dhcp-server option
-  - ip dhcp-server lease
-  - ip dhcp-client
-  - ip dhcp-relay
-  - ip dns
-  - ip dns static
-  - ip route
-  - ip service
-  - ip ssh
-  - ip settings
-  - ip cloud
-  - ip neighbor discovery-settings
+  - /ip/dhcp-server
+  - /ip/dhcp-server/network
+  - /ip/dhcp-server/option
+  - /ip/dhcp-server/lease
+  - /ip/dhcp-client
+  - /ip/dhcp-relay
+  - /ip/dns
+  - /ip/dns/static
+  - /ip/route
+  - /ip/service
+  - /ip/ssh
+  - /ip/settings
+  - /ip/cloud
+  - /ip/neighbor/discovery-settings
   # 5. firewall (address-list referenced by rules; rules ordered within their own chain)
-  - ip firewall address-list
-  - ip firewall connection tracking
-  - ip firewall service-port
-  - ip firewall filter
-  - ip firewall nat
-  - ip firewall mangle
-  - ip firewall raw
-  # system identity is order-independent; omitted -> applied last
+  - /ip/firewall/address-list
+  - /ip/firewall/connection/tracking
+  - /ip/firewall/service-port
+  - /ip/firewall/filter
+  - /ip/firewall/nat
+  - /ip/firewall/mangle
+  - /ip/firewall/raw
+  # /system/identity is order-independent; omitted -> applied last
 ```
 
 This turns the dependency knowledge — previously scattered and untested — into
