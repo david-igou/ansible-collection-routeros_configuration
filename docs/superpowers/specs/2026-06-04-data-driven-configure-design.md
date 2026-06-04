@@ -228,6 +228,51 @@ This turns the dependency knowledge — previously scattered and untested — in
 one reviewable list, and is the single most valuable thing `configure` adds over
 the per-role model.
 
+## Matching & updates (how `api_modify` decides what to overwrite)
+
+This is `api_modify`'s behaviour, not `configure`'s — `configure` passes `data`
+straight through, so reconciliation is identical to the per-role model. But
+consumers must understand it, because it determines how an *edit* to an existing
+object is applied. `api_modify` uses one of two mutually-exclusive mechanisms,
+chosen per path by the `community.routeros` registry:
+
+### Keyed paths → exact primary-key match (deterministic)
+
+Paths that declare `primary_keys` — e.g. `/ip/pool` (`name`),
+`/ip/firewall/address-list` (`address`,`list`), `/ip/dhcp-server/lease`
+(`server`,`address`), `/interface/bridge` (`name`) — index existing entries by
+their key tuple and match by exact key lookup. Editing a **non-key** field →
+matched by key → updated in place. Editing a **key** field → treated as a
+different object (old one removed if `purge`, new one created). This covers most
+paths and is fully deterministic.
+
+### Keyless paths → best-fit edit distance (heuristic)
+
+`/ip/firewall/filter`, `/nat`, `/mangle`, `/raw`, `/ip/route`, `/ip/dns/static`,
+`/ip/arp` have **no primary key**. There is nothing to look up, so `api_modify`
+pairs each desired entry with the existing entry that needs the **fewest field
+changes** (a greedy minimal-edit-distance assignment), and updates it.
+`order: true` additionally pins entries by position. So an edited firewall rule
+overwrites the existing rule it most closely resembles — normally the one
+differing only in the field you changed.
+
+Two consequences consumers must plan for on keyless paths:
+
+1. **Give each entry a stable, unique distinguishing field — by convention
+   `comment`.** It acts as a pseudo-key so the same-`comment` entry is always the
+   minimal-distance match; without it, near-identical rules can be paired
+   ambiguously.
+2. **Use `purge: true` (and usually `order: true`).** In additive mode
+   (`purge: false`) a desired entry only matches an existing one if *all* its
+   fields already equal — so an edited rule matches nothing and is **added as a
+   duplicate**. Keyless in-place updates only work under purge, with `data` being
+   the complete desired contents of that chain.
+
+The `configure` schema already exposes `purge`/`order` per path, so this is a
+documentation/usage concern, not a mechanism change. `configure`'s README must
+state the keyed-vs-keyless distinction and the `comment` + `purge`/`order`
+convention for firewall-style paths.
+
 ## Migration
 
 The collection is alpha with no downstream consumers, so the 41 named roles are
@@ -258,14 +303,18 @@ replaced by ~5 scenarios that exercise `configure` across the pattern classes
 
 | Scenario | Proves |
 |---|---|
-| `configure_lists` | list apply + `purge` round-trip (pool, dns-static, address) |
+| `configure_lists` | keyed-path **update**: apply a pool, then re-converge with a changed non-key field (e.g. `ranges`) and assert the SAME entry was updated in place (matched by `name`), not duplicated; plus a `purge` round-trip |
 | `configure_singletons` | singleton paths (dns, identity, settings) |
-| `configure_ordered` | `purge`+`order` firewall (filter, nat) — on-device entry order |
+| `configure_ordered` | keyless-path **update**: apply firewall rules with stable `comment`s under `purge`+`order`, then re-converge with one rule's action changed and assert it was overwritten in place (still N rules, correct order) — the best-fit-by-comment match — not duplicated |
 | `configure_modify_only` | `fixed_entries` paths (ip service, interface ethernet) |
 | `configure_dependency_chain` | one `routeros_config` containing `bridge→port`, `pool→dhcp-server→lease`, `list→member`, authored in **shuffled** key order; asserts all objects exist (canonical ordering worked) and the second converge is idempotent |
 
-`configure_dependency_chain` is the scenario that locks in the cross-path
-ordering guarantee the per-role model never tested. The same lockout-safety and
+`configure_lists` and `configure_ordered` deliberately test the **update** path
+(re-converge with an edited field), covering both matching mechanisms — keyed
+in-place update and keyless best-fit-by-`comment` — so the behaviour described in
+"Matching & updates" is verified on hardware, not just asserted.
+`configure_dependency_chain` locks in the cross-path ordering guarantee the
+per-role model never tested. The same lockout-safety and
 dedicated-port deconfliction rules from the shared-state work apply (these
 scenarios still all run on the one shared CHR).
 
