@@ -1,0 +1,6 @@
+---
+# List of /ip/dhcp-client entries, e.g.:
+#   - interface: ether1
+#     add-default-route: true
+routeros_ip_dhcp_client: []
+routeros_ip_dhcp_client_purge: false
