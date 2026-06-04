@@ -1,8 +1,0 @@
----
-minor_changes:
-  - >-
-    Add declarative roles for the /interface and /interface/bridge subsystems:
-    interface_ethernet, interface_bridge (plus port, vlan, settings),
-    interface_vlan, interface_bonding, interface_list (plus member),
-    interface_vrrp, interface_vxlan, interface_wireguard (plus peers),
-    interface_gre, and interface_eoip — each with a CHR molecule scenario.

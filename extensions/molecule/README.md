@@ -59,47 +59,24 @@ resolves everything.
 
 ## Scenarios
 
+All scenarios drive the single `configure` role with a `routeros_config` dict;
+they run on **one shared CHR** (see "Shared state" below).
+
 | Scenario | Backend | What it proves |
 | --- | --- | --- |
-| `chr` | qemu | A MikroTik CHR VM boots via the qemu provider and RouterOS is reachable over `community.routeros` (network_cli). See `chr/README.md`. |
-| `system_identity` | qemu | The `system_identity` role applies a singleton `/system/identity` over the binary API; idempotent; verified via `api_info`. Also proves the shared API-over-SLIRP bootstrap (`utils/`). |
-| `ip_address` | qemu | The `ip_address` role applies a list of `/ip/address` entries additively, and `_purge: true` removes entries dropped from the declared list. |
-| `ip_firewall_filter` | qemu | The `ip_firewall_filter` role applies an ordered `/ip/firewall/filter` rule set with purge + order + content management; verify asserts on-device order. |
+| `chr` | qemu | A MikroTik CHR VM boots via the qemu provider and RouterOS is reachable over `community.routeros` (network_cli). Opts out of shared state. |
+| `configure_lists` | qemu | Keyed-path apply (e.g. `/ip/pool` by `name`), in-place **update** of a non-key field (matched by key), and `purge`. |
+| `configure_singletons` | qemu | Singleton paths (`/system/identity`, `/ip/dns`, `/ip/settings`). |
+| `configure_ordered` | qemu | Keyless ordered firewall with `purge`+`order`; in-place **update** of a rule matched by `comment` (no duplicate). |
+| `configure_modify_only` | qemu | `fixed_entries` paths — disables the built-in `telnet` service. |
+| `configure_dependency_chain` | qemu | Cross-path **ordering**: `bridge→port`, `pool→dhcp-server→lease`, `list→member` authored in shuffled key order, applied correctly + idempotently. |
+| `configure_full` | qemu | Comprehensive — applies 74 of the CHR-configurable `api_modify` paths in one shuffled call; converge proves ordering, idempotence proves clean reconciliation. See `configure_full/EXCLUSIONS.md`. |
 
-Scenarios `system_identity`, `ip_address`, `ip_firewall_filter`, and the 15
-`interface_*` roles share their CHR bootstrap (create/prepare/destroy, inventory,
-connection vars) from `extensions/molecule/utils/`. The provisioner wiring (and
-the test_sequence + verifier) lives once in `extensions/molecule/config.yml` and
-is merged into every scenario, so each subsystem scenario's `molecule.yml` is
-reduced to just `scenario.name`; the per-scenario `converge.yml` / `verify.yml`
-playbooks stay in the scenario directory (config.yml's relative paths resolve
-against each scenario's own dir). (The `chr` scenario keeps its own `molecule.yml`
-block because it uses a local inventory and create/destroy playbooks, and
-`integration_hello_world` zeroes the inventory args; molecule's per-key merge
-lets those override the shared defaults.) The binary API (port 8728) is exposed to the
-controller through a dedicated SLIRP `hostfwd` on its own subnet, and the shared
-host now provides 8 ether NICs (ether1 SSH, ether2 API, ether3–8 spare) so
-interface/bridge/bonding/vlan scenarios have ports to bind — see
-`utils/inventory/hosts.yml`. Each scenario creates any prerequisites (a bridge,
-a list, a wireguard interface, …) in its own `converge`.
-
-The 17 IP-core scenarios (`ip_pool`, `ip_dns`, `ip_dns_static`, the
-`ip_dhcp_server`/`_network`/`_lease`/`_option` set, `ip_dhcp_client`,
-`ip_dhcp_relay`, `ip_route`, `ip_service`, `ip_arp`,
-`ip_neighbor_discovery_settings`, `ip_settings`, `ip_cloud`, `ip_vrf`, `ip_ssh`)
-follow the same shape. The dhcp-server lease/server scenarios create their pool
-and (disabled) server prerequisites in `converge` first; `ip_dhcp_client`,
-`ip_dhcp_relay`, and `ip_dhcp_server` are created `disabled: true` because the
-ephemeral CHR has no live DHCP segment; `ip_route` uses a `disabled` route with
-an explicit gateway (stored without a reachable next hop, and idempotent — a
-`blackhole` route is not); and `ip_service` only modifies the built-in `telnet`
-entry so it never disturbs the SSH/API the harness depends on.
-
-The 6 IP-firewall scenarios (`ip_firewall_nat`, `ip_firewall_mangle`,
-`ip_firewall_raw`, `ip_firewall_address_list`,
-`ip_firewall_connection_tracking`, `ip_firewall_service_port`) complete the
-set. The ordered nat/mangle/raw scenarios apply with purge + order but use only
-`accept`/`masquerade`/`notrack` rules (never dropping or NATing the SSH/API
-management traffic), so a full chain rewrite can't lock the harness out;
-`ip_firewall_address_list` does an additive + purge round-trip; and
-`ip_firewall_service_port` modifies only the built-in `ftp` helper.
+Provisioner wiring, `test_sequence`, and `verifier` are centralised in
+`extensions/molecule/config.yml`, so each scenario's `molecule.yml` is just its
+name; the per-scenario `converge.yml` / `verify.yml` stay in the scenario dir.
+The binary API (port 8728) is reached over a dedicated SLIRP `hostfwd`; the
+shared host provides 11 ether NICs (ether1 SSH, ether2 API, ether3–11 spare) so
+the port-binding scenarios (bridge ports on ether7/8, bonding on ether5/6,
+dhcp-client/relay on ether9/10) coexist on one device — see
+`utils/inventory/hosts.yml`.

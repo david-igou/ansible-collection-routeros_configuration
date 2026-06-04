@@ -1,9 +1,0 @@
----
-minor_changes:
-  - >-
-    Add the IP-firewall subsystem roles ``ip_firewall_nat``,
-    ``ip_firewall_mangle``, and ``ip_firewall_raw`` (ordered),
-    ``ip_firewall_address_list`` (list), ``ip_firewall_connection_tracking``
-    (singleton), and ``ip_firewall_service_port`` (modify-only) — each managing
-    one RouterOS path via ``community.routeros.api_modify`` with a per-role
-    molecule scenario.
