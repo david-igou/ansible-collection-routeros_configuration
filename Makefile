@@ -3,7 +3,7 @@ COLLECTION_NAME      := routeros_configuration
 COLLECTION           := $(COLLECTION_NAMESPACE).$(COLLECTION_NAME)
 COLLECTION_VERSION   := $(shell grep '^version:' galaxy.yml | awk '{print $$2}')
 
-MOLECULE_SCENARIOS := chr
+MOLECULE_SCENARIOS := system_identity ip_address ip_firewall_filter
 
 # PROVISIONER picks which mp.<backend> block a scenario uses when its inventory
 # declares more than one. The chr scenario declares only qemu, so leaving this
