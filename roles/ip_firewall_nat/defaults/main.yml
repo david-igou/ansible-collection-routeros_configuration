@@ -1,0 +1,10 @@
+---
+# Ordered list of /ip/firewall/nat rules. Order matters; set _order: true
+# (which also requires _purge: true) to enforce it exactly.
+routeros_ip_firewall_nat: []
+routeros_ip_firewall_nat_purge: false
+routeros_ip_firewall_nat_order: false
+# How to treat fields not present in a matched rule. ORDERED path: api_modify
+# requires _purge while this stays "ignore"; the default resets unspecified
+# fields, making rules fully declarative.
+routeros_ip_firewall_nat_content: remove_as_much_as_possible

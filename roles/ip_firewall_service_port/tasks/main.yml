@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_firewall_service_port
+- name: "Reconcile ip firewall service-port"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip firewall service-port
+    rcfg_data: "{{ routeros_ip_firewall_service_port }}"
+    rcfg_purge: false
+    rcfg_order: false

@@ -1,0 +1,6 @@
+---
+# Provisioner wiring, test_sequence, and verifier are centralised in
+# extensions/molecule/config.yml and merged in by molecule. This file declares
+# only the scenario name.
+scenario:
+  name: ip_firewall_raw

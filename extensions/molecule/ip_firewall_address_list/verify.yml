@@ -1,0 +1,62 @@
+---
+- name: Verify — address-list apply + purge semantics
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read /ip/firewall/address-list after additive converge
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip firewall address-list
+      delegate_to: localhost
+      connection: local
+      register: al_before
+
+    - name: Assert both declared addresses are present
+      ansible.builtin.assert:
+        that:
+          - >-
+            al_before.result | selectattr('address', 'equalto', '192.0.2.10')
+            | list | length == 1
+          - >-
+            al_before.result | selectattr('address', 'equalto', '192.0.2.11')
+            | list | length == 1
+
+    - name: Re-apply with a reduced list and purge enabled
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.ip_firewall_address_list
+      vars:
+        routeros_ip_firewall_address_list:
+          - list: test-block
+            address: "192.0.2.10"
+        routeros_ip_firewall_address_list_purge: true
+
+    - name: Read /ip/firewall/address-list after purge
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip firewall address-list
+      delegate_to: localhost
+      connection: local
+      register: al_after
+
+    - name: Assert .11 was purged and .10 remains
+      ansible.builtin.assert:
+        that:
+          - >-
+            al_after.result | selectattr('address', 'equalto', '192.0.2.10')
+            | list | length == 1
+          - >-
+            al_after.result | selectattr('address', 'equalto', '192.0.2.11')
+            | list | length == 0
+        success_msg: "purge removed 192.0.2.11, kept 192.0.2.10"
+        fail_msg: >-
+          purge did not behave as expected: {{ al_after.result }}

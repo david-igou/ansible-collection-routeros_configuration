@@ -1,0 +1,6 @@
+---
+# Modify-only list of /ip/firewall/service-port helpers (keyed by name).
+# Cannot add/remove; only change fields like disabled/ports, e.g.:
+#   - name: ftp
+#     disabled: true
+routeros_ip_firewall_service_port: []

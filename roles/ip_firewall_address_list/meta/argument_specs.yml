@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/firewall/address-list declaratively.
+    options:
+      routeros_ip_firewall_address_list:
+        type: list
+        elements: dict
+        default: []
+        description: Address-list entries (list, address, ...).
+      routeros_ip_firewall_address_list_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

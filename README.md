@@ -78,6 +78,17 @@ is reconciled idempotently via `community.routeros.api_modify`.
 | `ip_vrf` | `/ip/vrf` instances. |
 | `ip_ssh` | `/ip/ssh` (singleton). |
 
+### IP firewall
+
+| Role | Manages |
+| --- | --- |
+| `ip_firewall_nat` | `/ip/firewall/nat` (ordered). |
+| `ip_firewall_mangle` | `/ip/firewall/mangle` (ordered). |
+| `ip_firewall_raw` | `/ip/firewall/raw` (ordered). |
+| `ip_firewall_address_list` | `/ip/firewall/address-list`. |
+| `ip_firewall_connection_tracking` | `/ip/firewall/connection/tracking` (singleton). |
+| `ip_firewall_service_port` | `/ip/firewall/service-port` (modify-only). |
+
 All roles share one connection contract through the `routeros_api_*` variables
 (hostname, username, password, tls, validate_certs, port) and delegate
 reconciliation to the internal `_reconcile` engine role. Roles default to

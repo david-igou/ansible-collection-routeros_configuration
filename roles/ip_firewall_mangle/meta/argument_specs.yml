@@ -1,0 +1,23 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/firewall/mangle declaratively (ordered).
+    options:
+      routeros_ip_firewall_mangle:
+        type: list
+        elements: dict
+        default: []
+        description: Ordered mangle rules (chain, action, ...).
+      routeros_ip_firewall_mangle_purge:
+        type: bool
+        default: false
+        description: Remove rules not present in the list.
+      routeros_ip_firewall_mangle_order:
+        type: bool
+        default: false
+        description: Enforce rule order. Requires _purge true.
+      routeros_ip_firewall_mangle_content:
+        type: str
+        default: remove_as_much_as_possible
+        choices: [ignore, remove, remove_as_much_as_possible]
+        description: How to treat fields not present in a matched rule.

@@ -68,3 +68,12 @@ ephemeral CHR has no live DHCP segment; `ip_route` uses a `disabled` route with
 an explicit gateway (stored without a reachable next hop, and idempotent — a
 `blackhole` route is not); and `ip_service` only modifies the built-in `telnet`
 entry so it never disturbs the SSH/API the harness depends on.
+
+The 6 IP-firewall scenarios (`ip_firewall_nat`, `ip_firewall_mangle`,
+`ip_firewall_raw`, `ip_firewall_address_list`,
+`ip_firewall_connection_tracking`, `ip_firewall_service_port`) complete the
+set. The ordered nat/mangle/raw scenarios apply with purge + order but use only
+`accept`/`masquerade`/`notrack` rules (never dropping or NATing the SSH/API
+management traffic), so a full chain rewrite can't lock the harness out;
+`ip_firewall_address_list` does an additive + purge round-trip; and
+`ip_firewall_service_port` modifies only the built-in `ftp` helper.
