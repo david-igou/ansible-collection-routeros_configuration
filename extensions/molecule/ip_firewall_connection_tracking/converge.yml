@@ -1,0 +1,9 @@
+---
+- name: Converge — set a connection-tracking setting
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ip_firewall_connection_tracking:
+      - loose-tcp-tracking: false
+  roles:
+    - role: david_igou.routeros_configuration.ip_firewall_connection_tracking
