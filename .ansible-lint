@@ -1,0 +1,11 @@
+---
+# These roles intentionally share a variable namespace rather than using a
+# per-role prefix:
+#   routeros_<path>  — user-facing desired-state vars, consistent across roles
+#   routeros_api_*   — the shared connection contract every role authenticates with
+#   rcfg_*           — private inputs passed into the internal _reconcile engine
+# This is a deliberate design decision (see
+# docs/superpowers/specs/2026-06-04-routeros-config-roles-architecture-design.md),
+# so ansible-lint's per-role-prefix requirement does not apply here.
+skip_list:
+  - var-naming[no-role-prefix]
