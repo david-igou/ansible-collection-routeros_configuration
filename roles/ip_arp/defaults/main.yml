@@ -1,0 +1,7 @@
+---
+# List of /ip/arp entries, e.g.:
+#   - address: "192.168.88.10"
+#     mac-address: "00:11:22:33:44:55"
+#     interface: ether1
+routeros_ip_arp: []
+routeros_ip_arp_purge: false

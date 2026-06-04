@@ -1,0 +1,28 @@
+---
+- name: Verify — /ip/dns reflects declared servers
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read /ip/dns over the API
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip dns
+      delegate_to: localhost
+      connection: local
+      register: dns
+
+    - name: Assert the DNS servers were applied
+      ansible.builtin.assert:
+        that:
+          - >-
+            dns.result | selectattr('servers', 'search', '1.1.1.1')
+            | list | length == 1
+        success_msg: >-
+          dns servers applied:
+          {{ dns.result | map(attribute='servers') | list }}
+        fail_msg: "unexpected dns settings: {{ dns.result }}"

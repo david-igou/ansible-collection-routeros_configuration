@@ -1,0 +1,11 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/service declaratively (modify-only).
+    options:
+      routeros_ip_service:
+        type: list
+        elements: dict
+        default: []
+        description: >-
+          Built-in service entries to modify (name, disabled, port, ...).

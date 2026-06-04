@@ -56,6 +56,28 @@ is reconciled idempotently via `community.routeros.api_modify`.
 | `interface_gre` | `/interface/gre`. |
 | `interface_eoip` | `/interface/eoip`. |
 
+### IP core
+
+| Role | Manages |
+| --- | --- |
+| `ip_pool` | `/ip/pool`. |
+| `ip_dns` | `/ip/dns` (singleton). |
+| `ip_dns_static` | `/ip/dns/static` records. |
+| `ip_dhcp_server` | `/ip/dhcp-server` instances. |
+| `ip_dhcp_server_network` | `/ip/dhcp-server/network`. |
+| `ip_dhcp_server_lease` | `/ip/dhcp-server/lease` static leases. |
+| `ip_dhcp_server_option` | `/ip/dhcp-server/option`. |
+| `ip_dhcp_client` | `/ip/dhcp-client`. |
+| `ip_dhcp_relay` | `/ip/dhcp-relay`. |
+| `ip_route` | `/ip/route` static routes. |
+| `ip_service` | `/ip/service` (modify-only). |
+| `ip_arp` | `/ip/arp` static entries. |
+| `ip_neighbor_discovery_settings` | `/ip/neighbor/discovery-settings` (singleton). |
+| `ip_settings` | `/ip/settings` (singleton). |
+| `ip_cloud` | `/ip/cloud` (singleton). |
+| `ip_vrf` | `/ip/vrf` instances. |
+| `ip_ssh` | `/ip/ssh` (singleton). |
+
 All roles share one connection contract through the `routeros_api_*` variables
 (hostname, username, password, tls, validate_certs, port) and delegate
 reconciliation to the internal `_reconcile` engine role. Roles default to

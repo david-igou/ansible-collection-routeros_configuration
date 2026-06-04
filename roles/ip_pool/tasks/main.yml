@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_pool
+- name: "Reconcile ip pool"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip pool
+    rcfg_data: "{{ routeros_ip_pool }}"
+    rcfg_purge: "{{ routeros_ip_pool_purge | default(false) }}"
+    rcfg_order: false

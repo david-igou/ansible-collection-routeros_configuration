@@ -1,0 +1,5 @@
+---
+# /ip/dns is a singleton path. Provide a single-element list with the desired
+# settings, e.g. [{servers: "1.1.1.1,8.8.8.8", allow-remote-requests: false}].
+# Empty -> no change.
+routeros_ip_dns: []

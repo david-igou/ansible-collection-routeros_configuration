@@ -1,0 +1,11 @@
+---
+argument_specs:
+  main:
+    short_description: >-
+      Manage /ip/neighbor/discovery-settings declaratively (singleton).
+    options:
+      routeros_ip_neighbor_discovery_settings:
+        type: list
+        elements: dict
+        default: []
+        description: Single-element list of neighbor discovery settings.

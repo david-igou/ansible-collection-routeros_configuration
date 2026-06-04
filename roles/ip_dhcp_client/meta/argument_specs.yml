@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dhcp-client declaratively.
+    options:
+      routeros_ip_dhcp_client:
+        type: list
+        elements: dict
+        default: []
+        description: DHCP client entries (interface, add-default-route, ...).
+      routeros_ip_dhcp_client_purge:
+        type: bool
+        default: false
+        description: Remove clients not present in routeros_ip_dhcp_client.

@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dhcp-server/lease declaratively.
+    options:
+      routeros_ip_dhcp_server_lease:
+        type: list
+        elements: dict
+        default: []
+        description: Static DHCP leases (server, address, mac-address, ...).
+      routeros_ip_dhcp_server_lease_purge:
+        type: bool
+        default: false
+        description: Remove leases not present in the list.

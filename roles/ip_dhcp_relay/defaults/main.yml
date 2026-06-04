@@ -1,0 +1,7 @@
+---
+# List of /ip/dhcp-relay entries, e.g.:
+#   - name: relay1
+#     interface: ether2
+#     dhcp-server: "192.168.88.1"
+routeros_ip_dhcp_relay: []
+routeros_ip_dhcp_relay_purge: false

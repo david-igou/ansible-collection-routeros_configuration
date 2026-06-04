@@ -1,0 +1,12 @@
+---
+- name: Converge — add static DNS records
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ip_dns_static:
+      - name: router.lan
+        address: "192.168.88.1"
+      - name: nas.lan
+        address: "192.168.88.2"
+  roles:
+    - role: david_igou.routeros_configuration.ip_dns_static

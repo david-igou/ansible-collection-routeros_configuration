@@ -1,0 +1,6 @@
+---
+# List of /ip/vrf entries, e.g.:
+#   - name: mgmt
+#     interfaces: ether5
+routeros_ip_vrf: []
+routeros_ip_vrf_purge: false

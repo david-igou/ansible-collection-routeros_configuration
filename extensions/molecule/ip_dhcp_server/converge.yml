@@ -1,0 +1,30 @@
+---
+- name: Converge — pool prereq, then a (disabled) dhcp-server on ether3
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Prereq — create the address pool
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip pool
+        handle_absent_entries: ignore
+        data:
+          - name: pool-dhcp
+            ranges: "192.168.60.10-192.168.60.50"
+      delegate_to: localhost
+      connection: local
+
+    - name: Apply the dhcp-server
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.ip_dhcp_server
+      vars:
+        routeros_ip_dhcp_server:
+          - name: dhcp-test
+            interface: ether3
+            address-pool: pool-dhcp
+            disabled: true

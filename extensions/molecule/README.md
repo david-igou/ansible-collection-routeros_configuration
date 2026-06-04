@@ -56,3 +56,15 @@ host now provides 8 ether NICs (ether1 SSH, ether2 API, ether3–8 spare) so
 interface/bridge/bonding/vlan scenarios have ports to bind — see
 `utils/inventory/hosts.yml`. Each scenario creates any prerequisites (a bridge,
 a list, a wireguard interface, …) in its own `converge`.
+
+The 17 IP-core scenarios (`ip_pool`, `ip_dns`, `ip_dns_static`, the
+`ip_dhcp_server`/`_network`/`_lease`/`_option` set, `ip_dhcp_client`,
+`ip_dhcp_relay`, `ip_route`, `ip_service`, `ip_arp`,
+`ip_neighbor_discovery_settings`, `ip_settings`, `ip_cloud`, `ip_vrf`, `ip_ssh`)
+follow the same shape. The dhcp-server lease/server scenarios create their pool
+and (disabled) server prerequisites in `converge` first; `ip_dhcp_client`,
+`ip_dhcp_relay`, and `ip_dhcp_server` are created `disabled: true` because the
+ephemeral CHR has no live DHCP segment; `ip_route` uses a `disabled` route with
+an explicit gateway (stored without a reachable next hop, and idempotent — a
+`blackhole` route is not); and `ip_service` only modifies the built-in `telnet`
+entry so it never disturbs the SSH/API the harness depends on.

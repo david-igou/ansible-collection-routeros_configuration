@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_route
+- name: "Reconcile ip route"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip route
+    rcfg_data: "{{ routeros_ip_route }}"
+    rcfg_purge: "{{ routeros_ip_route_purge | default(false) }}"
+    rcfg_order: false

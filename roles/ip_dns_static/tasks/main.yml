@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_dns_static
+- name: "Reconcile ip dns static"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip dns static
+    rcfg_data: "{{ routeros_ip_dns_static }}"
+    rcfg_purge: "{{ routeros_ip_dns_static_purge | default(false) }}"
+    rcfg_order: false

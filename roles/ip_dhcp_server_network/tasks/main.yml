@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_dhcp_server_network
+- name: "Reconcile ip dhcp-server network"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip dhcp-server network
+    rcfg_data: "{{ routeros_ip_dhcp_server_network }}"
+    rcfg_purge: "{{ routeros_ip_dhcp_server_network_purge | default(false) }}"
+    rcfg_order: false
