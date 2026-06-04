@@ -42,8 +42,13 @@
           - "/user set [find name=admin] password={{ chr_admin_password }}"
       delegate_to: localhost
       register: chr_pw
+      # The forwarded SSH port accepts TCP before RouterOS's login subsystem is
+      # ready, so the empty-password login can race and fail. Retry until it
+      # lands (fresh VM => password is still empty until this succeeds once).
+      until: chr_pw.rc == 0
+      retries: 18
+      delay: 5
       changed_when: chr_pw.rc == 0
-      failed_when: false
 
     - name: Enable the api service and a dhcp-client on the apinet NIC (ether2)
       ansible.builtin.command:

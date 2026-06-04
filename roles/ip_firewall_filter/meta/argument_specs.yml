@@ -1,0 +1,23 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/firewall/filter declaratively (ordered).
+    options:
+      routeros_ip_firewall_filter:
+        type: list
+        elements: dict
+        default: []
+        description: Ordered firewall filter rules (chain, action, ...).
+      routeros_ip_firewall_filter_purge:
+        type: bool
+        default: false
+        description: Remove rules not present in the list.
+      routeros_ip_firewall_filter_order:
+        type: bool
+        default: false
+        description: Enforce rule order. Requires _purge true.
+      routeros_ip_firewall_filter_content:
+        type: str
+        default: remove_as_much_as_possible
+        choices: [ignore, remove, remove_as_much_as_possible]
+        description: How to treat fields not present in a matched rule.
