@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dhcp-server/option declaratively.
+    options:
+      routeros_ip_dhcp_server_option:
+        type: list
+        elements: dict
+        default: []
+        description: DHCP options (name, code, value, ...).
+      routeros_ip_dhcp_server_option_purge:
+        type: bool
+        default: false
+        description: Remove options not present in the list.
