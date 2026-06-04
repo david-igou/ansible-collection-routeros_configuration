@@ -28,6 +28,9 @@ help: ## Show this help
 
 install: ## Install runtime collection dependencies (community.routeros, ansible.netcommon)
 	ansible-galaxy collection install -r requirements.yml
+	# Test-only provisioner up front: shared_state hoists the default scenario's
+	# create before molecule's per-scenario dependency step would install it.
+	ansible-galaxy collection install -r extensions/molecule/requirements-test.yml
 
 # `molecule` depends on `install` so a single `make molecule` resolves all
 # collections the scenario needs: runtime deps here, and the pinned provisioner

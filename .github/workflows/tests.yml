@@ -92,10 +92,14 @@ jobs:
           # Runtime deps (community.routeros, ansible.netcommon).
           ansible-galaxy collection install -r requirements.yml --force
           # Install the collection itself so FQCN references resolve and
-          # galaxy.yml dependencies are pulled. Test-only deps
-          # (david_igou.molecule_provisioners) are installed by molecule's
-          # own `dependency` step via extensions/molecule/config.yml.
+          # galaxy.yml dependencies are pulled.
           ansible-galaxy collection install . --force
+          # Test-only provisioner (david_igou.molecule_provisioners). Must be
+          # installed UP FRONT: under shared_state molecule hoists the default
+          # scenario's create (which import_playbook's the provisioner) to run
+          # before the per-scenario `dependency` step that would otherwise
+          # install it.
+          ansible-galaxy collection install -r extensions/molecule/requirements-test.yml --force
 
       - name: Run molecule (${{ matrix.name }})
         run: ${{ matrix.cmd }}
