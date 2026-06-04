@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.ip_address
+- name: Reconcile /ip/address
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip address
+    rcfg_data: "{{ routeros_ip_address }}"
+    rcfg_purge: "{{ routeros_ip_address_purge }}"
+    rcfg_order: false

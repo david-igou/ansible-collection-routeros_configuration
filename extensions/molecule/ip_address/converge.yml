@@ -1,0 +1,12 @@
+---
+# ether1 (SSH) and ether2 (API) are used by the test harness; bind addresses on
+# the spare ether3/ether4 NICs the shared utils host provides.
+- name: Converge — apply ip_address
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ip_address:
+      - {address: "192.168.50.1/24", interface: "ether3"}
+      - {address: "192.168.51.1/24", interface: "ether4"}
+  roles:
+    - role: david_igou.routeros_configuration.ip_address
