@@ -1,0 +1,11 @@
+---
+# tasks file for
+# david_igou.routeros_configuration.ip_neighbor_discovery_settings
+- name: "Reconcile ip neighbor discovery-settings"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: ip neighbor discovery-settings
+    rcfg_data: "{{ routeros_ip_neighbor_discovery_settings }}"
+    rcfg_purge: false
+    rcfg_order: false
