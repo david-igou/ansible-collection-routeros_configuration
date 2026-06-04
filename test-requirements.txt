@@ -7,3 +7,7 @@ molecule
 ansible-pylibssh
 # Note: the chr scenario also needs the `sshpass` and `qemu`/`genisoimage`
 # system packages (see extensions/molecule/chr/README.md).
+# community.routeros's API modules (api_modify/api_info) — used by the
+# subsystem roles and their molecule verify steps — require librouteros on
+# the Ansible controller.
+librouteros>=3.0.0

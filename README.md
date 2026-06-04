@@ -7,9 +7,17 @@ This repository contains the `david_igou.routeros_configuration` Ansible Collect
 
 ## External requirements
 
-Some modules and plugins require external libraries. Please check the
-requirements for each plugin or module you use in the documentation to find out
-which requirements are needed.
+The roles in this collection manage RouterOS declaratively over the **binary
+API** via `community.routeros.api_modify`/`api_info`. This requires:
+
+- The **`librouteros`** Python library on the Ansible controller
+  (`pip install librouteros`).
+- The device's **`api`** service enabled (port 8728), or **`api-ssl`** (port
+  8729) for TLS — strongly preferred in production.
+
+Connection details are supplied once through the shared `routeros_api_*`
+variables (see the internal `_reconcile` role). Other modules and plugins may
+require additional external libraries — check each module's documentation.
 
 ## Included content
 
