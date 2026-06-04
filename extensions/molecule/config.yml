@@ -15,16 +15,19 @@ dependency:
     requirements-file: extensions/molecule/requirements-test.yml
 
 # Shared provisioner wiring for the subsystem-role scenarios. Centralised here
-# so the per-scenario molecule.yml files only declare what differs (the scenario
-# name). Playbook paths are resolved relative to each scenario's OWN directory —
-# molecule's provisioner.abs_path() joins them onto scenario.directory, not onto
-# this file's location — so `converge.yml`/`verify.yml` pick up each scenario's
-# local copy while create/destroy/prepare share the utils playbooks.
+# (together with the test_sequence + verifier below) so each per-scenario
+# molecule.yml is reduced to just its name. Playbook paths are resolved relative
+# to each scenario's OWN directory — molecule's provisioner.abs_path() joins
+# them onto scenario.directory, not onto this file's location — so
+# `converge.yml`/`verify.yml` pick up each scenario's local copy while
+# create/destroy/prepare share the utils playbooks.
 #
-# The chr scenario keeps its own ansible block: merge_dicts() applies a
-# scenario's molecule.yml on top of this base, replacing the inventory list
-# wholesale and overriding playbook paths per key, so chr's local
-# inventory/create/destroy win without affecting these defaults.
+# This base is merged into EVERY scenario under the glob. merge_dicts() applies
+# a scenario's molecule.yml on top, replacing list values wholesale and
+# overriding dict values per key, so a scenario can opt out: chr supplies its
+# own inventory list + local create/destroy, and integration_hello_world zeroes
+# the inventory args (ansible_args: []) so this CHR inventory does not leak into
+# its localhost-only smoke run.
 ansible:
   executor:
     args:
@@ -37,3 +40,21 @@ ansible:
     prepare: ../utils/playbooks/prepare.yml
     converge: converge.yml
     verify: verify.yml
+
+# Default test flow + verifier, shared by the subsystem-role scenarios so each
+# scenario's molecule.yml is reduced to just its name. test_sequence is a list,
+# so a scenario needing a different flow replaces it wholesale on merge: chr
+# drops `idempotence`, and integration_hello_world runs a prepare+converge smoke
+# flow.
+scenario:
+  test_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - destroy
+
+verifier:
+  name: ansible

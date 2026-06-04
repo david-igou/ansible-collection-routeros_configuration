@@ -4,6 +4,11 @@ platforms:
 
 provisioner:
   name: ansible
+  # Empty inventory args (migrated to ansible.executor.args.ansible_playbook)
+  # override the CHR inventory that extensions/molecule/config.yml centralises:
+  # this is a localhost-only smoke scenario with no CHR host, so it must not
+  # inherit the shared utils/inventory fixture.
+  ansible_args: []
   playbooks:
     cleanup: ../utils/playbooks/noop.yml
     converge: ../utils/playbooks/converge.yml
