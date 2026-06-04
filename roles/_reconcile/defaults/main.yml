@@ -1,0 +1,16 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+# In production prefer TLS (api-ssl, port 8729) with validate_certs: true.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+routeros_api_password: ""
+routeros_api_tls: true
+routeros_api_validate_certs: true
+# Leave empty to let the module pick the port from `tls` (8728/8729).
+routeros_api_port: ""
+
+# Private engine inputs — set by the calling subsystem role, not the user.
+# rcfg_path and rcfg_data have no default: callers MUST supply them.
+rcfg_purge: false            # true -> handle_absent_entries: remove (exact-state)
+rcfg_order: false            # true -> ensure_order: true (requires rcfg_purge)
+rcfg_content: ignore         # handle_entries_content: ignore|remove|remove_as_much_as_possible
