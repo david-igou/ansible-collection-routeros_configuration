@@ -164,7 +164,10 @@ argument_specs:
       routeros_ip_firewall_nat_content:
         type: str
         default: remove_as_much_as_possible
-        choices: [ignore, remove, remove_as_much_as_possible]
+        choices:
+          - ignore
+          - remove
+          - remove_as_much_as_possible
         description: How to treat fields not present in a matched rule.
 ```
 
@@ -300,7 +303,10 @@ argument_specs:
       routeros_ip_firewall_mangle_content:
         type: str
         default: remove_as_much_as_possible
-        choices: [ignore, remove, remove_as_much_as_possible]
+        choices:
+          - ignore
+          - remove
+          - remove_as_much_as_possible
         description: How to treat fields not present in a matched rule.
 ```
 
@@ -434,7 +440,10 @@ argument_specs:
       routeros_ip_firewall_raw_content:
         type: str
         default: remove_as_much_as_possible
-        choices: [ignore, remove, remove_as_much_as_possible]
+        choices:
+          - ignore
+          - remove
+          - remove_as_much_as_possible
         description: How to treat fields not present in a matched rule.
 ```
 

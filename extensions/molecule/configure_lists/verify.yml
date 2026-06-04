@@ -9,10 +9,11 @@
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
-      port: "{{ routeros_api_port }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read /ip/pool after converge
-      community.routeros.api_info: {path: ip pool}
+      community.routeros.api_info:
+        path: ip pool
       delegate_to: localhost
       connection: local
       register: pools
@@ -34,7 +35,8 @@
                 ranges: "192.168.70.10-192.168.70.50"
 
     - name: Read /ip/pool after update+purge
-      community.routeros.api_info: {path: ip pool}
+      community.routeros.api_info:
+        path: ip pool
       delegate_to: localhost
       connection: local
       register: pools2

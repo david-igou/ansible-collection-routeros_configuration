@@ -9,15 +9,17 @@
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
-      port: "{{ routeros_api_port }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read /system/identity
-      community.routeros.api_info: {path: system identity}
+      community.routeros.api_info:
+        path: system identity
       delegate_to: localhost
       connection: local
       register: ident
     - name: Read /ip/dns
-      community.routeros.api_info: {path: ip dns}
+      community.routeros.api_info:
+        path: ip dns
       delegate_to: localhost
       connection: local
       register: dns

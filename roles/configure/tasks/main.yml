@@ -3,6 +3,10 @@
 - name: Compute the canonical apply order
   ansible.builtin.include_tasks: order.yml
 
+# include_role in a loop (not a single role with an internal loop) is
+# deliberate: it re-enters the _reconcile engine per path with cleanly scoped
+# rcfg_* vars and isolated argument-spec validation. The per-iteration include
+# overhead is acceptable for the size of a typical routeros_config.
 - name: "Reconcile {{ rcfg_key }}"
   ansible.builtin.include_role:
     name: _reconcile

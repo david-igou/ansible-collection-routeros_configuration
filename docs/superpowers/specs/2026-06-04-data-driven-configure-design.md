@@ -137,9 +137,15 @@ routeros_config:
     purge: true
     order: true
     data:
-      - { chain: input, action: accept, connection-state: "established,related" }
-      - { chain: input, action: accept, protocol: tcp, dst-port: "22,8728" }
-      - { chain: input, action: drop }
+      - chain: input
+        action: accept
+        connection-state: "established,related"
+      - chain: input
+        action: accept
+        protocol: tcp
+        dst-port: "22,8728"
+      - chain: input
+        action: drop
 ```
 
 `configure`'s `meta/argument_specs.yml` validates the **structure**:

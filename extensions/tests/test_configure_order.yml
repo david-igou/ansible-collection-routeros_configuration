@@ -6,11 +6,16 @@
   gather_facts: false
   vars:
     routeros_config:
-      /ip/dhcp-server/lease: {data: []}
-      /system/identity: {data: []}
-      /ip/pool: {data: []}
-      /ip/dhcp-server: {data: []}
-      /interface/bridge: {data: []}
+      /ip/dhcp-server/lease:
+        data: []
+      /system/identity:
+        data: []
+      /ip/pool:
+        data: []
+      /ip/dhcp-server:
+        data: []
+      /interface/bridge:
+        data: []
   tasks:
     - name: Compute the ordered paths
       ansible.builtin.include_role:
