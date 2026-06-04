@@ -1,4 +1,0 @@
----
-# /ip/neighbor/discovery-settings is a singleton path. Single-element list,
-# e.g. [{discover-interface-list: none}]. Empty -> no change.
-routeros_ip_neighbor_discovery_settings: []

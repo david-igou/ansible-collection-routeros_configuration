@@ -1,8 +1,0 @@
----
-# List of /ip/route entries, e.g.:
-#   - dst-address: "10.0.0.0/8"
-#     gateway: "192.168.88.254"
-routeros_ip_route: []
-# Purge is OFF by default and not recommended for routes: exact-state would
-# remove connected/dynamic routes. Enable only with a complete static list.
-routeros_ip_route_purge: false

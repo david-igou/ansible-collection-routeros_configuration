@@ -1,9 +1,0 @@
----
-- name: Converge — set a global IP setting
-  hosts: molecule
-  gather_facts: false
-  vars:
-    routeros_ip_settings:
-      - tcp-syncookies: true
-  roles:
-    - role: david_igou.routeros_configuration.ip_settings

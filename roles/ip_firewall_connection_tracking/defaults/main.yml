@@ -1,5 +1,0 @@
----
-# /ip/firewall/connection/tracking is a singleton path. Single-element list of
-# connection-tracking settings, e.g. [{loose-tcp-tracking: false}].
-# Empty -> no change.
-routeros_ip_firewall_connection_tracking: []

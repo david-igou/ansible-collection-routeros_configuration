@@ -1,7 +1,0 @@
----
-# List of /ip/dhcp-server entries, e.g.:
-#   - name: dhcp1
-#     interface: ether2
-#     address-pool: lan-pool
-routeros_ip_dhcp_server: []
-routeros_ip_dhcp_server_purge: false

@@ -1,7 +1,0 @@
----
-# List of /ip/dhcp-server/option entries, e.g.:
-#   - name: tftp
-#     code: 66
-#     value: "'192.168.88.1'"
-routeros_ip_dhcp_server_option: []
-routeros_ip_dhcp_server_option_purge: false

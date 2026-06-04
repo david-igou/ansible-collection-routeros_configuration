@@ -1,9 +1,0 @@
----
-- name: Converge — set ip cloud update-time off
-  hosts: molecule
-  gather_facts: false
-  vars:
-    routeros_ip_cloud:
-      - update-time: false
-  roles:
-    - role: david_igou.routeros_configuration.ip_cloud

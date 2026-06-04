@@ -1,4 +1,0 @@
----
-# /system/identity is a singleton path. Provide a single-element list with the
-# desired name, e.g. [{name: "core-router"}]. Empty -> no change.
-routeros_system_identity: []

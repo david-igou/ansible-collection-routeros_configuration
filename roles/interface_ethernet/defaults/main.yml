@@ -1,3 +1,0 @@
----
-# Field updates to existing interface ethernet entries (modify-only — no add/remove; see README).
-routeros_interface_ethernet: []

@@ -1,7 +1,0 @@
----
-# List of /ip/dhcp-server/lease entries, e.g.:
-#   - server: dhcp1
-#     address: "192.168.88.100"
-#     mac-address: "00:11:22:33:44:55"
-routeros_ip_dhcp_server_lease: []
-routeros_ip_dhcp_server_lease_purge: false
