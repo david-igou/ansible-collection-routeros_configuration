@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/dhcp-server declaratively.
+    options:
+      routeros_ip_dhcp_server:
+        type: list
+        elements: dict
+        default: []
+        description: DHCP server instances (name, interface, address-pool, ...).
+      routeros_ip_dhcp_server_purge:
+        type: bool
+        default: false
+        description: Remove servers not present in routeros_ip_dhcp_server.
