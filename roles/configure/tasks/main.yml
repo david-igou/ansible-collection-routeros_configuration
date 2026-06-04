@@ -1,0 +1,19 @@
+---
+# tasks file for david_igou.routeros_configuration.configure
+- name: Compute the canonical apply order
+  ansible.builtin.include_tasks: order.yml
+
+- name: "Reconcile {{ rcfg_key }}"
+  ansible.builtin.include_role:
+    name: _reconcile
+  loop: "{{ rcfg_ordered_paths }}"
+  loop_control:
+    loop_var: rcfg_key
+  vars:
+    # Slash path -> space-separated api_modify path: /ip/dhcp-server ->
+    # "ip dhcp-server" (leading slash trimmed, inner slashes -> spaces).
+    rcfg_path: "{{ rcfg_key | replace('/', ' ') | trim }}"
+    rcfg_data: "{{ routeros_config[rcfg_key].data }}"
+    rcfg_purge: "{{ routeros_config[rcfg_key].purge | default(false) }}"
+    rcfg_order: "{{ routeros_config[rcfg_key].order | default(false) }}"
+    rcfg_content: "{{ routeros_config[rcfg_key].content | default('ignore') }}"
