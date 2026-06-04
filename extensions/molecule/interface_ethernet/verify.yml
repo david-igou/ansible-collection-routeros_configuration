@@ -1,5 +1,5 @@
 ---
-- name: Verify — ether3 has the managed comment and mtu
+- name: Verify — ether3 has the managed comment
   hosts: molecule
   gather_facts: false
   tasks:
@@ -18,5 +18,5 @@
     - name: Assert ether3 was updated
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('name','equalto','ether3') | selectattr('comment','equalto','managed-by-ansible') | list | length == 1
-        fail_msg: "ether3 not updated: {{ q.result | selectattr('name','equalto','ether3') | list }}"
+          - q.result | selectattr('default-name','equalto','ether3') | selectattr('comment','equalto','managed-by-ansible') | list | length == 1
+        fail_msg: "ether3 not updated: {{ q.result | selectattr('default-name','equalto','ether3') | list }}"

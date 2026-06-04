@@ -18,5 +18,5 @@
     - name: Assert vlan30 present
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('name','equalto','vlan30') | selectattr('vlan-id','equalto','30') | list | length == 1
+          - "'30' in (q.result | selectattr('name','equalto','vlan30') | map(attribute='vlan-id') | map('string') | list)"
         fail_msg: "vlan missing: {{ q.result }}"

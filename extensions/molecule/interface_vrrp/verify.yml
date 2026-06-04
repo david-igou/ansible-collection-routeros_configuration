@@ -18,5 +18,5 @@
     - name: Assert vrrp-test present with vrid 7
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('name','equalto','vrrp-test') | selectattr('vrid','equalto','7') | list | length == 1
+          - "'7' in (q.result | selectattr('name','equalto','vrrp-test') | map(attribute='vrid') | map('string') | list)"
         fail_msg: "vrrp missing: {{ q.result }}"

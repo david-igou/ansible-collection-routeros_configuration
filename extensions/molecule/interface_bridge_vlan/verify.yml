@@ -18,5 +18,5 @@
     - name: Assert VLAN 20 present on br-test
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('bridge','equalto','br-test') | selectattr('vlan-ids','equalto','20') | list | length == 1
+          - "'20' in (q.result | selectattr('bridge','equalto','br-test') | map(attribute='vlan-ids') | map('string') | list)"
         fail_msg: "bridge vlan missing: {{ q.result }}"

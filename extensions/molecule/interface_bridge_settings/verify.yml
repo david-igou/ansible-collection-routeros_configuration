@@ -18,5 +18,5 @@
     - name: Assert use-ip-firewall true
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('use-ip-firewall','equalto','true') | list | length == 1
+          - q.result | selectattr('use-ip-firewall','equalto',true) | list | length == 1
         fail_msg: "settings unexpected: {{ q.result }}"

@@ -18,5 +18,5 @@
     - name: Assert eoip-test present
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('name','equalto','eoip-test') | selectattr('tunnel-id','equalto','1') | list | length == 1
+          - "'1' in (q.result | selectattr('name','equalto','eoip-test') | map(attribute='tunnel-id') | map('string') | list)"
         fail_msg: "eoip missing: {{ q.result }}"

@@ -18,5 +18,5 @@
     - name: Assert vxlan-test present
       ansible.builtin.assert:
         that:
-          - q.result | selectattr('name','equalto','vxlan-test') | selectattr('vni','equalto','100') | list | length == 1
+          - "'100' in (q.result | selectattr('name','equalto','vxlan-test') | map(attribute='vni') | map('string') | list)"
         fail_msg: "vxlan missing: {{ q.result }}"

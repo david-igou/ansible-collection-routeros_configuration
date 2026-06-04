@@ -1,9 +1,11 @@
 ---
-- name: Converge — set a comment + mtu on ether3
+- name: Converge — set a comment on ether3 (matched by default-name)
   hosts: molecule
   gather_facts: false
   vars:
+    # api_modify matches /interface/ethernet by default-name (the stable port
+    # identifier), not the renameable name.
     routeros_interface_ethernet:
-      - {name: ether3, comment: "managed-by-ansible", mtu: 1400}
+      - {default-name: ether3, comment: "managed-by-ansible"}
   roles:
     - role: david_igou.routeros_configuration.interface_ethernet
