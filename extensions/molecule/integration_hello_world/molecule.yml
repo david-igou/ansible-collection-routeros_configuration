@@ -1,4 +1,6 @@
 ---
+# localhost-only smoke scenario — no CHR. Opt out of the shared-state run.
+shared_state: false
 platforms:
   - name: na
 

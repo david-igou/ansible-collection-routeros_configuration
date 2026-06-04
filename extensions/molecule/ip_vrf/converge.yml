@@ -1,10 +1,10 @@
 ---
-- name: Converge — create a VRF bound to ether6
+- name: Converge — create a VRF bound to ether11
   hosts: molecule
   gather_facts: false
   vars:
     routeros_ip_vrf:
       - name: vrf-test
-        interfaces: ether6
+        interfaces: ether11
   roles:
     - role: david_igou.routeros_configuration.ip_vrf

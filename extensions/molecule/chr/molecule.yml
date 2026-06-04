@@ -2,6 +2,11 @@
 # CHR feasibility scenario — boots a MikroTik CHR VM via the
 # david_igou.molecule_provisioners qemu backend and reaches the RouterOS CLI.
 # Static inventory plus the role's runtime inventory (ansible_host/ansible_port).
+#
+# Opt OUT of the shared-state run: chr verifies over network_cli (SSH CLI), which
+# needs its own runtime inventory, so it boots and tears down its own CHR. Run it
+# as a separate `molecule test -s chr`, never in the shared `--all` invocation.
+shared_state: false
 ansible:
   executor:
     args:

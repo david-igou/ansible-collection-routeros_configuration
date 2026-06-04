@@ -3,12 +3,38 @@
 Each scenario lives in its own subdirectory. Invoke from the **collection root**:
 
 ```bash
-# Resolve runtime deps once, then run a scenario:
-make molecule SCENARIO=chr
+# Shared pass: boot ONE CHR and run every subsystem-role scenario against it,
+# then the standalone chr scenario:
+make molecule
+
+# A single scenario (boots/uses one CHR for just that scenario):
+make molecule SCENARIO=ip_dns
 
 # Or directly (after `make install`), from the collection root:
-MOLECULE_GLOB="extensions/molecule/*/molecule.yml" molecule test -s chr
+MOLECULE_GLOB="extensions/molecule/*/molecule.yml" \
+  molecule test --all --exclude chr --exclude integration_hello_world
 ```
+
+## Shared state — one CHR for the whole suite
+
+`extensions/molecule/config.yml` sets `shared_state: true`, and a dedicated
+`default` scenario owns the instance lifecycle: under shared state molecule runs
+the `default` scenario's **create + prepare + destroy exactly once** for the
+entire run, and every subsystem-role scenario reuses that single CHR. Those role
+scenarios therefore declare a trimmed `test_sequence` of just
+`dependency → converge → idempotence → verify` — they reach the shared device
+over the fixed `127.0.0.1:8728` API hostfwd (their api tasks `delegate_to:
+localhost`, so no SSH to the device is needed). This replaces ~40 per-scenario
+CHR boots with one.
+
+Because all scenarios mutate the same device sequentially, each binds **dedicated
+ports** where it would otherwise conflict (bonding on ether5/6, bridge ports on
+ether7/8, dhcp-client/relay/vrf on ether9/10/11), while additive L3 config stacks
+on ether3/4 — see `utils/inventory/hosts.yml` (11 ethers).
+
+The `chr` scenario opts out (`shared_state: false`): it verifies over
+`network_cli` (SSH CLI), which needs its own runtime inventory, so run it
+standalone with `make molecule SCENARIO=chr`.
 
 `MOLECULE_GLOB` overrides molecule's default `molecule/<scenario>/` layout to
 point at this collection's `extensions/molecule/<scenario>/` layout. Running

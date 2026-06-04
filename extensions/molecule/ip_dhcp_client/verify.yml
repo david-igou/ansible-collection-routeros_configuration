@@ -1,5 +1,5 @@
 ---
-- name: Verify — dhcp-client present on ether5
+- name: Verify — dhcp-client present on ether9
   hosts: molecule
   gather_facts: false
   tasks:
@@ -16,11 +16,11 @@
       connection: local
       register: q
 
-    - name: Assert the dhcp-client on ether5 exists
+    - name: Assert the dhcp-client on ether9 exists
       ansible.builtin.assert:
         that:
           - >-
             q.result
-            | selectattr('interface', 'equalto', 'ether5')
+            | selectattr('interface', 'equalto', 'ether9')
             | list | length == 1
-        fail_msg: "dhcp-client on ether5 not found: {{ q.result }}"
+        fail_msg: "dhcp-client on ether9 not found: {{ q.result }}"

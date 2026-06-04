@@ -37,49 +37,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        scenario:
-          - chr
-          - system_identity
-          - ip_address
-          - ip_firewall_filter
-          - interface_ethernet
-          - interface_bridge
-          - interface_bridge_port
-          - interface_bridge_vlan
-          - interface_bridge_settings
-          - interface_vlan
-          - interface_bonding
-          - interface_list
-          - interface_list_member
-          - interface_vrrp
-          - interface_vxlan
-          - interface_wireguard
-          - interface_wireguard_peers
-          - interface_gre
-          - interface_eoip
-          - ip_pool
-          - ip_dns
-          - ip_dns_static
-          - ip_dhcp_server
-          - ip_dhcp_server_network
-          - ip_dhcp_server_lease
-          - ip_dhcp_server_option
-          - ip_dhcp_client
-          - ip_dhcp_relay
-          - ip_route
-          - ip_service
-          - ip_arp
-          - ip_neighbor_discovery_settings
-          - ip_settings
-          - ip_cloud
-          - ip_vrf
-          - ip_ssh
-          - ip_firewall_nat
-          - ip_firewall_mangle
-          - ip_firewall_raw
-          - ip_firewall_address_list
-          - ip_firewall_connection_tracking
-          - ip_firewall_service_port
+        # Two jobs instead of one-per-scenario. `shared` boots ONE CHR (the
+        # `default` scenario owns create/prepare/destroy via molecule's
+        # shared_state) and runs every subsystem-role scenario against it in a
+        # single sequential pass — see extensions/molecule/config.yml. `chr`
+        # (network_cli feasibility, opts out of shared_state) keeps its own VM.
+        include:
+          - name: shared
+            cmd: molecule test --all --exclude chr --exclude integration_hello_world
+          - name: chr
+            cmd: molecule test -s chr
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -125,13 +92,17 @@ jobs:
           # Runtime deps (community.routeros, ansible.netcommon).
           ansible-galaxy collection install -r requirements.yml --force
           # Install the collection itself so FQCN references resolve and
-          # galaxy.yml dependencies are pulled. Test-only deps
-          # (david_igou.molecule_provisioners) are installed by molecule's
-          # own `dependency` step via extensions/molecule/config.yml.
+          # galaxy.yml dependencies are pulled.
           ansible-galaxy collection install . --force
+          # Test-only provisioner (david_igou.molecule_provisioners). Must be
+          # installed UP FRONT: under shared_state molecule hoists the default
+          # scenario's create (which import_playbook's the provisioner) to run
+          # before the per-scenario `dependency` step that would otherwise
+          # install it.
+          ansible-galaxy collection install -r extensions/molecule/requirements-test.yml --force
 
-      - name: Run molecule ${{ matrix.scenario }}
-        run: molecule test -s ${{ matrix.scenario }}
+      - name: Run molecule (${{ matrix.name }})
+        run: ${{ matrix.cmd }}
 
   all_green:
     if: ${{ always() }}

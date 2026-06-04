@@ -1,0 +1,12 @@
+---
+# Shared-state owner. Under shared_state molecule runs THIS scenario's create +
+# destroy exactly once for the whole suite, and (running first) its prepare once
+# — every other scenario reuses the single CHR it boots.
+scenario:
+  name: default
+  test_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+    - destroy

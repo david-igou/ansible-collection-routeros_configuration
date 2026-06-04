@@ -1,5 +1,5 @@
 ---
-- name: Converge — bridge prereq, then add ether3/ether4 as ports
+- name: Converge — bridge prereq, then add ether7/ether8 as ports
   hosts: molecule
   gather_facts: false
   tasks:
@@ -24,6 +24,6 @@
       vars:
         routeros_interface_bridge_port:
           - bridge: br-test
-            interface: ether3
+            interface: ether7
           - bridge: br-test
-            interface: ether4
+            interface: ether8
