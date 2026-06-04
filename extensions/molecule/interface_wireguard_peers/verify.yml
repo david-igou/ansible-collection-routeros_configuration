@@ -1,0 +1,22 @@
+---
+- name: Verify — the peer exists on wg-test
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read interface wireguard peers over the API
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: interface wireguard peers
+      delegate_to: localhost
+      connection: local
+      register: q
+    - name: Assert the peer is present on wg-test
+      ansible.builtin.assert:
+        that:
+          - q.result | selectattr('interface','equalto','wg-test') | selectattr('allowed-address','equalto','10.10.10.2/32') | list | length == 1
+        fail_msg: "peer missing: {{ q.result }}"

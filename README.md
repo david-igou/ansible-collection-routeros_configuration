@@ -36,6 +36,26 @@ is reconciled idempotently via `community.routeros.api_modify`.
 | `ip_address` | `/ip/address` | IPv4 addresses. `routeros_ip_address_purge` for exact-state. |
 | `ip_firewall_filter` | `/ip/firewall/filter` | Ordered rules; `_purge`/`_order`/`_content` toggles. |
 
+### Interface & bridge
+
+| Role | Manages |
+| --- | --- |
+| `interface_ethernet` | `/interface/ethernet` port fields (modify-only, matched by `default-name`). |
+| `interface_bridge` | `/interface/bridge`. |
+| `interface_bridge_port` | `/interface/bridge/port` membership. |
+| `interface_bridge_vlan` | `/interface/bridge/vlan` table. |
+| `interface_bridge_settings` | `/interface/bridge/settings` (singleton). |
+| `interface_vlan` | `/interface/vlan`. |
+| `interface_bonding` | `/interface/bonding`. |
+| `interface_list` | `/interface/list`. |
+| `interface_list_member` | `/interface/list/member`. |
+| `interface_vrrp` | `/interface/vrrp`. |
+| `interface_vxlan` | `/interface/vxlan`. |
+| `interface_wireguard` | `/interface/wireguard`. |
+| `interface_wireguard_peers` | `/interface/wireguard/peers`. |
+| `interface_gre` | `/interface/gre`. |
+| `interface_eoip` | `/interface/eoip`. |
+
 All roles share one connection contract through the `routeros_api_*` variables
 (hostname, username, password, tls, validate_certs, port) and delegate
 reconciliation to the internal `_reconcile` engine role. Roles default to

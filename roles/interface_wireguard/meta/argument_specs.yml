@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/wireguard declaratively.
+    options:
+      routeros_interface_wireguard:
+        type: list
+        elements: dict
+        default: []
+        description: WireGuard interfaces.
+      routeros_interface_wireguard_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

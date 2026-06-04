@@ -42,6 +42,21 @@ jobs:
           - system_identity
           - ip_address
           - ip_firewall_filter
+          - interface_ethernet
+          - interface_bridge
+          - interface_bridge_port
+          - interface_bridge_vlan
+          - interface_bridge_settings
+          - interface_vlan
+          - interface_bonding
+          - interface_list
+          - interface_list_member
+          - interface_vrrp
+          - interface_vxlan
+          - interface_wireguard
+          - interface_wireguard_peers
+          - interface_gre
+          - interface_eoip
     steps:
       - name: Check out repository
         uses: actions/checkout@v4

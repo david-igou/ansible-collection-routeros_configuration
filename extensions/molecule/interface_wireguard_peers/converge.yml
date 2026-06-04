@@ -1,0 +1,29 @@
+---
+- name: Converge — wireguard interface prereq, then a peer
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Prereq — create wg-test interface
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: interface wireguard
+        handle_absent_entries: ignore
+        data:
+          - name: wg-test
+            listen-port: 13231
+      delegate_to: localhost
+      connection: local
+
+    - name: Apply a peer
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.interface_wireguard_peers
+      vars:
+        routeros_interface_wireguard_peers:
+          - interface: wg-test
+            public-key: "JRI5Acni4bnH0+L0wA0sFV0iHs3J0jVnp3hQ8j0wYy0="
+            allowed-address: "10.10.10.2/32"

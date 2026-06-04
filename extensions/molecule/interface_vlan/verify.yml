@@ -1,0 +1,22 @@
+---
+- name: Verify — vlan30 exists on ether3
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read interface vlan over the API
+      community.routeros.api_info:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: interface vlan
+      delegate_to: localhost
+      connection: local
+      register: q
+    - name: Assert vlan30 present
+      ansible.builtin.assert:
+        that:
+          - "'30' in (q.result | selectattr('name','equalto','vlan30') | map(attribute='vlan-id') | map('string') | list)"
+        fail_msg: "vlan missing: {{ q.result }}"

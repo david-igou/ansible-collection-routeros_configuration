@@ -1,0 +1,3 @@
+---
+# Singleton interface bridge settings — single-element list of fields (see README).
+routeros_interface_bridge_settings: []

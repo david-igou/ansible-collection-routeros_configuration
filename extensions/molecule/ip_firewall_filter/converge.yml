@@ -8,9 +8,18 @@
   gather_facts: false
   vars:
     routeros_ip_firewall_filter:
-      - {chain: input, action: accept, connection-state: "established,related", comment: "rule-a"}
-      - {chain: input, action: accept, protocol: tcp, dst-port: "22,8728", comment: "rule-b"}
-      - {chain: input, action: drop, comment: "rule-c"}
+      - chain: input
+        action: accept
+        connection-state: "established,related"
+        comment: "rule-a"
+      - chain: input
+        action: accept
+        protocol: tcp
+        dst-port: "22,8728"
+        comment: "rule-b"
+      - chain: input
+        action: drop
+        comment: "rule-c"
     routeros_ip_firewall_filter_purge: true
     routeros_ip_firewall_filter_order: true
   roles:

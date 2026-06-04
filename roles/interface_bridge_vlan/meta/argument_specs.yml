@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /interface/bridge/vlan declaratively.
+    options:
+      routeros_interface_bridge_vlan:
+        type: list
+        elements: dict
+        default: []
+        description: Bridge VLAN table entries.
+      routeros_interface_bridge_vlan_purge:
+        type: bool
+        default: false
+        description: Remove entries not present in the list.

@@ -27,7 +27,8 @@
         name: david_igou.routeros_configuration.ip_address
       vars:
         routeros_ip_address:
-          - {address: "192.168.50.1/24", interface: "ether3"}
+          - address: "192.168.50.1/24"
+            interface: "ether3"
         routeros_ip_address_purge: true
 
     - name: Read /ip/address after purge

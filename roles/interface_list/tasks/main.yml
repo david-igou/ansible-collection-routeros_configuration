@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.interface_list
+- name: "Reconcile interface list"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: interface list
+    rcfg_data: "{{ routeros_interface_list }}"
+    rcfg_purge: "{{ routeros_interface_list_purge | default(false) }}"
+    rcfg_order: false

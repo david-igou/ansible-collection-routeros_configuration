@@ -1,0 +1,10 @@
+---
+# tasks file for david_igou.routeros_configuration.interface_bridge
+- name: "Reconcile interface bridge"
+  ansible.builtin.include_role:
+    name: _reconcile
+  vars:
+    rcfg_path: interface bridge
+    rcfg_data: "{{ routeros_interface_bridge }}"
+    rcfg_purge: "{{ routeros_interface_bridge_purge | default(false) }}"
+    rcfg_order: false
