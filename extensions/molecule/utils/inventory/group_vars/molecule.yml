@@ -1,4 +1,15 @@
 ---
+# Backend selector for david_igou.molecule_provisioners. These scenarios only
+# declare an mp.qemu block, so the default resolves to qemu; PROVISIONER env var
+# can override.
+mp_backend: "{{ lookup('env', 'PROVISIONER') | default('qemu', true) }}"
+
+mp_defaults:
+  qemu:
+    cpus: 1
+    memory: 512
+    ssh_user: admin
+
 # Throwaway admin password bootstrapped onto the fresh CHR by prepare.yml.
 chr_admin_password: molecule
 

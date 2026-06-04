@@ -1,0 +1,10 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /system/identity declaratively.
+    options:
+      routeros_system_identity:
+        type: list
+        elements: dict
+        default: []
+        description: "Single-element list with the device name, e.g. [{name: core}]."
