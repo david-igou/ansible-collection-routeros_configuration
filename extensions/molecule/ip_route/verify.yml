@@ -16,7 +16,7 @@
       connection: local
       register: q
 
-    - name: Assert the blackhole route was added
+    - name: Assert the static route was added
       ansible.builtin.assert:
         that:
           - >-

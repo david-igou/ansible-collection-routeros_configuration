@@ -473,7 +473,9 @@ git commit -m "feat(ip_dns_static): declarative /ip/dns/static role + molecule s
 
 ## Task 4: `ip_route` (list)
 
-> **Note:** `/ip/route` has no primary key in the registry; `api_modify` matches on the full entry. Use a **blackhole** route (no gateway reachability needed) and leave purge **off** — purging routes on a live device can remove connected/default routes.
+> **Note:** `/ip/route` has no primary key in the registry; `api_modify` matches on the full entry. Use a **`disabled: true`** route with an explicit gateway (stored verbatim without a reachable next hop) and leave purge **off** — purging routes on a live device can remove connected/default routes.
+>
+> **Do NOT use a `blackhole` route here:** it is not idempotent under `api_modify`. RouterOS stores the blackhole flag as the empty string `""` while the module sends `true`, so every re-converge reports a change and the molecule `idempotence` step fails. (Verified on CHR 7.21.4.)
 
 **Files:** `roles/ip_route/...` + `extensions/molecule/ip_route/...`
 
@@ -527,13 +529,14 @@ routeros_ip_route:
 
 ```yaml
 ---
-- name: Converge — add a blackhole static route
+- name: Converge — add a disabled static route
   hosts: molecule
   gather_facts: false
   vars:
     routeros_ip_route:
       - dst-address: "10.99.0.0/24"
-        blackhole: true
+        gateway: "192.0.2.1"
+        disabled: true
         comment: "route-test"
   roles:
     - role: david_igou.routeros_configuration.ip_route
@@ -560,7 +563,7 @@ routeros_ip_route:
       connection: local
       register: q
 
-    - name: Assert the blackhole route was added
+    - name: Assert the static route was added
       ansible.builtin.assert:
         that:
           - q.result | selectattr('comment', 'defined') | selectattr('comment', 'equalto', 'route-test') | list | length == 1
@@ -2083,7 +2086,7 @@ Then watch the run (`gh run watch` / `gh run list`) until the `all_green` gate a
 - **Count reconciliation:** the spec prose says "16 new roles" but its table lists 17; this plan implements the 17 table rows (the authoritative source). Flag to the reviewer at PR time.
 - **Type coverage:** list (pool, dns_static, dhcp_*, route, arp, vrf), singleton (dns, neighbor_discovery_settings, settings, cloud, ssh), modify-only (service). No ordered paths — deferred to Plan 3 (firewall).
 - **Prerequisite chains** handled inside `converge` via `api_modify` prereq tasks: dhcp-server → pool (Task 14); dhcp-server lease → pool + server (Task 17). dhcp-server-network/option are independent. arp/vrf/dhcp-client/dhcp-relay bind to existing spare ethers (ether3/5/6).
-- **Offline-safety:** dhcp client/relay/server created `disabled: true`; `ip_route` uses a blackhole route (no gateway reachability); `ip_service` touches only `telnet`; singletons (`ip_ssh`, `ip_settings`, `ip_cloud`) use fields that don't disrupt the API/SSH the harness depends on.
+- **Offline-safety:** dhcp client/relay/server created `disabled: true`; `ip_route` uses a `disabled` route with an explicit gateway (no reachability needed, and idempotent — unlike a `blackhole` route); `ip_service` touches only `telnet`; singletons (`ip_ssh`, `ip_settings`, `ip_cloud`) use fields that don't disrupt the API/SSH the harness depends on.
 - **Fixture:** unchanged — the 8-NIC CHR from Plan 1 already provides ether3–8 spare ports.
 - **Idempotence risk:** `ip_cloud` flagged with a documented fallback field (Task 9 Step 9) if a ROS build normalises `update-time`.
 ```

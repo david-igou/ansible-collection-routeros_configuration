@@ -64,6 +64,7 @@ The 17 IP-core scenarios (`ip_pool`, `ip_dns`, `ip_dns_static`, the
 follow the same shape. The dhcp-server lease/server scenarios create their pool
 and (disabled) server prerequisites in `converge` first; `ip_dhcp_client`,
 `ip_dhcp_relay`, and `ip_dhcp_server` are created `disabled: true` because the
-ephemeral CHR has no live DHCP segment; `ip_route` uses a blackhole route
-(no gateway reachability needed); and `ip_service` only modifies the built-in
-`telnet` entry so it never disturbs the SSH/API the harness depends on.
+ephemeral CHR has no live DHCP segment; `ip_route` uses a `disabled` route with
+an explicit gateway (stored without a reachable next hop, and idempotent — a
+`blackhole` route is not); and `ip_service` only modifies the built-in `telnet`
+entry so it never disturbs the SSH/API the harness depends on.
