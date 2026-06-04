@@ -1,0 +1,4 @@
+---
+# /ip/settings is a singleton path. Single-element list of global IP settings,
+# e.g. [{ip-forward: true}]. Empty -> no change.
+routeros_ip_settings: []
