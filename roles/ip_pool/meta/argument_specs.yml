@@ -1,0 +1,14 @@
+---
+argument_specs:
+  main:
+    short_description: Manage /ip/pool declaratively.
+    options:
+      routeros_ip_pool:
+        type: list
+        elements: dict
+        default: []
+        description: IP pool entries (name, ranges, next-pool).
+      routeros_ip_pool_purge:
+        type: bool
+        default: false
+        description: Remove pools not present in routeros_ip_pool.
