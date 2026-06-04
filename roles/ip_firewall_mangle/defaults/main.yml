@@ -1,0 +1,7 @@
+---
+# Ordered list of /ip/firewall/mangle rules. Order matters; set _order: true
+# (which also requires _purge: true) to enforce it exactly.
+routeros_ip_firewall_mangle: []
+routeros_ip_firewall_mangle_purge: false
+routeros_ip_firewall_mangle_order: false
+routeros_ip_firewall_mangle_content: remove_as_much_as_possible
