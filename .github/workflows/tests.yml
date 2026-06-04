@@ -74,6 +74,12 @@ jobs:
           - ip_cloud
           - ip_vrf
           - ip_ssh
+          - ip_firewall_nat
+          - ip_firewall_mangle
+          - ip_firewall_raw
+          - ip_firewall_address_list
+          - ip_firewall_connection_tracking
+          - ip_firewall_service_port
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
