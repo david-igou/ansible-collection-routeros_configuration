@@ -1,0 +1,8 @@
+---
+- name: Default (shared-state owner) — no-op converge
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: Shared CHR booted + API prepared once; role scenarios converge next
+      ansible.builtin.debug:
+        msg: "shared-state default: instance created and prepared once"
