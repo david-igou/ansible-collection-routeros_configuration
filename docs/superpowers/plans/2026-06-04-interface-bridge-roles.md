@@ -213,7 +213,9 @@ Sets fields on existing physical ports; never adds/removes. No `_purge`.
 ---
 # Field updates to existing /interface/ethernet ports (modify-only — you cannot
 # add or remove physical ports). Match by name.
-#   - {name: ether3, comment: "uplink", mtu: 1500}
+#   - name: ether3
+#     comment: "uplink"
+#     mtu: 1500
 routeros_interface_ethernet: []
 ```
 
@@ -243,7 +245,9 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_ethernet:
-      - {name: ether3, comment: "managed-by-ansible", mtu: 1400}
+      - name: ether3
+        comment: "managed-by-ansible"
+        mtu: 1400
   roles:
     - role: david_igou.routeros_configuration.interface_ethernet
 ```
@@ -289,7 +293,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/bridge entries.
-#   - {name: bridge1, comment: "lan", vlan-filtering: false}
+#   - name: bridge1
+#     comment: "lan"
+#     vlan-filtering: false
 routeros_interface_bridge: []
 routeros_interface_bridge_purge: false
 ```
@@ -323,8 +329,10 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_bridge:
-      - {name: br-lan, comment: "lan"}
-      - {name: br-dmz, comment: "dmz"}
+      - name: br-lan
+        comment: "lan"
+      - name: br-dmz
+        comment: "dmz"
   roles:
     - role: david_igou.routeros_configuration.interface_bridge
 ```
@@ -371,7 +379,9 @@ argument_specs:
 ```yaml
 ---
 # Bridge port membership.
-#   - {bridge: bridge1, interface: ether3, pvid: 10}
+#   - bridge: bridge1
+#     interface: ether3
+#     pvid: 10
 routeros_interface_bridge_port: []
 routeros_interface_bridge_port_purge: false
 ```
@@ -415,7 +425,7 @@ argument_specs:
         path: interface bridge
         handle_absent_entries: ignore
         data:
-          - {name: br-test}
+          - name: br-test
       delegate_to: localhost
       connection: local
 
@@ -424,8 +434,10 @@ argument_specs:
         name: david_igou.routeros_configuration.interface_bridge_port
       vars:
         routeros_interface_bridge_port:
-          - {bridge: br-test, interface: ether3}
-          - {bridge: br-test, interface: ether4}
+          - bridge: br-test
+            interface: ether3
+          - bridge: br-test
+            interface: ether4
 ```
 
 - [ ] **Step 5: `extensions/molecule/interface_bridge_port/verify.yml`**
@@ -470,7 +482,10 @@ argument_specs:
 ```yaml
 ---
 # Bridge VLAN table entries.
-#   - {bridge: bridge1, vlan-ids: 10, tagged: "bridge1,ether3", untagged: ether4}
+#   - bridge: bridge1
+#     vlan-ids: 10
+#     tagged: "bridge1,ether3"
+#     untagged: ether4
 routeros_interface_bridge_vlan: []
 routeros_interface_bridge_vlan_purge: false
 ```
@@ -514,7 +529,7 @@ argument_specs:
         path: interface bridge
         handle_absent_entries: ignore
         data:
-          - {name: br-test}
+          - name: br-test
       delegate_to: localhost
       connection: local
 
@@ -523,7 +538,9 @@ argument_specs:
         name: david_igou.routeros_configuration.interface_bridge_vlan
       vars:
         routeros_interface_bridge_vlan:
-          - {bridge: br-test, vlan-ids: "20", tagged: "br-test"}
+          - bridge: br-test
+            vlan-ids: "20"
+            tagged: "br-test"
 ```
 
 - [ ] **Step 5: `extensions/molecule/interface_bridge_vlan/verify.yml`**
@@ -567,7 +584,7 @@ argument_specs:
 ```yaml
 ---
 # Singleton /interface/bridge/settings. Single-element list of fields.
-#   - {use-ip-firewall: true}
+#   - use-ip-firewall: true
 routeros_interface_bridge_settings: []
 ```
 
@@ -596,7 +613,7 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_bridge_settings:
-      - {use-ip-firewall: true}
+      - use-ip-firewall: true
   roles:
     - role: david_igou.routeros_configuration.interface_bridge_settings
 ```
@@ -642,7 +659,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/vlan entries.
-#   - {name: vlan10, vlan-id: 10, interface: ether3}
+#   - name: vlan10
+#     vlan-id: 10
+#     interface: ether3
 routeros_interface_vlan: []
 routeros_interface_vlan_purge: false
 ```
@@ -676,7 +695,9 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_vlan:
-      - {name: vlan30, vlan-id: 30, interface: ether3}
+      - name: vlan30
+        vlan-id: 30
+        interface: ether3
   roles:
     - role: david_igou.routeros_configuration.interface_vlan
 ```
@@ -722,7 +743,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/bonding entries.
-#   - {name: bond1, slaves: "ether5,ether6", mode: 802.3ad}
+#   - name: bond1
+#     slaves: "ether5,ether6"
+#     mode: 802.3ad
 routeros_interface_bonding: []
 routeros_interface_bonding_purge: false
 ```
@@ -756,7 +779,9 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_bonding:
-      - {name: bond-test, slaves: "ether5,ether6", mode: balance-rr}
+      - name: bond-test
+        slaves: "ether5,ether6"
+        mode: balance-rr
   roles:
     - role: david_igou.routeros_configuration.interface_bonding
 ```
@@ -802,7 +827,8 @@ argument_specs:
 ```yaml
 ---
 # /interface/list groupings.
-#   - {name: WAN, comment: "uplinks"}
+#   - name: WAN
+#     comment: "uplinks"
 routeros_interface_list: []
 routeros_interface_list_purge: false
 ```
@@ -836,8 +862,8 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_list:
-      - {name: WAN}
-      - {name: LAN}
+      - name: WAN
+      - name: LAN
   roles:
     - role: david_igou.routeros_configuration.interface_list
 ```
@@ -884,7 +910,8 @@ argument_specs:
 ```yaml
 ---
 # /interface/list/member entries.
-#   - {list: WAN, interface: ether3}
+#   - list: WAN
+#     interface: ether3
 routeros_interface_list_member: []
 routeros_interface_list_member_purge: false
 ```
@@ -928,7 +955,7 @@ argument_specs:
         path: interface list
         handle_absent_entries: ignore
         data:
-          - {name: WAN}
+          - name: WAN
       delegate_to: localhost
       connection: local
 
@@ -937,7 +964,8 @@ argument_specs:
         name: david_igou.routeros_configuration.interface_list_member
       vars:
         routeros_interface_list_member:
-          - {list: WAN, interface: ether3}
+          - list: WAN
+            interface: ether3
 ```
 
 - [ ] **Step 5: `extensions/molecule/interface_list_member/verify.yml`**
@@ -981,7 +1009,10 @@ argument_specs:
 ```yaml
 ---
 # /interface/vrrp entries.
-#   - {name: vrrp1, interface: ether3, vrid: 1, priority: 100}
+#   - name: vrrp1
+#     interface: ether3
+#     vrid: 1
+#     priority: 100
 routeros_interface_vrrp: []
 routeros_interface_vrrp_purge: false
 ```
@@ -1015,7 +1046,9 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_vrrp:
-      - {name: vrrp-test, interface: ether3, vrid: 7}
+      - name: vrrp-test
+        interface: ether3
+        vrid: 7
   roles:
     - role: david_igou.routeros_configuration.interface_vrrp
 ```
@@ -1061,7 +1094,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/vxlan entries.
-#   - {name: vxlan1, vni: 100, port: 4789}
+#   - name: vxlan1
+#     vni: 100
+#     port: 4789
 routeros_interface_vxlan: []
 routeros_interface_vxlan_purge: false
 ```
@@ -1095,7 +1130,8 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_vxlan:
-      - {name: vxlan-test, vni: 100}
+      - name: vxlan-test
+        vni: 100
   roles:
     - role: david_igou.routeros_configuration.interface_vxlan
 ```
@@ -1141,7 +1177,8 @@ argument_specs:
 ```yaml
 ---
 # /interface/wireguard entries. RouterOS auto-generates keys if omitted.
-#   - {name: wg0, listen-port: 13231}
+#   - name: wg0
+#     listen-port: 13231
 routeros_interface_wireguard: []
 routeros_interface_wireguard_purge: false
 ```
@@ -1175,7 +1212,8 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_wireguard:
-      - {name: wg-test, listen-port: 13231}
+      - name: wg-test
+        listen-port: 13231
   roles:
     - role: david_igou.routeros_configuration.interface_wireguard
 ```
@@ -1221,7 +1259,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/wireguard/peers entries.
-#   - {interface: wg0, public-key: "<base64>", allowed-address: "10.0.0.2/32"}
+#   - interface: wg0
+#     public-key: "<base64>"
+#     allowed-address: "10.0.0.2/32"
 routeros_interface_wireguard_peers: []
 routeros_interface_wireguard_peers_purge: false
 ```
@@ -1265,7 +1305,8 @@ argument_specs:
         path: interface wireguard
         handle_absent_entries: ignore
         data:
-          - {name: wg-test, listen-port: 13231}
+          - name: wg-test
+            listen-port: 13231
       delegate_to: localhost
       connection: local
 
@@ -1320,7 +1361,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/gre tunnels.
-#   - {name: gre1, remote-address: 203.0.113.5, local-address: 192.0.2.1}
+#   - name: gre1
+#     remote-address: 203.0.113.5
+#     local-address: 192.0.2.1
 routeros_interface_gre: []
 routeros_interface_gre_purge: false
 ```
@@ -1354,7 +1397,8 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_gre:
-      - {name: gre-test, remote-address: "203.0.113.5"}
+      - name: gre-test
+        remote-address: "203.0.113.5"
   roles:
     - role: david_igou.routeros_configuration.interface_gre
 ```
@@ -1400,7 +1444,9 @@ argument_specs:
 ```yaml
 ---
 # /interface/eoip tunnels.
-#   - {name: eoip1, remote-address: 203.0.113.5, tunnel-id: 1}
+#   - name: eoip1
+#     remote-address: 203.0.113.5
+#     tunnel-id: 1
 routeros_interface_eoip: []
 routeros_interface_eoip_purge: false
 ```
@@ -1434,7 +1480,9 @@ argument_specs:
   gather_facts: false
   vars:
     routeros_interface_eoip:
-      - {name: eoip-test, remote-address: "203.0.113.5", tunnel-id: 1}
+      - name: eoip-test
+        remote-address: "203.0.113.5"
+        tunnel-id: 1
   roles:
     - role: david_igou.routeros_configuration.interface_eoip
 ```

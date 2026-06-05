@@ -12,30 +12,35 @@
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
-      port: "{{ routeros_api_port }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read /ip/pool (keyed list)
-      community.routeros.api_info: {path: ip pool}
+      community.routeros.api_info:
+        path: ip pool
       delegate_to: localhost
       connection: local
       register: pool
     - name: Read /ip/firewall/filter (keyless ordered)
-      community.routeros.api_info: {path: ip firewall filter}
+      community.routeros.api_info:
+        path: ip firewall filter
       delegate_to: localhost
       connection: local
       register: fw
     - name: Read /interface/bridge/port (dependency child)
-      community.routeros.api_info: {path: interface bridge port}
+      community.routeros.api_info:
+        path: interface bridge port
       delegate_to: localhost
       connection: local
       register: ports
     - name: Read /ip/dhcp-server/lease (deep dependency child)
-      community.routeros.api_info: {path: ip dhcp-server lease}
+      community.routeros.api_info:
+        path: ip dhcp-server lease
       delegate_to: localhost
       connection: local
       register: leases
     - name: Read /system/identity (singleton)
-      community.routeros.api_info: {path: system identity}
+      community.routeros.api_info:
+        path: system identity
       delegate_to: localhost
       connection: local
       register: ident

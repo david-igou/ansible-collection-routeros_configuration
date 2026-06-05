@@ -9,20 +9,23 @@
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
-      port: "{{ routeros_api_port }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read bridge ports
-      community.routeros.api_info: {path: interface bridge port}
+      community.routeros.api_info:
+        path: interface bridge port
       delegate_to: localhost
       connection: local
       register: ports
     - name: Read dhcp-server lease
-      community.routeros.api_info: {path: ip dhcp-server lease}
+      community.routeros.api_info:
+        path: ip dhcp-server lease
       delegate_to: localhost
       connection: local
       register: leases
     - name: Read interface list member
-      community.routeros.api_info: {path: interface list member}
+      community.routeros.api_info:
+        path: interface list member
       delegate_to: localhost
       connection: local
       register: members

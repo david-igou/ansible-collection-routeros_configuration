@@ -13,11 +13,18 @@ by one `routeros_config` dict.
         purge: true
         order: true
         data:
-          - { chain: input, action: accept, comment: est,
-              connection-state: "established,related" }
-          - { chain: input, action: accept, comment: mgmt,
-              protocol: tcp, dst-port: "22,8728" }
-          - { chain: input, action: drop, comment: drop-rest }
+          - chain: input
+            action: accept
+            comment: est
+            connection-state: "established,related"
+          - chain: input
+            action: accept
+            comment: mgmt
+            protocol: tcp
+            dst-port: "22,8728"
+          - chain: input
+            action: drop
+            comment: drop-rest
 
 ## Per-path options
 
@@ -48,3 +55,18 @@ a stable `comment` and use `purge: true` (+ `order: true`), since additive mode
 adds an edited keyless rule as a duplicate.
 
 Connection comes from the shared `routeros_api_*` vars (see the `_reconcile` role).
+
+## Idempotency & rollback
+
+**Idempotent:** yes — a converged device reports `ok`/no changes on re-run.
+Reconciliation is `api_modify`'s, which compares desired vs on-device state.
+
+**Destructive options:** `purge: true` *removes* on-device entries absent from
+`data`, and `order: true` (which requires `purge`) rewrites entry order — both
+can delete live configuration. Review a `--check` / `--diff` run before applying
+`purge`/`order` to a production path.
+
+**Rollback:** this role has no built-in undo. Recover by re-applying a known-good
+`routeros_config` (the desired state *is* the source of truth) or restoring a
+device backup (`/system/backup`) or exported config (`/export`) taken beforehand.
+Keep `routeros_config` in version control so any prior state can be re-applied.

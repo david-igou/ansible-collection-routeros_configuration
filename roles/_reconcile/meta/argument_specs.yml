@@ -25,19 +25,34 @@ argument_specs:
       rcfg_content:
         type: str
         default: ignore
-        choices: [ignore, remove, remove_as_much_as_possible]
+        choices:
+          - ignore
+          - remove
+          - remove_as_much_as_possible
         description: How to treat entry fields not present in rcfg_data.
       routeros_api_hostname:
         type: str
+        default: "{{ inventory_hostname }}"
         description: API hostname/IP of the device.
       routeros_api_username:
         type: str
+        default: admin
+        description: API username.
       routeros_api_password:
         type: str
+        description:
+          - API password. Secret — supply via vault/group_vars. Intentionally
+            has no default so a missing value fails loudly rather than
+            attempting an empty-password login. The module marks it no_log.
       routeros_api_tls:
         type: bool
+        default: true
+        description: Use TLS (api-ssl). Prefer true in production.
       routeros_api_validate_certs:
         type: bool
+        default: true
+        description: Validate the device TLS certificate.
       routeros_api_port:
         type: raw
+        default: ""
         description: TCP port; empty lets the module choose from tls.

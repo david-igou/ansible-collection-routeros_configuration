@@ -11,6 +11,12 @@ argument_specs:
         default: {}
         description:
           - Desired state keyed by RouterOS slash path (e.g. C(/ip/pool)). Each
-            value is a dict with C(data) (list, required) and optional C(purge),
-            C(order) (bool), and C(content)
-            (ignore/remove/remove_as_much_as_possible).
+            value is a dict with these keys (argument_specs cannot validate the
+            nested dict-of-dicts; see the role README for the authoritative
+            contract and examples)
+          - "C(data) (list, required) — desired entries for the path."
+          - "C(purge) (bool, default false) — remove on-device entries not in C(data)."
+          - "C(order) (bool, default false) — enforce entry order; requires C(purge)."
+          - "C(content) (str, default C(ignore)) — one of
+            ignore/remove/remove_as_much_as_possible; how to treat fields absent
+            from a matched entry."

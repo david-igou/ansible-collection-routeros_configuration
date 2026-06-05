@@ -9,10 +9,11 @@
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
-      port: "{{ routeros_api_port }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read /ip/service
-      community.routeros.api_info: {path: ip service}
+      community.routeros.api_info:
+        path: ip service
       delegate_to: localhost
       connection: local
       register: svc

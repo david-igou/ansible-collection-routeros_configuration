@@ -3,7 +3,10 @@
 # In production prefer TLS (api-ssl, port 8729) with validate_certs: true.
 routeros_api_hostname: "{{ inventory_hostname }}"
 routeros_api_username: admin
-routeros_api_password: ""
+# Intentionally left undefined (no default): supply it via vault/group_vars.
+# A missing password then fails loudly instead of silently attempting an
+# empty-password login.
+# routeros_api_password: "{{ vault_routeros_api_password }}"
 routeros_api_tls: true
 routeros_api_validate_certs: true
 # Leave empty to let the module pick the port from `tls` (8728/8729).

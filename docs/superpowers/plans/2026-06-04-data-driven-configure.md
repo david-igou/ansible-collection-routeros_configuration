@@ -47,11 +47,16 @@ The canonical-order sort is the one piece of real logic; it is testable without 
   gather_facts: false
   vars:
     routeros_config:
-      /ip/dhcp-server/lease: {data: []}
-      /system/identity: {data: []}
-      /ip/pool: {data: []}
-      /ip/dhcp-server: {data: []}
-      /interface/bridge: {data: []}
+      /ip/dhcp-server/lease:
+        data: []
+      /system/identity:
+        data: []
+      /ip/pool:
+        data: []
+      /ip/dhcp-server:
+        data: []
+      /interface/bridge:
+        data: []
   tasks:
     - name: Compute the ordered paths
       ansible.builtin.include_role:
@@ -264,11 +269,18 @@ by one `routeros_config` dict.
         purge: true
         order: true
         data:
-          - { chain: input, action: accept, comment: est,
-              connection-state: "established,related" }
-          - { chain: input, action: accept, comment: mgmt,
-              protocol: tcp, dst-port: "22,8728" }
-          - { chain: input, action: drop, comment: drop-rest }
+          - chain: input
+            action: accept
+            comment: est
+            connection-state: "established,related"
+          - chain: input
+            action: accept
+            comment: mgmt
+            protocol: tcp
+            dst-port: "22,8728"
+          - chain: input
+            action: drop
+            comment: drop-rest
 
 ## Per-path options
 
@@ -426,7 +438,8 @@ scenario:
       port: "{{ routeros_api_port }}"
   tasks:
     - name: Read /ip/pool after converge
-      community.routeros.api_info: { path: ip pool }
+      community.routeros.api_info:
+        path: ip pool
       delegate_to: localhost
       connection: local
       register: pools
@@ -448,7 +461,8 @@ scenario:
                 ranges: "192.168.70.10-192.168.70.50"
 
     - name: Read /ip/pool after update+purge
-      community.routeros.api_info: { path: ip pool }
+      community.routeros.api_info:
+        path: ip pool
       delegate_to: localhost
       connection: local
       register: pools2
@@ -510,12 +524,14 @@ scenario:
       port: "{{ routeros_api_port }}"
   tasks:
     - name: Read /system/identity
-      community.routeros.api_info: { path: system identity }
+      community.routeros.api_info:
+        path: system identity
       delegate_to: localhost
       connection: local
       register: ident
     - name: Read /ip/dns
-      community.routeros.api_info: { path: ip dns }
+      community.routeros.api_info:
+        path: ip dns
       delegate_to: localhost
       connection: local
       register: dns
@@ -584,7 +600,8 @@ scenario:
       port: "{{ routeros_api_port }}"
   tasks:
     - name: Read /ip/firewall/filter
-      community.routeros.api_info: { path: ip firewall filter }
+      community.routeros.api_info:
+        path: ip firewall filter
       delegate_to: localhost
       connection: local
       register: fw
@@ -607,12 +624,22 @@ scenario:
             order: true
             content: remove_as_much_as_possible
             data:
-              - { chain: input, action: accept, connection-state: "established", comment: rule-a }
-              - { chain: input, action: accept, protocol: tcp, dst-port: "22,8728", comment: rule-b }
-              - { chain: input, action: drop, comment: rule-c }
+              - chain: input
+                action: accept
+                connection-state: "established"
+                comment: rule-a
+              - chain: input
+                action: accept
+                protocol: tcp
+                dst-port: "22,8728"
+                comment: rule-b
+              - chain: input
+                action: drop
+                comment: rule-c
 
     - name: Read /ip/firewall/filter after update
-      community.routeros.api_info: { path: ip firewall filter }
+      community.routeros.api_info:
+        path: ip firewall filter
       delegate_to: localhost
       connection: local
       register: fw2
@@ -668,7 +695,8 @@ scenario:
       port: "{{ routeros_api_port }}"
   tasks:
     - name: Read /ip/service
-      community.routeros.api_info: { path: ip service }
+      community.routeros.api_info:
+        path: ip service
       delegate_to: localhost
       connection: local
       register: svc
@@ -750,17 +778,20 @@ scenario:
       port: "{{ routeros_api_port }}"
   tasks:
     - name: Read bridge ports
-      community.routeros.api_info: { path: interface bridge port }
+      community.routeros.api_info:
+        path: interface bridge port
       delegate_to: localhost
       connection: local
       register: ports
     - name: Read dhcp-server lease
-      community.routeros.api_info: { path: ip dhcp-server lease }
+      community.routeros.api_info:
+        path: ip dhcp-server lease
       delegate_to: localhost
       connection: local
       register: leases
     - name: Read interface list member
-      community.routeros.api_info: { path: interface list member }
+      community.routeros.api_info:
+        path: interface list member
       delegate_to: localhost
       connection: local
       register: members
@@ -826,11 +857,13 @@ on CHR). Writes `/tmp/chr_paths.json`.
     all_paths: "{{ lookup('file', 'all_api_modify_paths.txt').splitlines() }}"
   tasks:
     - name: Probe each path
-      community.routeros.api_info: { path: "{{ item }}" }
+      community.routeros.api_info:
+        path: "{{ item }}"
       delegate_to: localhost
       connection: local
       loop: "{{ all_paths }}"
-      loop_control: { label: "{{ item }}" }
+      loop_control:
+        label: "{{ item }}"
       register: probe
       failed_when: false
     - name: Record present vs absent

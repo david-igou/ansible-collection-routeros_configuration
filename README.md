@@ -48,11 +48,18 @@ routeros_config:
     purge: true          # exact-state for this path
     order: true          # enforce rule order (requires purge)
     data:
-      - { chain: input, action: accept, comment: est,
-          connection-state: "established,related" }
-      - { chain: input, action: accept, comment: mgmt,
-          protocol: tcp, dst-port: "22,8728" }
-      - { chain: input, action: drop, comment: drop-rest }
+      - chain: input
+        action: accept
+        comment: est
+        connection-state: "established,related"
+      - chain: input
+        action: accept
+        comment: mgmt
+        protocol: tcp
+        dst-port: "22,8728"
+      - chain: input
+        action: drop
+        comment: drop-rest
 ```
 
 Each path value takes `data` (required), and optional `purge` (exact-state),

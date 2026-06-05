@@ -188,15 +188,22 @@ argument_specs:
       rcfg_content:
         type: str
         default: ignore
-        choices: [ignore, remove, remove_as_much_as_possible]
+        choices:
+          - ignore
+          - remove
+          - remove_as_much_as_possible
         description: How to treat entry fields not present in rcfg_data.
       routeros_api_hostname:
         type: str
         description: API hostname/IP of the device.
-      routeros_api_username: {type: str}
-      routeros_api_password: {type: str}
-      routeros_api_tls: {type: bool}
-      routeros_api_validate_certs: {type: bool}
+      routeros_api_username:
+        type: str
+      routeros_api_password:
+        type: str
+      routeros_api_tls:
+        type: bool
+      routeros_api_validate_certs:
+        type: bool
       routeros_api_port:
         type: raw
         description: TCP port; empty lets the module choose from tls.
@@ -632,7 +639,8 @@ git commit -m "feat(system_identity): declarative /system/identity role + molecu
 ```yaml
 ---
 # List of /ip/address entries, e.g.:
-#   - {address: "192.168.88.1/24", interface: "ether1"}
+#   - address: "192.168.88.1/24"
+#     interface: "ether1"
 routeros_ip_address: []
 # Set true to delete device addresses not present above (exact-state).
 routeros_ip_address_purge: false
@@ -697,8 +705,10 @@ argument_specs:
 Declaratively manage `/ip/address` over the RouterOS API.
 
     routeros_ip_address:
-      - {address: "192.168.88.1/24", interface: "ether1"}
-      - {address: "10.0.0.1/24", interface: "ether2"}
+      - address: "192.168.88.1/24"
+        interface: "ether1"
+      - address: "10.0.0.1/24"
+        interface: "ether2"
     routeros_ip_address_purge: true   # optional: exact-state
 
 Requires the shared `routeros_api_*` connection vars (see the `_reconcile` role).
@@ -747,8 +757,10 @@ Apply two addresses on ether3/ether4 (ether1=SSH, ether2=API are in use by the h
   gather_facts: false
   vars:
     routeros_ip_address:
-      - {address: "192.168.50.1/24", interface: "ether3"}
-      - {address: "192.168.51.1/24", interface: "ether4"}
+      - address: "192.168.50.1/24"
+        interface: "ether3"
+      - address: "192.168.51.1/24"
+        interface: "ether4"
   roles:
     - role: david_igou.routeros_configuration.ip_address
 ```
@@ -806,7 +818,8 @@ Verifies additive apply, then exercises purge by re-running the role with a redu
         name: david_igou.routeros_configuration.ip_address
       vars:
         routeros_ip_address:
-          - {address: "192.168.50.1/24", interface: "ether3"}
+          - address: "192.168.50.1/24"
+            interface: "ether3"
         routeros_ip_address_purge: true
 
     - name: Read /ip/address after purge
@@ -932,9 +945,15 @@ Declaratively manage `/ip/firewall/filter` over the RouterOS API. Rules are
 ordered; enable `_order` (which requires `_purge`) for exact ordered state.
 
     routeros_ip_firewall_filter:
-      - {chain: input, action: accept, connection-state: "established,related"}
-      - {chain: input, action: accept, protocol: icmp}
-      - {chain: input, action: drop, comment: "drop the rest"}
+      - chain: input
+        action: accept
+        connection-state: "established,related"
+      - chain: input
+        action: accept
+        protocol: icmp
+      - chain: input
+        action: drop
+        comment: "drop the rest"
     routeros_ip_firewall_filter_purge: true
     routeros_ip_firewall_filter_order: true
 
@@ -983,9 +1002,17 @@ verifier:
   gather_facts: false
   vars:
     routeros_ip_firewall_filter:
-      - {chain: input, action: accept, connection-state: "established,related", comment: "rule-a"}
-      - {chain: input, action: accept, protocol: icmp, comment: "rule-b"}
-      - {chain: input, action: drop, comment: "rule-c"}
+      - chain: input
+        action: accept
+        connection-state: "established,related"
+        comment: "rule-a"
+      - chain: input
+        action: accept
+        protocol: icmp
+        comment: "rule-b"
+      - chain: input
+        action: drop
+        comment: "rule-c"
     routeros_ip_firewall_filter_purge: true
     routeros_ip_firewall_filter_order: true
   roles:
