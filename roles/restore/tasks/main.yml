@@ -33,6 +33,16 @@
         delay: 15
       when: routeros_restore_backup_name | length > 0
 
+    - name: Wait for the API to actually answer (port opens before login is ready)
+      community.routeros.api:
+        path: system identity
+      register: _restore_api_ready
+      until: _restore_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
+      when: routeros_restore_backup_name | length > 0
+
     - name: Import a configuration script
       community.routeros.api:
         path: ""
