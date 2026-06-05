@@ -1,165 +1,145 @@
-# Tier 2 imperative roles — design
+# `backup` role — design
 
 Date: 2026-06-05
 
+> Scope was narrowed from four Tier 2 roles to **`backup` only**, and the
+> approach changed to mirror the official RouterOS backup/restore procedure
+> while staying idempotent. Earlier drafts (four roles; an `api_info` structured
+> snapshot) are superseded by this document.
+
 ## Problem
 
-The `configure`/`_reconcile` roles can declaratively reconcile any path
-`community.routeros.api_modify` understands, but `api_modify` only expresses
-*desired state*. Several operational tasks are imperative actions it cannot
-perform: creating certificates (api_modify treats `certificate` as read-only),
-taking backups, upgrading packages, and running arbitrary one-off commands.
-This adds four standalone **imperative** roles to cover those gaps.
+`configure`/`_reconcile` reconcile declarative *desired state*; they don't
+capture a device's current configuration for safekeeping. We want a role that
+takes a backup, **follows the official RouterOS backup/restore docs**, and is
+**idempotent** (safe to run every play; only changes when the config changed).
 
-## Scope (v1)
+## What the official docs say
 
-| Role | Does | Idempotent |
+From MikroTik's
+[Backup](https://help.mikrotik.com/docs/spaces/ROS/pages/40992852/Backup) and
+[Configuration Management](https://help.mikrotik.com/docs/spaces/ROS/pages/328155/Configuration+Management):
+
+- **Binary backup** — `/system backup save name=<> password=<>` writes a file in
+  `/file`; restore with `/system backup load name=<> password=<>` (reboots).
+  Full fidelity (user passwords, MAC addresses), but same-device / same-version
+  only, and sensitive — encrypt it.
+- **Config export** — `/export` produces portable plain-text `.rsc`; restore via
+  `/import`. Officially **omits** system user passwords, installed certificates,
+  SSH keys, Dude, and the User-manager database.
+
+Verified independently against `community.routeros` v3.20.0 field metadata: every
+service secret (WireGuard private-key, IPsec PSK, PPP/PPPoE secret, SNMP
+community, WiFi passphrase) is readable; the only write-only secret field is
+`/user password`. So an export "with secrets" (`show-sensitive`) carries the
+service secrets and, like every export, cannot carry user passwords.
+
+## Approach
+
+Two artifacts, mirroring the two official mechanisms. The **export** is the
+idempotent primary; the **binary backup** is opt-in full-fidelity.
+
+### Primary (idempotent): config export to the controller
+
+- `community.routeros.command` (network_cli) runs `/export` (with
+  `show-sensitive` when `routeros_backup_show_sensitive`), capturing stdout — no
+  on-device file, no transfer.
+- Strip the volatile leading header comment block (the `# <date> by RouterOS …`
+  lines) so output is content-stable.
+- Write to `{{ routeros_backup_dir }}/{{ inventory_hostname }}.rsc` with
+  `ansible.builtin.copy` (`delegate_to: localhost`). `copy` only reports
+  *changed* when content differs → **idempotent**.
+- Restore is `/import file=<>` (documented in the README, not performed here).
+
+### Optional (full fidelity, opt-in): binary backup
+
+- `routeros_backup_binary: true` → `community.routeros.command` runs
+  `/system backup save name=<name> password=<password>` (encrypted when a
+  password is given). Stays on the device per the official workflow.
+- Not idempotent (a binary backup is a point-in-time artifact); the README
+  documents `/system backup load` restore and the encrypt/store-safely warning.
+- Off-box fetch of the binary file is **out of scope** (needs SFTP/SCP; official
+  docs treat the binary as on-device + manual copy).
+
+## Connection
+
+network_cli, like the existing `chr` scenario: `ansible_connection=network_cli`,
+`ansible_network_os=community.routeros.routeros`, libssh transport (paramiko
+fails RouterOS SSH negotiation — see `test-requirements.txt`). `/export` is
+console-only, so the binary API is not an option here. The collection already
+ships this path (`chr` scenario, `ansible.netcommon` dependency).
+
+## Variables
+
+| Var | Default | Meaning |
 | --- | --- | --- |
-| `command` | Run a list of arbitrary RouterOS API commands (escape hatch) | No |
-| `backup` | Create on-device binary backup + optional `/export`; verify it exists | No |
-| `certificate` | Create + self-sign certs, idempotent by name | Yes |
-| `upgrade` | Set update channel + check for updates; gated install/reboot | Yes (safe path) |
+| `routeros_backup_dir` | `./routeros-backups` | controller dir for `.rsc` files |
+| `routeros_backup_show_sensitive` | `true` | `/export show-sensitive` (include service secrets) |
+| `routeros_backup_export_options` | `""` | extra `/export` args (e.g. a menu path, `terse`) |
+| `routeros_backup_binary` | `false` | also `/system backup save` on the device |
+| `routeros_backup_name` | `ansible` | binary backup file name |
+| `routeros_backup_password` | `""` (omit) | binary backup encryption password |
 
-Explicitly **deferred** (documented as follow-ups, not built here):
-- `backup`: fetching the backup/export file off-box (needs SFTP/SCP, not the API).
-- `certificate`: importing existing PEM cert/key files, and SCEP enrollment.
-- `upgrade`: the install+reboot path exists but is gated off and not exercised
-  in molecule.
+No `routeros_api_*` block — this role is network_cli, configured via the
+inventory's connection vars, not the API contract.
 
-## Shared conventions
+## Role files
 
-All four roles are imperative and use `community.routeros.api` over the binary
-API, reusing the existing `routeros_api_*` connection contract (the same block
-`_reconcile` defines: hostname/username/password/tls/validate_certs/port). Each
-role is self-contained and carries that connection block in its
-`defaults/main.yml`.
+`roles/backup/`: `defaults/main.yml`, `meta/main.yml`,
+`meta/argument_specs.yml`, `tasks/main.yml`, `README.md` (usage + an
+"Idempotency & restore" section quoting the official `/import` and
+`/system backup load` procedures and the export-omits caveats).
 
-Connection wiring is DRY via a single `block:` per role:
+`tasks/main.yml` outline:
+1. `ansible.builtin.file` (delegate localhost) — ensure `routeros_backup_dir`.
+2. `community.routeros.command` — `/export {{ show-sensitive }} {{ options }}`,
+   register stdout, `changed_when: false` (reading config is not a change).
+3. Strip the header comment block from the captured lines.
+4. `ansible.builtin.copy` (delegate localhost) — write `<host>.rsc` from the
+   stripped content; this task carries the real idempotency.
+5. When `routeros_backup_binary`: `community.routeros.command` —
+   `/system backup save name=<> [password=<>]`.
 
-```yaml
-- name: <role> over the RouterOS API
-  delegate_to: localhost
-  connection: local
-  module_defaults:
-    community.routeros.api:
-      hostname: "{{ routeros_api_hostname }}"
-      username: "{{ routeros_api_username }}"
-      password: "{{ routeros_api_password }}"
-      tls: "{{ routeros_api_tls | bool }}"
-      validate_certs: "{{ routeros_api_validate_certs | bool }}"
-      port: "{{ routeros_api_port | default(omit, true) }}"
-  block:
-    - ...  # role tasks; connection args inherited
-```
+## Molecule (`extensions/molecule/backup/`, network_cli)
 
-Each role ships: `defaults/main.yml`, `meta/main.yml`, `meta/argument_specs.yml`,
-`tasks/main.yml`, and `README.md` with an "Idempotency & rollback" section
-(matching the repo convention from `configure`/`_reconcile`).
+Modeled on the `chr` scenario (its own CHR VM, libssh, opts out of
+`shared_state`), because the role needs SSH/network_cli, not the API hostfwd the
+shared scenarios use.
 
-## Role designs
+- `converge.yml`: first set a recognizable secret (a WireGuard interface with a
+  known private-key, or an IPsec identity PSK) via the API, then run the
+  `backup` role with `routeros_backup_dir` pointed at the scenario's ephemeral
+  dir and `routeros_backup_binary: true`.
+- `verify.yml`: assert (a) the `.rsc` exists and contains the WireGuard
+  interface/secret (proves "export with secrets" on a real CHR), (b) it contains
+  no `set password=` for `/user` (documents the known gap), and (c) the binary
+  `<name>.backup` file is present in `/file` via `api_info`/command.
+- Idempotence: the scenario keeps the default `converge → idempotence → verify`
+  sequence. Only the controller `copy` reports *changed* (and only when the
+  config changed); both `command` tasks are `changed_when: false` — reading the
+  export is not a change, and a backup-save is treated as a non-reporting action
+  (the standard backup-role idiom). So a second run of unchanged config is green
+  even with `routeros_backup_binary: true`. The README notes the binary file is
+  rewritten each run (a fresh point-in-time artifact) though the task reports
+  `ok`.
 
-### 1. `command` (API escape hatch) — non-idempotent
-
-Runs over the **API** (not the `community.routeros.command` CLI module); the
-README states this prominently to avoid confusion.
-
-- Input `routeros_command` (default `[]`): list of dicts, each with `path`
-  (required) and exactly one action: `cmd` | `add` | `remove` | `update` |
-  `query`. Passed straight through to `community.routeros.api`.
-- `query` items are read-only (`changed_when: false`); action verbs report
-  changed.
-- argument_specs: `routeros_command` is a list/elements=dict with suboptions
-  `path` (required) and the optional action keys.
-
-Molecule: converge a `query` (e.g. `system resource`) and a benign mutating
-round-trip; verify the query returned data and the mutation took effect.
-test_sequence drops `idempotence`.
-
-### 2. `backup` — non-idempotent
-
-- Vars: `routeros_backup_name` (default `ansible`), `routeros_backup_password`
-  (optional; encrypts the binary backup), `routeros_backup_export` (default
-  `true`), `routeros_export_options` (default `""`, e.g. `hide-sensitive`).
-- Tasks:
-  1. `community.routeros.api` path `system backup`, `cmd: save name=<name>`
-     (+ `password=...` when set).
-  2. When `routeros_backup_export`: run `/export file=<name> <options>`. Export
-     is a root-level command; whether the `api` module can invoke it (path `""`
-     + `cmd: export ...`) is validated during implementation. If it cannot, v1
-     ships binary-backup-only with a clear note, and export becomes a follow-up.
-  3. Verify: `api_info` (or `api` query) on path `file`; assert `<name>.backup`
-     is present.
-- Not idempotent (a backup is point-in-time). test_sequence drops `idempotence`.
-
-Molecule: converge with a fixed name; verify the `.backup` file exists in `file`.
-
-### 3. `certificate` — idempotent
-
-- Var `routeros_certificates` (default `[]`): list of dicts with `name`
-  (required), `common_name` (required), and optional `key_size` (default 2048),
-  `days_valid` (default 365), `key_usage`, `trusted` (default `false`), `ca`
-  (name of a signing cert; omitted → self-signed).
-- Per cert (idempotent):
-  1. Query `certificate` by name.
-  2. If absent: `add name=<> common-name=<> key-size=<> days-valid=<>` (creates
-     the request/template).
-  3. If present but not yet signed: `cmd: sign .id=<id> [ca=<ca>] [name=<>]`.
-     Guarded on signed-state so re-runs are no-ops.
-- Verify: `api_info` on `certificate`; assert each cert exists and is signed
-  (e.g. has a fingerprint / `private-key` present).
-- Idempotent: keeps the default `[dependency, converge, idempotence, verify]`
-  sequence.
-
-Molecule: create a self-signed CA plus a host cert (`ca:` referencing the CA);
-verify both exist and are signed; the `idempotence` step proves no-op re-runs.
-
-### 4. `upgrade` — idempotent safe path
-
-- Vars: `routeros_update_channel` (default `stable`), `routeros_upgrade_install`
-  (default `false`), `routeros_upgrade_reboot_timeout` (default 300),
-  `routeros_routerboard_firmware` (default `false`).
-- Tasks:
-  1. Query current channel on `system package update`; set it only if different
-     (idempotent).
-  2. `cmd: check-for-updates` (`changed_when: false`).
-  3. When `routeros_upgrade_install` **and** an update is available: `cmd:
-     install` (reboots the device), then wait for the API port to drop and
-     return within `routeros_upgrade_reboot_timeout`. When
-     `routeros_routerboard_firmware`: also upgrade RouterBOARD firmware. This
-     whole step is gated off by default.
-- Idempotent on the safe path (channel set is guarded, check is read-only).
-
-Molecule: set `channel: stable` + check-for-updates with install gated off;
-verify the channel is set and a status was returned; `idempotence` passes.
-
-## Molecule integration
-
-- Four new scenarios: `extensions/molecule/{command,backup,certificate,upgrade}/`
-  each with `molecule.yml`, `converge.yml`, `verify.yml`.
-- They inherit create/prepare/destroy + the API inventory from the shared
-  `extensions/molecule/config.yml`, running against the single shared CHR. Only
-  `backup` and `command` override `test_sequence` to
-  `[dependency, converge, verify]` (drop `idempotence`); `certificate` and
-  `upgrade` use the shared default.
-- Wire all four into the CI `molecule-qemu` `shared` job list
-  (`.github/workflows/tests.yml`) and the `Makefile` shared pass, appended after
-  `configure_full`. They mutate independent device state (certs, backup files,
-  update channel) so ordering after the configure scenarios is safe.
+Wire the scenario into the CI `molecule-qemu` matrix (its own leg, like `chr`,
+since it needs its own network_cli VM) and the `Makefile`.
 
 ## Error handling
 
-- argument_specs enforce required inputs (cert `name`+`common_name`, each
-  `command` item's `path`); bad input fails before hitting the device.
-- API errors fail the task (module behaviour).
-- `upgrade` install (gated) wraps reboot + reconnect with
-  `routeros_upgrade_reboot_timeout`; a failure to reconnect fails the run.
+- argument_specs validate types (`routeros_backup_dir` str, booleans typed,
+  `routeros_backup_password` str with `no_log`).
+- `command` failures fail the task.
+- Header-strip is defensive: if the expected header is absent, write the full
+  output rather than dropping lines.
 
 ## Out of scope
 
-Off-box file transfer, PEM/SCEP certificate import, and exercising the
-upgrade-install/reboot path in CI — all noted as follow-ups in the respective
-role READMEs and the enhancement backlog.
+Off-box transfer of the binary backup, `/import`-based restore automation, and
+any non-backup Tier 2 role (command/certificate/upgrade) — tracked in the
+enhancement backlog.
 
 ## Changelog
 
-One `minor_changes` fragment announcing the four new roles.
+One `minor_changes` fragment announcing the `backup` role.
