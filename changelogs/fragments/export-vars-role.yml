@@ -1,0 +1,14 @@
+---
+minor_changes:
+  - >-
+    New C(export_vars) role: the reverse of C(configure). Reads a running device
+    over the API (C(community.routeros.api_info)) and writes an equivalent
+    C(routeros_config) vars file to the controller (one per host), so an existing
+    device can be brought under declarative management (capture, version-control,
+    re-apply). Captures every configurable path by default (omitting empty ones),
+    overridable via C(routeros_export_vars_paths); includes secrets by default
+    (encrypt with vault) with a C(routeros_export_vars_redact) toggle.
+  - >-
+    New filter C(david_igou.routeros_configuration.to_routeros_config): shapes
+    looped C(api_info) results into a C(routeros_config) dict (drops C(.id), omits
+    empty paths, optional redaction). Used by the C(export_vars) role.

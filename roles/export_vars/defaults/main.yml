@@ -1,0 +1,23 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# Intentionally left undefined (no default): supply it via vault/group_vars.
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# Controller directory for the captured vars files (one per host:
+# <inventory_hostname>.yml, containing a top-level routeros_config key).
+routeros_export_vars_dir: ./routeros-vars
+
+# Replace sensitive field values (keys, PSKs, passwords) with REDACTED. Off by
+# default so the captured config round-trips — the output then contains secrets,
+# so ansible-vault encrypt it.
+routeros_export_vars_redact: false
+
+# routeros_export_vars_paths is intentionally NOT defaulted here: when it is
+# undefined, tasks/main.yml loads the configure role's canonical rcfg_path_order
+# (every configurable path). Set it to a subset (slash paths) to capture only
+# certain paths — much faster than querying all 508.

@@ -49,7 +49,7 @@ ifeq ($(SCENARIO),)
 	molecule test -s default -s configure_lists -s configure_singletons \
 		-s configure_ordered -s configure_modify_only \
 		-s configure_dependency_chain -s configure_full \
-		-s certificate -s upgrade -s backup
+		-s certificate -s upgrade -s export_vars -s backup
 	molecule test -s chr
 else
 	molecule test -s $(SCENARIO)

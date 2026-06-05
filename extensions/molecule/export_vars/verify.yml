@@ -1,0 +1,25 @@
+---
+- name: Verify — the captured vars file is a valid routeros_config
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_export_vars_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/captured"
+  tasks:
+    - name: Load the captured vars file from the controller
+      ansible.builtin.include_vars:
+        file: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
+        name: captured
+
+    - name: Assert routeros_config captured /ip/address with the known entry and no .id
+      ansible.builtin.assert:
+        that:
+          - "'routeros_config' in captured"
+          - "'/ip/address' in captured.routeros_config"
+          - >-
+            captured.routeros_config['/ip/address'].data
+            | selectattr('address', 'equalto', '192.168.99.1/24') | list | length == 1
+          - >-
+            captured.routeros_config['/ip/address'].data
+            | map('list') | flatten | select('equalto', '.id') | list | length == 0
+        success_msg: "captured /ip/address contains 192.168.99.1/24 and no .id"
+        fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"
