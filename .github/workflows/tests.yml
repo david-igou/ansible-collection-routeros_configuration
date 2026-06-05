@@ -7,7 +7,7 @@ concurrency:
 
 on: # yamllint disable-line rule:truthy
   pull_request:
-    branches: [master, main]
+    branches: [main]
   workflow_dispatch:
   # TO-DO: Below is an example cron scheduler. Uncomment and tweak it as per your requirement
   # schedule:
@@ -121,13 +121,16 @@ jobs:
       - molecule-qemu
     runs-on: ubuntu-latest
     steps:
+      # Fail if ANY required job failed or was cancelled. 'skipped' is allowed
+      # (changelog is skipped on workflow_dispatch). Every job in `needs` above
+      # must appear here, or its failure would not gate the merge.
       - run: >-
-          python -c "assert 'failure' not in
-          set([
+          python -c "results = {
           '${{ needs.changelog.result }}',
+          '${{ needs.build-import.result }}',
           '${{ needs.sanity.result }}',
           '${{ needs.unit-galaxy.result }}',
           '${{ needs.ansible-lint.result }}',
           '${{ needs.unit-source.result }}',
-          '${{ needs.molecule-qemu.result }}'
-          ])"
+          '${{ needs.molecule-qemu.result }}'};
+          assert not ({'failure', 'cancelled'} & results), results"

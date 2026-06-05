@@ -1,0 +1,12 @@
+---
+minor_changes:
+  - >-
+    The ``configure`` role's ``rcfg_path_order`` now covers every configurable
+    path in ``community.routeros`` ``api_modify`` (508 paths), arranged in a
+    dependency-correct order — referenced objects before referencers and parents
+    before children (e.g. IPsec proposal/profile before peer/policy, pools before
+    DHCP servers, bridge before ports/VLANs, OSPF/BGP instances before their
+    areas/peers, wireless/wifi/CAPsMAN profile chains, containers, IPv6
+    addressing). Previously only ~50 interface/IP paths were ordered, so
+    dependency-sensitive paths outside that set relied on the user's declaration
+    order.
