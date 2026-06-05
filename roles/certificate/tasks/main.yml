@@ -2,14 +2,19 @@
 # tasks file for david_igou.routeros_configuration.certificate
 #
 # api_modify treats `certificate` as read-only, so create + sign go through the
-# `api` module. Idempotent: read current state first, then only add the requests
-# that don't exist and sign the certs that aren't signed yet (empty fingerprint).
+# `api` module. Create/sign are idempotent: read current state first, then only
+# add the requests that don't exist and sign the certs that aren't signed yet
+# (empty fingerprint). Import is guarded to skip when the target cert already
+# exists, so re-runs don't create duplicate entries. The api `cmd` action always
+# reports changed=False, so the mutating tasks set changed_when explicitly. The
+# export→import file dance is imperative (import consumes/deletes its source
+# file), so the molecule scenario omits the idempotence step.
 
 - name: Manage certificates over the RouterOS API
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -18,18 +23,19 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Read existing certificates
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
       register: _cert_existing
       changed_when: false
 
     - name: Create certificate requests that do not exist yet
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
-        # common-name may contain spaces, so quote it; the api module's splitter
-        # (split_routeros_command) is quoting-aware.
+        # Free-form values (name, common-name, …) may contain spaces, so quote
+        # them; the api module's splitter (split_routeros_command) is
+        # quoting-aware and quote_argument_value leaves simple values untouched.
         add: >-
-          name={{ item.name }}
+          name={{ item.name | community.routeros.quote_argument_value }}
           common-name={{ item.common_name | community.routeros.quote_argument_value }}
           key-size={{ item.key_size | default(2048) }}
           days-valid={{ item.days_valid | default(365) }}
@@ -40,20 +46,69 @@
       when: item.name not in (_cert_existing.msg | map(attribute='name') | list)
 
     - name: Re-read certificate state after creation
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
       register: _cert_state
       changed_when: false
 
     - name: Sign certificates that are not yet signed
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         cmd: >-
           sign .id={{ (_cert_state.msg | selectattr('name', 'equalto', item.name) | first)['.id'] }}{{
-          (' ca=' ~ item.ca) if item.ca is defined else '' }} name={{ item.name }}
+          (' ca=' ~ (item.ca | community.routeros.quote_argument_value)) if item.ca is defined else '' }}
+          name={{ item.name | community.routeros.quote_argument_value }}
+      changed_when: true
       loop: "{{ routeros_certificates }}"
       loop_control:
         label: "{{ item.name }}"
       when: >-
         not ((_cert_state.msg | selectattr('name', 'equalto', item.name)
               | first)['fingerprint'] | default(''))
+
+    - name: Export certificates to files
+      community.routeros.api:  # noqa: args[module]
+        path: certificate
+        cmd: >-
+          export-certificate
+          .id={{ (_cert_state.msg | selectattr('name', 'equalto', item.name) | first)['.id'] }}
+          type={{ item.type | default('pem') }}
+          file-name={{ (item.file_name | default(item.name)) | community.routeros.quote_argument_value }}{{
+          (' export-passphrase=' ~ (item.export_passphrase | community.routeros.quote_argument_value)) if item.export_passphrase is defined else '' }}
+      changed_when: true
+      loop: "{{ routeros_certificates_export }}"
+      loop_control:
+        label: "{{ item.name }}"
+      no_log: "{{ item.export_passphrase is defined }}"
+      when: _cert_state.msg | selectattr('name', 'equalto', item.name) | list | length > 0
+
+    - name: Import certificates from files
+      community.routeros.api:  # noqa: args[module]
+        path: certificate
+        cmd: >-
+          import file-name={{ item.file_name | community.routeros.quote_argument_value }}{{
+          (' name=' ~ (item.name | community.routeros.quote_argument_value)) if item.name is defined else '' }}
+          passphrase={{ item.passphrase | default('') | community.routeros.quote_argument_value }}
+      changed_when: true
+      loop: "{{ routeros_certificates_import }}"
+      loop_control:
+        label: "{{ item.file_name }}"
+      no_log: "{{ item.passphrase is defined }}"
+      # Skip when a cert with the target name already exists, so re-runs don't
+      # create duplicate entries (RouterOS would suffix the name). When no name
+      # is given the resulting name can't be predicted, so always import.
+      when: >-
+        item.name is not defined
+        or item.name not in (_cert_state.msg | map(attribute='name') | list)
+
+    # ACME (Let's Encrypt) — gated/untested on CHR (needs a public domain + DNS).
+    # add-acme args can carry a DNS-provider API token, so hide the whole task.
+    - name: Request ACME certificates
+      community.routeros.api:  # noqa: args[module]
+        path: certificate
+        cmd: "add-acme {{ item.args }}"
+      changed_when: true
+      no_log: true
+      loop: "{{ routeros_acme }}"
+      loop_control:
+        label: "{{ item.args | default('') }}"

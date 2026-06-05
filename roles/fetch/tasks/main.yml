@@ -1,0 +1,45 @@
+---
+# tasks file for david_igou.routeros_configuration.fetch
+# Transfer files to/from the device via /tool fetch and remove files via /file.
+- name: Fetch and remove files over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Fetch files
+      community.routeros.api:  # noqa: args[module]
+        path: tool
+        cmd: >-
+          fetch url={{ item['url'] | community.routeros.quote_argument_value }}
+          dst-path={{ item['dst_path'] | community.routeros.quote_argument_value }}
+          mode={{ item['mode'] | default('http') }}{{
+          (' ' ~ item['extra']) if 'extra' in item else '' }}
+      loop: "{{ routeros_fetch }}"
+      loop_control:
+        label: "{{ item['url'] }} -> {{ item['dst_path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
+
+    - name: Read files to resolve names for removal
+      community.routeros.api:  # noqa: args[module]
+        path: file
+      register: _fetch_files
+      changed_when: false
+      when: routeros_fetch_remove | length > 0
+
+    - name: Remove files
+      community.routeros.api:  # noqa: args[module]
+        path: file
+        remove: "{{ (_fetch_files.msg | selectattr('name', 'equalto', item) | first)['.id'] }}"
+      loop: "{{ routeros_fetch_remove }}"
+      loop_control:
+        label: "{{ item }}"
+      when:
+        - routeros_fetch_remove | length > 0
+        - _fetch_files.msg | selectattr('name', 'equalto', item) | list | length > 0

@@ -1,0 +1,8 @@
+---
+minor_changes:
+  - >-
+    New C(fetch) role — transfer files to/from the device via C(/tool fetch) and
+    remove files via C(/file remove) (stages firmware/scripts/certs, pulls backups).
+  - >-
+    New C(user_password) role — set/rotate C(/user) account passwords (the
+    write-only field C(configure) cannot manage).

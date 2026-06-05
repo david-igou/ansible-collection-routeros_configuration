@@ -1,0 +1,15 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# Reboot the device and wait for the API to return.
+routeros_reboot: true
+# Shut down the device instead (gated; no reconnect wait — the device powers off).
+routeros_shutdown: false
+# Seconds to wait for the API to return after the reboot.
+routeros_reboot_timeout: 300

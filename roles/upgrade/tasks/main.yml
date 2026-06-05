@@ -9,7 +9,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -18,19 +18,20 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Read current update settings
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
       register: _upd
       changed_when: false
 
     - name: Set the update channel
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: "set channel={{ routeros_update_channel }}"
+      changed_when: true
       when: ((_upd.msg | first).channel | default('')) != routeros_update_channel
 
     - name: Check for updates
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: check-for-updates
       changed_when: false
@@ -40,13 +41,13 @@
       failed_when: false
 
     - name: Read update status after the check
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
       register: _upd_status
       changed_when: false
 
     - name: Install the available update (REBOOTS the device)
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: install
       changed_when: true
@@ -57,9 +58,79 @@
     - name: Wait for the API to return after the reboot
       ansible.builtin.wait_for:
         host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default(8728, true) }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
         timeout: "{{ routeros_upgrade_reboot_timeout }}"
         delay: 20
       when:
         - routeros_upgrade_install | bool
         - ((_upd_status.msg | first).status | default('')) is search('New version')
+
+    - name: Wait for the API to actually answer after the install reboot
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _upd_api_ready
+      until: _upd_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
+      when:
+        - routeros_upgrade_install | bool
+        - ((_upd_status.msg | first).status | default('')) is search('New version')
+
+    # RouterBOARD firmware. Gated and not exercised on a CHR (which has no
+    # RouterBOARD). Only flashes + reboots when the installed firmware differs
+    # from the firmware bundled with the running RouterOS — otherwise an enabled
+    # flag would reboot the device on every run.
+    - name: Read RouterBOARD firmware state
+      community.routeros.api:  # noqa: args[module]
+        path: system routerboard
+      register: _rb
+      changed_when: false
+      when: routeros_routerboard_upgrade | bool
+
+    - name: Determine whether the RouterBOARD firmware is out of date
+      ansible.builtin.set_fact:
+        _rb_needs_upgrade: >-
+          {{ ((_rb.msg | first)['current-firmware'] | default(''))
+             != ((_rb.msg | first)['upgrade-firmware'] | default('')) }}
+      when: routeros_routerboard_upgrade | bool
+
+    - name: Upgrade RouterBOARD firmware
+      community.routeros.api:  # noqa: args[module]
+        path: system routerboard
+        cmd: upgrade
+      changed_when: true
+      when:
+        - routeros_routerboard_upgrade | bool
+        - _rb_needs_upgrade | default(false) | bool
+
+    - name: Reboot to apply the RouterBOARD firmware and wait for the API
+      community.routeros.api:  # noqa: args[module]
+        path: system
+        cmd: reboot
+      changed_when: true
+      when:
+        - routeros_routerboard_upgrade | bool
+        - _rb_needs_upgrade | default(false) | bool
+
+    - name: Wait for the API to return after the firmware reboot
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
+        timeout: "{{ routeros_upgrade_reboot_timeout }}"
+        delay: 20
+      when:
+        - routeros_routerboard_upgrade | bool
+        - _rb_needs_upgrade | default(false) | bool
+
+    - name: Wait for the API to actually answer after the firmware reboot
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _rb_api_ready
+      until: _rb_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
+      when:
+        - routeros_routerboard_upgrade | bool
+        - _rb_needs_upgrade | default(false) | bool

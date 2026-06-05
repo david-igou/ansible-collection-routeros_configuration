@@ -1,0 +1,43 @@
+---
+# tasks file for david_igou.routeros_configuration.reset
+# DESTRUCTIVE: /system reset-configuration wipes the config and reboots. Gated
+# behind routeros_reset_confirm — does nothing unless explicitly confirmed.
+- name: Reset configuration over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Reset the configuration (DESTRUCTIVE — wipes config and reboots)
+      community.routeros.api:  # noqa: args[module]
+        path: system
+        cmd: >-
+          reset-configuration{{ ' keep-users=yes' if routeros_reset_keep_users | bool else '' }}{{
+          ' no-defaults=yes' if routeros_reset_no_defaults | bool else '' }}{{
+          (' run-after-reset=' ~ (routeros_reset_run_after_reset | community.routeros.quote_argument_value)) if routeros_reset_run_after_reset else '' }}
+      changed_when: true
+      when: routeros_reset_confirm | bool
+
+    - name: Wait for the API to return after the reset reboot
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
+        timeout: "{{ routeros_reset_reboot_timeout }}"
+        delay: 20
+      when: routeros_reset_confirm | bool
+
+    - name: Wait for the API to actually answer (port opens before login is ready)
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _reset_api_ready
+      until: _reset_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
+      when: routeros_reset_confirm | bool

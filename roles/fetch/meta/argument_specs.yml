@@ -1,0 +1,66 @@
+---
+argument_specs:
+  main:
+    short_description: Transfer files to/from RouterOS via /tool fetch.
+    description:
+      - Downloads/uploads files with C(/tool fetch) and removes files with C(/file remove).
+    options:
+      routeros_fetch:
+        type: list
+        elements: dict
+        default: []
+        description: Files to fetch.
+        options:
+          url:
+            type: str
+            required: true
+            description: Source URL.
+          dst_path:
+            type: str
+            required: true
+            description: Destination file name on the device.
+          mode:
+            type: str
+            default: http
+            choices:
+              - http
+              - https
+              - ftp
+              - tftp
+              - sftp
+            description: Transfer mode (http/https/ftp/tftp/sftp).
+          extra:
+            type: str
+            description: Extra fetch arguments appended verbatim.
+          no_log:
+            type: bool
+            default: false
+            description: Hide this fetch from logs (set when the URL/extra carries a secret).
+      routeros_fetch_remove:
+        type: list
+        elements: str
+        default: []
+        description: File names to delete from the device.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

@@ -1,0 +1,37 @@
+---
+minor_changes:
+  - >-
+    The operational roles now quote user-supplied values
+    (C(community.routeros.quote_argument_value)) before interpolating them into
+    RouterOS API command strings — C(user_password) passwords, C(restore) backup
+    name/password, C(certificate) names/CA/passphrases, C(fetch) url/dst-path,
+    C(ping) address/interface, and C(reset) run-after-reset — so values
+    containing spaces or special characters no longer break the command.
+  - >-
+    The C(fetch) role's C(mode) option is now constrained to
+    C(http)/C(https)/C(ftp)/C(tftp)/C(sftp) via argument-spec C(choices), so an
+    invalid mode fails validation instead of at runtime.
+  - >-
+    The post-reboot C(wait_for) in C(reboot), C(restore), C(reset), and
+    C(upgrade) now derives the API port from C(routeros_api_tls) (8729 when TLS,
+    8728 otherwise) instead of hardcoding 8728, so the wait works with the
+    default TLS connection.
+  - >-
+    The C(upgrade) role's RouterBOARD firmware path now only flashes and reboots
+    when the installed firmware differs from the available firmware, instead of
+    rebooting on every run when the feature is enabled.
+  - >-
+    The C(reset) and C(upgrade) install paths now wait for the API to actually
+    answer (not just for the TCP port to open) after the reboot, matching
+    C(reboot) and C(restore).
+  - >-
+    The C(certificate) role's mutating tasks now report C(changed) correctly,
+    and import skips certificates that already exist so re-runs do not create
+    duplicate entries; the ACME task is now C(no_log).
+  - >-
+    The C(user_password) role now fails loudly when a named user does not exist
+    instead of silently skipping it and reporting success.
+  - >-
+    The C(command) role now validates that each item specifies exactly one of
+    C(cmd)/C(add)/C(remove)/C(update), failing on a typo'd or ambiguous key
+    instead of silently no-op'ing or running twice.

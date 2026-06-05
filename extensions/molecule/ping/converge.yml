@@ -1,0 +1,10 @@
+---
+- name: Converge — ping a reachable target
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ping:
+      - address: "127.0.0.1"
+        count: 3
+  roles:
+    - role: david_igou.routeros_configuration.ping

@@ -1,0 +1,56 @@
+---
+argument_specs:
+  main:
+    short_description: Run arbitrary RouterOS API commands (escape hatch).
+    description:
+      - Each entry is passed to C(community.routeros.api). Not idempotent.
+    options:
+      routeros_command:
+        type: list
+        elements: dict
+        default: []
+        description: Commands to run.
+        options:
+          path:
+            type: str
+            required: true
+            description: API path (e.g. "system script").
+          cmd:
+            type: str
+            description: Arbitrary command in the path (e.g. "run .id=*1").
+          add:
+            type: str
+            description: Add arguments (key=value ...).
+          remove:
+            type: str
+            description: .id to remove.
+          update:
+            type: str
+            description: Update arguments (.id=... key=value ...).
+          no_log:
+            type: bool
+            default: false
+            description: Hide this command from logs (set when it carries a secret).
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

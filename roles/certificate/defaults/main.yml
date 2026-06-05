@@ -15,6 +15,18 @@ routeros_api_port: ""
 #   common_name: certificate CN (required)
 #   key_size:    RSA key size (default 2048)
 #   days_valid:  validity in days (default 365)
-#   key_usage:   list of key usages (optional; e.g. [key-cert-sign, crl-sign] for a CA)
+#   key_usage:   list of key usages (optional; key-cert-sign and crl-sign for a CA)
 #   ca:          name of the signing CA certificate (optional; omitted -> self-signed)
 routeros_certificates: []
+
+# Certificates to export to files on the device. Each:
+#   name (required), file_name? (default = name), type? (pem|pkcs12), export_passphrase?
+routeros_certificates_export: []
+
+# Certificates to import from files. Each:
+#   file_name (required), name?, passphrase?
+routeros_certificates_import: []
+
+# ACME (Let's Encrypt) requests. Each entry has an 'args' string (the add-acme arguments).
+# Gated/untested on a CHR (needs a public domain + DNS challenge).
+routeros_acme: []

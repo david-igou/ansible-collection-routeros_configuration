@@ -1,0 +1,23 @@
+---
+- name: Verify — the backup restored the baseline identity
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Read identity
+      community.routeros.api:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port | default(omit, true) }}"
+        path: system identity
+      delegate_to: localhost
+      connection: local
+      register: ident
+    - name: Assert the identity reverted to the baseline
+      ansible.builtin.assert:
+        that:
+          - (ident.msg | first).name == 'rst-baseline'
+        success_msg: "restore reverted identity to rst-baseline"
+        fail_msg: "restore did not revert: {{ ident.msg }}"

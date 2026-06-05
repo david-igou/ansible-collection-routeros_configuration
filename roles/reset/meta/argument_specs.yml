@@ -1,0 +1,51 @@
+---
+argument_specs:
+  main:
+    short_description: Reset RouterOS configuration (gated, destructive).
+    description:
+      - Runs C(/system reset-configuration) only when C(routeros_reset_confirm) is
+        true. Wipes the configuration and reboots.
+    options:
+      routeros_reset_confirm:
+        type: bool
+        default: false
+        description: Must be true to actually reset. Safety gate.
+      routeros_reset_keep_users:
+        type: bool
+        default: true
+        description: Keep users/passwords across the reset.
+      routeros_reset_no_defaults:
+        type: bool
+        default: false
+        description: Skip the default configuration after reset.
+      routeros_reset_run_after_reset:
+        type: str
+        default: ""
+        description: Script to run after reset (e.g. re-enable the API).
+      routeros_reset_reboot_timeout:
+        type: int
+        default: 300
+        description: Seconds to wait for the API after the reset reboot.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

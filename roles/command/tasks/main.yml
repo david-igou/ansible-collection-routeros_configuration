@@ -1,0 +1,81 @@
+---
+# tasks file for david_igou.routeros_configuration.command
+# Run arbitrary RouterOS API operations (community.routeros.api). Escape hatch.
+# Grouped by operation type. Uses 'op' in item / item['op'] (key access) rather
+# than selectattr, because attribute access on keys like 'update' resolves to the
+# dict's built-in method, not the value. Set no_log on an item to hide a command
+# that carries a secret.
+
+- name: Run RouterOS API commands
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    # Each item is dispatched by which op key it carries, so an item with two op
+    # keys would run twice and a typo'd key (e.g. 'cmnd') would silently no-op.
+    # Validate exactly one of cmd/add/remove/update up front. The collect pass is
+    # no_log (items may carry secrets); only the menu path is surfaced.
+    - name: Collect command items that do not specify exactly one operation
+      ansible.builtin.set_fact:
+        _cmd_bad: "{{ (_cmd_bad | default([])) + [item['path'] | default('?')] }}"
+      when: (item.keys() | select('in', ['cmd', 'add', 'remove', 'update']) | list | length) != 1
+      loop: "{{ routeros_command }}"
+      loop_control:
+        label: "{{ item['path'] | default('?') }}"
+      no_log: true
+
+    - name: Fail if any command item is malformed
+      ansible.builtin.assert:
+        that:
+          - (_cmd_bad | default([])) | length == 0
+        fail_msg: >-
+          each routeros_command item needs exactly one of cmd/add/remove/update;
+          offending path(s): {{ _cmd_bad | default([]) }}
+        quiet: true
+
+    - name: Execute cmd operations
+      community.routeros.api:  # noqa: args[module]
+        path: "{{ item['path'] }}"
+        cmd: "{{ item['cmd'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'cmd' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
+
+    - name: Execute add operations
+      community.routeros.api:  # noqa: args[module]
+        path: "{{ item['path'] }}"
+        add: "{{ item['add'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'add' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
+
+    - name: Execute remove operations
+      community.routeros.api:  # noqa: args[module]
+        path: "{{ item['path'] }}"
+        remove: "{{ item['remove'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'remove' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
+
+    - name: Execute update operations
+      community.routeros.api:  # noqa: args[module]
+        path: "{{ item['path'] }}"
+        update: "{{ item['update'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'update' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"

@@ -1,0 +1,25 @@
+---
+- name: Verify — the command took effect
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read system note
+      community.routeros.api:
+        path: "system note"
+      delegate_to: localhost
+      connection: local
+      register: note
+    - name: Assert note was set
+      ansible.builtin.assert:
+        that:
+          - (note.msg | first).note == 'cmd-role-marker'
+        success_msg: "system note set by command role"
+        fail_msg: "unexpected note: {{ note.msg }}"

@@ -1,0 +1,42 @@
+---
+argument_specs:
+  main:
+    short_description: Reboot or shut down a RouterOS device.
+    description:
+      - Reboots and waits for the API, or (gated) shuts the device down.
+    options:
+      routeros_reboot:
+        type: bool
+        default: true
+        description: Reboot the device and wait for the API to return.
+      routeros_shutdown:
+        type: bool
+        default: false
+        description: Shut down the device instead (gated; no reconnect wait).
+      routeros_reboot_timeout:
+        type: int
+        default: 300
+        description: Seconds to wait for the API after the reboot.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

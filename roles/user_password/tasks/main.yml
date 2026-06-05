@@ -1,0 +1,47 @@
+---
+# tasks file for david_igou.routeros_configuration.user_password
+# Set/rotate /user account passwords (the write-only field configure cannot
+# manage). Reads users to resolve .id, then `set .id=<> password=<>`.
+- name: Set user passwords over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Read users
+      community.routeros.api:  # noqa: args[module]
+        path: user
+      register: _users
+      changed_when: false
+
+    # Fail loudly instead of silently skipping an unknown user (a typo or a not-
+    # yet-created account would otherwise report success without rotating). Set-
+    # difference rather than a loop so the password-bearing items are never
+    # iterated/logged here.
+    - name: Fail if any requested user does not exist
+      vars:
+        _missing_users: >-
+          {{ routeros_user_passwords | map(attribute='name') | list
+             | difference(_users.msg | map(attribute='name') | list) }}
+      ansible.builtin.assert:
+        that:
+          - _missing_users | length == 0
+        fail_msg: "user(s) not found on the device, cannot set password(s): {{ _missing_users }}"
+        quiet: true
+
+    - name: Set passwords
+      community.routeros.api:  # noqa: args[module]
+        path: user
+        cmd: >-
+          set .id={{ (_users.msg | selectattr('name', 'equalto', item['name']) | first)['.id'] }}
+          password={{ item['password'] | community.routeros.quote_argument_value }}
+      loop: "{{ routeros_user_passwords }}"
+      loop_control:
+        label: "{{ item['name'] }}"
+      no_log: true

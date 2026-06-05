@@ -1,0 +1,33 @@
+---
+- name: Converge — set a throwaway user's password
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read users
+      community.routeros.api:
+        path: user
+      delegate_to: localhost
+      connection: local
+      register: _u
+    - name: Create the throwaway test user if absent
+      community.routeros.api:
+        path: user
+        add: "name=pwtest group=read password=initpw-000"
+      delegate_to: localhost
+      connection: local
+      when: _u.msg | selectattr('name', 'equalto', 'pwtest') | list | length == 0
+    - name: Rotate its password via the role
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.user_password
+      vars:
+        routeros_user_passwords:
+          - name: pwtest
+            password: "rotated-pw-456"

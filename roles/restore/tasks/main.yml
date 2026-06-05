@@ -1,0 +1,51 @@
+---
+# tasks file for david_igou.routeros_configuration.restore
+# Restore from a binary backup (/system backup load, reboots) or import a config
+# script (/import). The reverse of the backup role.
+- name: Restore over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Load a binary backup (DESTRUCTIVE — reboots the device)
+      community.routeros.api:  # noqa: args[module]
+        path: system backup
+        # /system backup load requires a password= even for unencrypted backups.
+        cmd: >-
+          load name={{ routeros_restore_backup_name | community.routeros.quote_argument_value }}
+          password={{ routeros_restore_backup_password | community.routeros.quote_argument_value }}
+      changed_when: true
+      no_log: "{{ (routeros_restore_backup_password | length) > 0 }}"
+      when: routeros_restore_backup_name | length > 0
+
+    - name: Wait for the API to return after the backup-load reboot
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
+        timeout: "{{ routeros_restore_reboot_timeout }}"
+        delay: 15
+      when: routeros_restore_backup_name | length > 0
+
+    - name: Wait for the API to actually answer (port opens before login is ready)
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _restore_api_ready
+      until: _restore_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
+      when: routeros_restore_backup_name | length > 0
+
+    - name: Import a configuration script
+      community.routeros.api:  # noqa: args[module]
+        path: ""
+        cmd: "import file-name={{ routeros_restore_import_file }}"
+      changed_when: true
+      when: routeros_restore_import_file | length > 0
