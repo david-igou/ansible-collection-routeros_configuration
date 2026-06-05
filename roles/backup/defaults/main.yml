@@ -1,0 +1,26 @@
+---
+# Directory on the Ansible CONTROLLER where the text config export (.rsc) is
+# written, one file per host (<inventory_hostname>.rsc).
+routeros_backup_dir: ./routeros-backups
+
+# Run "/export show-sensitive" so service secrets (WireGuard keys, IPsec PSKs,
+# PPP secrets, SNMP communities, WiFi passphrases) are included. Note: /export
+# NEVER includes /user passwords, installed certificates, SSH keys, Dude, or the
+# User-manager database regardless of this flag — use a binary backup for those.
+routeros_backup_show_sensitive: true
+
+# Extra arguments appended to /export, e.g. a menu path ("ip firewall") to export
+# only part of the config, or "terse". Empty exports the whole configuration.
+routeros_backup_export_options: ""
+
+# Also take a full-fidelity binary backup on the device (/system backup save).
+# The binary backup preserves what /export cannot (notably /user passwords) and
+# is restorable on the same device/version with /system backup load. It stays ON
+# the device (off-box fetch is out of scope) and is a point-in-time artifact, so
+# the role reports it as a non-change to remain idempotent.
+routeros_backup_binary: false
+
+# Binary backup file name and optional encryption password (recommended — the
+# binary backup contains sensitive data).
+routeros_backup_name: ansible
+routeros_backup_password: ""

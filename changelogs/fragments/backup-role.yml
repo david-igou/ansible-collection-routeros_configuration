@@ -1,0 +1,12 @@
+---
+minor_changes:
+  - >-
+    New C(backup) role: backs up RouterOS configuration following the official
+    backup/restore mechanisms. It writes an idempotent text export
+    (C(/export show-sensitive)) to a C(.rsc) file on the controller — rewritten
+    only when the device config changed — and can optionally take a full-fidelity
+    binary backup (C(/system backup save)) on the device. Runs over network_cli
+    (C(/export) is console-only, not on the binary API). The README documents the
+    C(/import) and C(/system backup load) restore procedures and that the text
+    export omits user passwords, certificates, SSH keys, Dude, and the
+    User-manager database.
