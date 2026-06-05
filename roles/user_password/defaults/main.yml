@@ -7,6 +7,6 @@ routeros_api_tls: true
 routeros_api_validate_certs: true
 routeros_api_port: ""
 
-# Passwords to set. Each entry: { name (required), password (required) }.
+# Passwords to set. Each entry has name (required) and password (required).
 # The user must already exist. Not idempotent — passwords are write-only.
 routeros_user_passwords: []

@@ -56,8 +56,11 @@ Example Playbook
         - role: david_igou.routeros_configuration.ping
           vars:
             routeros_ping:
-              - { address: "1.1.1.1", count: 3 }
-              - { address: "10.0.0.1", count: 5, interface: ether1 }
+              - address: "1.1.1.1"
+                count: 3
+              - address: "10.0.0.1"
+                count: 5
+                interface: ether1
 
     - name: Fail if the uplink is down
       ansible.builtin.assert:

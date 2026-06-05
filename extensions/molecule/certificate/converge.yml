@@ -7,7 +7,9 @@
       # Self-signed CA (no `ca:`).
       - name: mol-ca
         common_name: Molecule Test CA
-        key_usage: [key-cert-sign, crl-sign]
+        key_usage:
+          - key-cert-sign
+          - crl-sign
       # Host certificate signed by that CA.
       - name: mol-host
         common_name: host.molecule.test

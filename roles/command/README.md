@@ -61,12 +61,18 @@ Example Playbook
         - role: david_igou.routeros_configuration.command
           vars:
             routeros_command:
-              - { path: "system script", cmd: "run .id=*1" }
-              - { path: "ip dhcp-server lease", cmd: "make-static .id=*2" }
-              - { path: "ip firewall address-list", add: "list=blocked address=203.0.113.5" }
-              - { path: "ip firewall address-list", remove: "*7" }
+              - path: "system script"
+                cmd: "run .id=*1"
+              - path: "ip dhcp-server lease"
+                cmd: "make-static .id=*2"
+              - path: "ip firewall address-list"
+                add: "list=blocked address=203.0.113.5"
+              - path: "ip firewall address-list"
+                remove: "*7"
               # Carries a secret — hide it from logs:
-              - { path: "ppp secret", add: "name=vpn password=s3cret", no_log: true }
+              - path: "ppp secret"
+                add: "name=vpn password=s3cret"
+                no_log: true
 
 License
 -------

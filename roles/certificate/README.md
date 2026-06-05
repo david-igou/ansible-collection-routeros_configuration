@@ -86,13 +86,17 @@ Example Playbook
               # A self-signed CA (no `ca:`), usable to sign other certs.
               - name: lan-ca
                 common_name: LAN Root CA
-                key_usage: [key-cert-sign, crl-sign]
+                key_usage:
+                  - key-cert-sign
+                  - crl-sign
               # A host certificate signed by that CA.
               - name: router-api
                 common_name: router.lan
                 ca: lan-ca
             routeros_certificates_export:
-              - { name: lan-ca, file_name: lan-ca, type: pem }
+              - name: lan-ca
+                file_name: lan-ca
+                type: pem
 
 License
 -------
