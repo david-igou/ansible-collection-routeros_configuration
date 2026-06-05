@@ -1,0 +1,8 @@
+---
+trivial:
+  - >-
+    backup role: controller-side tasks (directory create, export write) now use
+    the local connection explicitly so they are not attempted over the device's
+    network_cli connection. Also fixes the paired molecule scenario's network_cli
+    wiring (a fixed SSH host-forward on the shared CHR). No change to released
+    behaviour — the role was introduced in the same unreleased cycle.
