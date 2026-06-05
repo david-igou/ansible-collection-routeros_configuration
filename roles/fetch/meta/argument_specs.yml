@@ -22,6 +22,12 @@ argument_specs:
           mode:
             type: str
             default: http
+            choices:
+              - http
+              - https
+              - ftp
+              - tftp
+              - sftp
             description: Transfer mode (http/https/ftp/tftp/sftp).
           extra:
             type: str

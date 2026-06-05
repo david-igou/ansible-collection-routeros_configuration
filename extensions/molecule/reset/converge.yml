@@ -10,7 +10,7 @@
         password: "{{ routeros_api_password }}"
         tls: "{{ routeros_api_tls }}"
         validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
+        port: "{{ routeros_api_port | default(omit, true) }}"
         path: system identity
         data:
           - name: reset-gate-test

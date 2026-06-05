@@ -17,8 +17,9 @@
       community.routeros.api:  # noqa: args[module]
         path: ""
         cmd: >-
-          ping address={{ item.address }} count={{ item.count | default(4) }}{{
-          (' interface=' ~ item.interface) if item.interface is defined else '' }}
+          ping address={{ item.address | community.routeros.quote_argument_value }}
+          count={{ item.count | default(4) }}{{
+          (' interface=' ~ (item.interface | community.routeros.quote_argument_value)) if item.interface is defined else '' }}
       loop: "{{ routeros_ping }}"
       loop_control:
         label: "{{ item.address }}"
