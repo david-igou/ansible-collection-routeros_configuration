@@ -6,7 +6,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -15,15 +15,17 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Read users
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: user
       register: _users
       changed_when: false
 
     - name: Set passwords
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: user
-        cmd: "set .id={{ (_users.msg | selectattr('name', 'equalto', item['name']) | first)['.id'] }} password={{ item['password'] }}"
+        cmd: >-
+          set .id={{ (_users.msg | selectattr('name', 'equalto', item['name']) | first)['.id'] }}
+          password={{ item['password'] }}
       loop: "{{ routeros_user_passwords }}"
       loop_control:
         label: "{{ item['name'] }}"

@@ -21,3 +21,5 @@ or certificates onto the device, or to pull backups off-box.
 Connection comes from the shared `routeros_api_*` vars. `fetch` overwrites the
 destination each run; `remove` only acts when the file is present (so it is safe
 to re-run).
+
+Set `no_log: true` on a fetch whose URL or `extra` carries credentials.

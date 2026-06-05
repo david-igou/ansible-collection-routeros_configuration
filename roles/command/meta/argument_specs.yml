@@ -27,6 +27,10 @@ argument_specs:
           update:
             type: str
             description: Update arguments (.id=... key=value ...).
+          no_log:
+            type: bool
+            default: false
+            description: Hide this command from logs (set when it carries a secret).
       routeros_api_hostname:
         type: str
         default: "{{ inventory_hostname }}"

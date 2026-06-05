@@ -6,7 +6,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -15,7 +15,7 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Load a binary backup (DESTRUCTIVE — reboots the device)
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system backup
         # /system backup load requires a password= even for unencrypted backups.
         cmd: >-
@@ -34,7 +34,7 @@
       when: routeros_restore_backup_name | length > 0
 
     - name: Wait for the API to actually answer (port opens before login is ready)
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system identity
       register: _restore_api_ready
       until: _restore_api_ready is succeeded
@@ -44,7 +44,7 @@
       when: routeros_restore_backup_name | length > 0
 
     - name: Import a configuration script
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: ""
         cmd: "import file-name={{ routeros_restore_import_file }}"
       changed_when: true

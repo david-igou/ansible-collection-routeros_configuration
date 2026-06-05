@@ -26,6 +26,10 @@ argument_specs:
           extra:
             type: str
             description: Extra fetch arguments appended verbatim.
+          no_log:
+            type: bool
+            default: false
+            description: Hide this fetch from logs (set when the URL/extra carries a secret).
       routeros_fetch_remove:
         type: list
         elements: str

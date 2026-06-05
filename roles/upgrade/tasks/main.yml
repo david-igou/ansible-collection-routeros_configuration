@@ -9,7 +9,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -18,19 +18,19 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Read current update settings
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
       register: _upd
       changed_when: false
 
     - name: Set the update channel
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: "set channel={{ routeros_update_channel }}"
       when: ((_upd.msg | first).channel | default('')) != routeros_update_channel
 
     - name: Check for updates
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: check-for-updates
       changed_when: false
@@ -40,13 +40,13 @@
       failed_when: false
 
     - name: Read update status after the check
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
       register: _upd_status
       changed_when: false
 
     - name: Install the available update (REBOOTS the device)
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: install
       changed_when: true
@@ -67,14 +67,14 @@
     # RouterBOARD firmware. Gated and not exercised on a CHR (which has no
     # RouterBOARD). Reboots when newer firmware is flashed.
     - name: Upgrade RouterBOARD firmware
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system routerboard
         cmd: upgrade
       changed_when: true
       when: routeros_routerboard_upgrade | bool
 
     - name: Reboot to apply the RouterBOARD firmware and wait for the API
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system
         cmd: reboot
       changed_when: true
@@ -89,7 +89,7 @@
       when: routeros_routerboard_upgrade | bool
 
     - name: Wait for the API to actually answer after the firmware reboot
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system identity
       register: _rb_api_ready
       until: _rb_api_ready is succeeded

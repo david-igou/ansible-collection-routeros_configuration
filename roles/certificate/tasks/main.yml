@@ -9,7 +9,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -18,13 +18,13 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Read existing certificates
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
       register: _cert_existing
       changed_when: false
 
     - name: Create certificate requests that do not exist yet
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         # common-name may contain spaces, so quote it; the api module's splitter
         # (split_routeros_command) is quoting-aware.
@@ -40,13 +40,13 @@
       when: item.name not in (_cert_existing.msg | map(attribute='name') | list)
 
     - name: Re-read certificate state after creation
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
       register: _cert_state
       changed_when: false
 
     - name: Sign certificates that are not yet signed
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         cmd: >-
           sign .id={{ (_cert_state.msg | selectattr('name', 'equalto', item.name) | first)['.id'] }}{{
@@ -59,7 +59,7 @@
               | first)['fingerprint'] | default(''))
 
     - name: Export certificates to files
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         cmd: >-
           export-certificate
@@ -74,7 +74,7 @@
       when: _cert_state.msg | selectattr('name', 'equalto', item.name) | list | length > 0
 
     - name: Import certificates from files
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         cmd: >-
           import file-name={{ item.file_name }}{{
@@ -87,7 +87,7 @@
 
     # ACME (Let's Encrypt) — gated/untested on CHR (needs a public domain + DNS).
     - name: Request ACME certificates
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: certificate
         cmd: "add-acme {{ item.args }}"
       loop: "{{ routeros_acme }}"

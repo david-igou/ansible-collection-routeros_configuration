@@ -3,7 +3,8 @@
 # Run arbitrary RouterOS API operations (community.routeros.api). Escape hatch.
 # Grouped by operation type. Uses 'op' in item / item['op'] (key access) rather
 # than selectattr, because attribute access on keys like 'update' resolves to the
-# dict's built-in method, not the value.
+# dict's built-in method, not the value. Set no_log on an item to hide a command
+# that carries a secret.
 
 - name: Run RouterOS API commands
   delegate_to: localhost
@@ -18,37 +19,41 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Execute cmd operations
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: "{{ item['path'] }}"
         cmd: "{{ item['cmd'] }}"
       loop: "{{ routeros_command }}"
       when: "'cmd' in item"
       loop_control:
         label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
 
     - name: Execute add operations
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: "{{ item['path'] }}"
         add: "{{ item['add'] }}"
       loop: "{{ routeros_command }}"
       when: "'add' in item"
       loop_control:
         label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
 
     - name: Execute remove operations
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: "{{ item['path'] }}"
         remove: "{{ item['remove'] }}"
       loop: "{{ routeros_command }}"
       when: "'remove' in item"
       loop_control:
         label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"
 
     - name: Execute update operations
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: "{{ item['path'] }}"
         update: "{{ item['update'] }}"
       loop: "{{ routeros_command }}"
       when: "'update' in item"
       loop_control:
         label: "{{ item['path'] }}"
+      no_log: "{{ item['no_log'] | default(false) }}"

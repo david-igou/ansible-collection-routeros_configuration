@@ -5,7 +5,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -14,7 +14,7 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Ping each target
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: ""
         cmd: >-
           ping address={{ item.address }} count={{ item.count | default(4) }}{{

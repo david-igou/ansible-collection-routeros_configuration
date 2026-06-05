@@ -6,7 +6,7 @@
   delegate_to: localhost
   connection: local
   module_defaults:
-    community.routeros.api:
+    community.routeros.api:  # noqa: args[module]
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
@@ -15,7 +15,7 @@
       port: "{{ routeros_api_port | default(omit, true) }}"
   block:
     - name: Reset the configuration (DESTRUCTIVE — wipes config and reboots)
-      community.routeros.api:
+      community.routeros.api:  # noqa: args[module]
         path: system
         cmd: >-
           reset-configuration{{ ' keep-users=yes' if routeros_reset_keep_users | bool else '' }}{{
