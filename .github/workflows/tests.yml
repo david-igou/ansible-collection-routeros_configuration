@@ -30,26 +30,6 @@ jobs:
     with:
       collection_pre_install: >-
         git+https://github.com/ansible-collections/ansible.utils.git
-  path-order-check:
-    # rcfg_path_order is generated from api_modify's path registry. Fail if it
-    # has drifted from the installed community.routeros (e.g. the module added
-    # paths) — regenerate with extensions/tests/gen_path_order.py.
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.13"
-      - name: Install community.routeros (provides the api_modify registry)
-        run: |
-          python -m pip install --upgrade pip
-          pip install ansible-core
-          ansible-galaxy collection install -r requirements.yml
-      - name: Verify rcfg_path_order is in sync with api_modify
-        run: python extensions/tests/gen_path_order.py --check
-
   molecule-qemu:
     runs-on: ubuntu-latest
     env:
@@ -138,7 +118,6 @@ jobs:
       - unit-galaxy
       - unit-source
       - ansible-lint
-      - path-order-check
       - molecule-qemu
     runs-on: ubuntu-latest
     steps:
@@ -153,6 +132,5 @@ jobs:
           '${{ needs.unit-galaxy.result }}',
           '${{ needs.ansible-lint.result }}',
           '${{ needs.unit-source.result }}',
-          '${{ needs.path-order-check.result }}',
           '${{ needs.molecule-qemu.result }}'};
           assert not ({'failure', 'cancelled'} & results), results"

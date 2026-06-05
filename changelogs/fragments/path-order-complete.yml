@@ -10,7 +10,3 @@ minor_changes:
     addressing). Previously only ~50 interface/IP paths were ordered, so
     dependency-sensitive paths outside that set relied on the user's declaration
     order.
-  - >-
-    Added ``extensions/tests/gen_path_order.py`` as the source of truth that
-    generates and ``--check``-verifies ``rcfg_path_order`` against the installed
-    ``api_modify`` registry, keeping it in sync as the module gains paths.

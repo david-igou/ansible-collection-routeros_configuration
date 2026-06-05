@@ -1,8 +1,0 @@
----
-trivial:
-  - >-
-    CI: the ``all_green`` gate now also fails on ``build-import`` failures and on
-    cancelled jobs (previously only ``failure`` of a subset was checked), and a
-    new ``path-order-check`` job runs ``extensions/tests/gen_path_order.py
-    --check`` so ``rcfg_path_order`` cannot drift from api_modify's registry.
-    Dropped the non-existent ``master`` branch from the pull_request trigger.
