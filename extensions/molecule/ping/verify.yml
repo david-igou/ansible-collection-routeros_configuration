@@ -1,0 +1,18 @@
+---
+- name: Verify — ping received replies
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_ping:
+      - address: "127.0.0.1"
+        count: 3
+  tasks:
+    - name: Ping via the role
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.ping
+    - name: Assert replies were received
+      ansible.builtin.assert:
+        that:
+          - (_routeros_ping.results[0].msg | last).received | int > 0
+        success_msg: "ping received {{ (_routeros_ping.results[0].msg | last).received }} replies"
+        fail_msg: "no ping replies: {{ _routeros_ping.results[0].msg }}"

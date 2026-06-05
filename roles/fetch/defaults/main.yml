@@ -1,0 +1,16 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# Files to download/upload onto the device. Each entry:
+#   url (required), dst_path (required), mode? (http|https|ftp|tftp|sftp, default http),
+#   extra? (extra fetch args appended verbatim, e.g. "user=x password=y")
+routeros_fetch: []
+
+# File names to delete from the device (/file remove).
+routeros_fetch_remove: []

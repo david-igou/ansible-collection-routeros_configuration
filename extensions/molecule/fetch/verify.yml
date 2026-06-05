@@ -1,0 +1,25 @@
+---
+- name: Verify — the fetched file exists on the device
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read files
+      community.routeros.api:
+        path: file
+      delegate_to: localhost
+      connection: local
+      register: files
+    - name: Assert the fetched file is present
+      ansible.builtin.assert:
+        that:
+          - files.msg | selectattr('name', 'equalto', 'fetch-role-test.html') | list | length == 1
+        success_msg: "fetch-role-test.html present"
+        fail_msg: "fetched file missing: {{ files.msg | map(attribute='name') | list }}"

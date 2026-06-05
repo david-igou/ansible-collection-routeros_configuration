@@ -12,5 +12,17 @@
       - name: mol-host
         common_name: host.molecule.test
         ca: mol-ca
+    # Export mol-ca to a kept file (verified present) and mol-host to a file that
+    # the import then consumes (RouterOS deletes a file after importing it).
+    routeros_certificates_export:
+      - name: mol-ca
+        file_name: mol-ca-keep
+        type: pem
+      - name: mol-host
+        file_name: mol-host-imp
+        type: pem
+    routeros_certificates_import:
+      - file_name: mol-host-imp.crt
+        name: mol-host-imported
   roles:
     - role: david_igou.routeros_configuration.certificate

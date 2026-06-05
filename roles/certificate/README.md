@@ -53,3 +53,11 @@ any exported key material.
 
 Importing existing PEM cert/key files, SCEP enrollment, and `trusted`-flag
 management — tracked as follow-ups.
+
+## Export / import / ACME
+
+- `routeros_certificates_export`: export certs to files (`export-certificate`).
+- `routeros_certificates_import`: import certs from files (`import`). **RouterOS
+  deletes the file after a successful import.**
+- `routeros_acme`: request ACME (Let's Encrypt) certs (`add-acme`) — gated and not
+  exercised in CI (needs a public domain + DNS challenge).

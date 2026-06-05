@@ -1,0 +1,7 @@
+---
+scenario:
+  name: restore
+  test_sequence:
+    - dependency
+    - converge
+    - verify

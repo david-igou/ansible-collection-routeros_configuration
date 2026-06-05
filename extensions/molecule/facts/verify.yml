@@ -1,0 +1,16 @@
+---
+- name: Verify — RouterOS facts are populated
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    - name: Gather via the role
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.facts
+    - name: Assert key facts present
+      ansible.builtin.assert:
+        that:
+          - ansible_net_version is defined
+          - ansible_net_hostname is defined
+          - ansible_net_interfaces is defined
+        success_msg: "facts gathered: RouterOS {{ ansible_net_version }}"
+        fail_msg: "facts missing"

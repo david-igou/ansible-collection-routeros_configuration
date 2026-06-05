@@ -1,0 +1,40 @@
+---
+- name: Converge — back up a baseline, change it, then restore
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api: &conn
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+    community.routeros.api_modify: *conn
+  tasks:
+    - name: Set the baseline identity
+      community.routeros.api_modify:
+        path: system identity
+        data:
+          - name: rst-baseline
+      delegate_to: localhost
+      connection: local
+    - name: Save a binary backup of the baseline
+      community.routeros.api:
+        path: system backup
+        cmd: "save name=rst-test password=rst-pw-123"
+      delegate_to: localhost
+      connection: local
+    - name: Change the identity (so the restore is observable)
+      community.routeros.api_modify:
+        path: system identity
+        data:
+          - name: rst-changed
+      delegate_to: localhost
+      connection: local
+    - name: Restore the baseline backup (reboots)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.restore
+      vars:
+        routeros_restore_backup_name: rst-test
+        routeros_restore_backup_password: rst-pw-123

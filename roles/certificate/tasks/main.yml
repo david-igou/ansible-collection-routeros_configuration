@@ -57,3 +57,39 @@
       when: >-
         not ((_cert_state.msg | selectattr('name', 'equalto', item.name)
               | first)['fingerprint'] | default(''))
+
+    - name: Export certificates to files
+      community.routeros.api:
+        path: certificate
+        cmd: >-
+          export-certificate
+          .id={{ (_cert_state.msg | selectattr('name', 'equalto', item.name) | first)['.id'] }}
+          type={{ item.type | default('pem') }}
+          file-name={{ item.file_name | default(item.name) }}{{
+          (' export-passphrase=' ~ item.export_passphrase) if item.export_passphrase is defined else '' }}
+      loop: "{{ routeros_certificates_export }}"
+      loop_control:
+        label: "{{ item.name }}"
+      no_log: "{{ item.export_passphrase is defined }}"
+      when: _cert_state.msg | selectattr('name', 'equalto', item.name) | list | length > 0
+
+    - name: Import certificates from files
+      community.routeros.api:
+        path: certificate
+        cmd: >-
+          import file-name={{ item.file_name }}{{
+          (' name=' ~ item.name) if item.name is defined else '' }}
+          passphrase={{ item.passphrase | default('""') }}
+      loop: "{{ routeros_certificates_import }}"
+      loop_control:
+        label: "{{ item.file_name }}"
+      no_log: "{{ item.passphrase is defined }}"
+
+    # ACME (Let's Encrypt) — gated/untested on CHR (needs a public domain + DNS).
+    - name: Request ACME certificates
+      community.routeros.api:
+        path: certificate
+        cmd: "add-acme {{ item.args }}"
+      loop: "{{ routeros_acme }}"
+      loop_control:
+        label: "{{ item.args | default('') }}"

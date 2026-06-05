@@ -37,6 +37,52 @@ argument_specs:
           ca:
             type: str
             description: Name of the signing CA certificate. Omit for self-signed.
+      routeros_certificates_export:
+        type: list
+        elements: dict
+        default: []
+        description: Certificates to export to files on the device.
+        options:
+          name:
+            type: str
+            required: true
+            description: Certificate name to export.
+          file_name:
+            type: str
+            description: Output file name (default = name).
+          type:
+            type: str
+            default: pem
+            description: Export type (pem/pkcs12).
+          export_passphrase:
+            type: str
+            description: Passphrase to encrypt the exported key.
+      routeros_certificates_import:
+        type: list
+        elements: dict
+        default: []
+        description: Certificates to import from files.
+        options:
+          file_name:
+            type: str
+            required: true
+            description: File to import.
+          name:
+            type: str
+            description: Name for the imported certificate.
+          passphrase:
+            type: str
+            description: Passphrase for an encrypted key.
+      routeros_acme:
+        type: list
+        elements: dict
+        default: []
+        description: ACME (Let's Encrypt) requests. Gated/untested on a CHR.
+        options:
+          args:
+            type: str
+            required: true
+            description: Arguments passed to /certificate add-acme.
       routeros_api_hostname:
         type: str
         default: "{{ inventory_hostname }}"

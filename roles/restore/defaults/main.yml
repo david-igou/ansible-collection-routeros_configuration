@@ -1,0 +1,20 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# Restore from a binary backup on the device (/system backup load). REBOOTS.
+# Set the on-device backup name (without .backup) to enable.
+routeros_restore_backup_name: ""
+routeros_restore_backup_password: ""
+
+# Import a config script on the device (/import). Does not reboot. Set the file
+# name to enable.
+routeros_restore_import_file: ""
+
+# Seconds to wait for the API to return after a backup-load reboot.
+routeros_restore_reboot_timeout: 300

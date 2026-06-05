@@ -63,3 +63,27 @@
       when:
         - routeros_upgrade_install | bool
         - ((_upd_status.msg | first).status | default('')) is search('New version')
+
+    # RouterBOARD firmware. Gated and not exercised on a CHR (which has no
+    # RouterBOARD). Reboots when newer firmware is flashed.
+    - name: Upgrade RouterBOARD firmware
+      community.routeros.api:
+        path: system routerboard
+        cmd: upgrade
+      changed_when: true
+      when: routeros_routerboard_upgrade | bool
+
+    - name: Reboot to apply the RouterBOARD firmware and wait for the API
+      community.routeros.api:
+        path: system
+        cmd: reboot
+      changed_when: true
+      when: routeros_routerboard_upgrade | bool
+
+    - name: Wait for the API to return after the firmware reboot
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default(8728, true) }}"
+        timeout: "{{ routeros_upgrade_reboot_timeout }}"
+        delay: 20
+      when: routeros_routerboard_upgrade | bool

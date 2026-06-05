@@ -18,3 +18,15 @@ routeros_api_port: ""
 #   key_usage:   list of key usages (optional; e.g. [key-cert-sign, crl-sign] for a CA)
 #   ca:          name of the signing CA certificate (optional; omitted -> self-signed)
 routeros_certificates: []
+
+# Certificates to export to files on the device. Each:
+#   name (required), file_name? (default = name), type? (pem|pkcs12), export_passphrase?
+routeros_certificates_export: []
+
+# Certificates to import from files. Each:
+#   file_name (required), name?, passphrase?
+routeros_certificates_import: []
+
+# ACME (Let's Encrypt) requests. Each: { args: "<add-acme arguments>" }.
+# Gated/untested on a CHR (needs a public domain + DNS challenge).
+routeros_acme: []

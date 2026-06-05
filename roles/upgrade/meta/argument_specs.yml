@@ -24,6 +24,10 @@ argument_specs:
         type: int
         default: 300
         description: Seconds to wait for the API to return after an install/reboot.
+      routeros_routerboard_upgrade:
+        type: bool
+        default: false
+        description: Upgrade RouterBOARD firmware and reboot. Gated; not applicable to CHR.
       routeros_api_hostname:
         type: str
         default: "{{ inventory_hostname }}"

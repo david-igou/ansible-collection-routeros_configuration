@@ -1,0 +1,54 @@
+---
+# tasks file for david_igou.routeros_configuration.command
+# Run arbitrary RouterOS API operations (community.routeros.api). Escape hatch.
+# Grouped by operation type. Uses 'op' in item / item['op'] (key access) rather
+# than selectattr, because attribute access on keys like 'update' resolves to the
+# dict's built-in method, not the value.
+
+- name: Run RouterOS API commands
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Execute cmd operations
+      community.routeros.api:
+        path: "{{ item['path'] }}"
+        cmd: "{{ item['cmd'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'cmd' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+
+    - name: Execute add operations
+      community.routeros.api:
+        path: "{{ item['path'] }}"
+        add: "{{ item['add'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'add' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+
+    - name: Execute remove operations
+      community.routeros.api:
+        path: "{{ item['path'] }}"
+        remove: "{{ item['remove'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'remove' in item"
+      loop_control:
+        label: "{{ item['path'] }}"
+
+    - name: Execute update operations
+      community.routeros.api:
+        path: "{{ item['path'] }}"
+        update: "{{ item['update'] }}"
+      loop: "{{ routeros_command }}"
+      when: "'update' in item"
+      loop_control:
+        label: "{{ item['path'] }}"

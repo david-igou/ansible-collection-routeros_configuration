@@ -1,0 +1,47 @@
+---
+argument_specs:
+  main:
+    short_description: Connectivity checks via /tool ping over the API.
+    description:
+      - Pings each target; results are registered in C(_routeros_ping).
+    options:
+      routeros_ping:
+        type: list
+        elements: dict
+        default: []
+        description: Targets to ping.
+        options:
+          address:
+            type: str
+            required: true
+            description: Address to ping.
+          count:
+            type: int
+            default: 4
+            description: Number of pings.
+          interface:
+            type: str
+            description: Source interface.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

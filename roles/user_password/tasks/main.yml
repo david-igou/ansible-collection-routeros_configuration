@@ -1,0 +1,31 @@
+---
+# tasks file for david_igou.routeros_configuration.user_password
+# Set/rotate /user account passwords (the write-only field configure cannot
+# manage). Reads users to resolve .id, then `set .id=<> password=<>`.
+- name: Set user passwords over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Read users
+      community.routeros.api:
+        path: user
+      register: _users
+      changed_when: false
+
+    - name: Set passwords
+      community.routeros.api:
+        path: user
+        cmd: "set .id={{ (_users.msg | selectattr('name', 'equalto', item['name']) | first)['.id'] }} password={{ item['password'] }}"
+      loop: "{{ routeros_user_passwords }}"
+      loop_control:
+        label: "{{ item['name'] }}"
+      no_log: true
+      when: _users.msg | selectattr('name', 'equalto', item['name']) | list | length > 0

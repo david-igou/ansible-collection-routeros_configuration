@@ -1,0 +1,19 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# DESTRUCTIVE. The reset only runs when this is explicitly true.
+routeros_reset_confirm: false
+# Keep existing users/passwords across the reset.
+routeros_reset_keep_users: true
+# Skip the default configuration after reset (no-defaults=yes).
+routeros_reset_no_defaults: false
+# A script to run after reset (e.g. re-enable the API). Empty = none.
+routeros_reset_run_after_reset: ""
+# Seconds to wait for the API to return after the reset reboot.
+routeros_reset_reboot_timeout: 300

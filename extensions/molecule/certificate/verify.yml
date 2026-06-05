@@ -18,12 +18,21 @@
       connection: local
       register: certs
 
-    - name: Assert both certs exist and are signed (non-empty fingerprint)
+    - name: Read files
+      community.routeros.api:
+        path: file
+      delegate_to: localhost
+      connection: local
+      register: certfiles
+
+    - name: Assert certs are signed and the exported cert file exists
       ansible.builtin.assert:
         that:
           - certs.msg | selectattr('name', 'equalto', 'mol-ca') | list | length == 1
           - certs.msg | selectattr('name', 'equalto', 'mol-host') | list | length == 1
           - (certs.msg | selectattr('name', 'equalto', 'mol-ca') | first)['fingerprint'] | default('') | length > 0
           - (certs.msg | selectattr('name', 'equalto', 'mol-host') | first)['fingerprint'] | default('') | length > 0
-        success_msg: "mol-ca and mol-host both present and signed"
-        fail_msg: "certs missing or unsigned: {{ certs.msg }}"
+          - certfiles.msg | selectattr('name', 'equalto', 'mol-ca-keep.crt') | list | length == 1
+          - certfiles.msg | selectattr('name', 'equalto', 'mol-host-imp.crt') | list | length == 0
+        success_msg: "certs signed; export created mol-ca-keep.crt; import consumed mol-host-imp.crt"
+        fail_msg: "export/import wrong: {{ certfiles.msg | map(attribute='name') | list }}"

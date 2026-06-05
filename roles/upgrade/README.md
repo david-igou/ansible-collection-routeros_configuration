@@ -50,3 +50,8 @@ upgrade (see the `backup` role).
 
 RouterBOARD firmware upgrade (`/system routerboard upgrade`) — tracked as a
 follow-up.
+
+## RouterBOARD firmware
+
+`routeros_routerboard_upgrade: true` runs `/system routerboard upgrade` and
+reboots. Gated and **not exercised in CI** (a CHR has no RouterBOARD).

@@ -46,10 +46,12 @@ molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the sh
 # sorts by directory, which would put configure_* before default and converge
 # against an un-prepared CHR).
 ifeq ($(SCENARIO),)
-	molecule test -s default -s configure_lists -s configure_singletons \
+	molecule test -s default -s ping -s fetch -s configure_lists -s configure_singletons \
 		-s configure_ordered -s configure_modify_only \
 		-s configure_dependency_chain -s configure_full \
-		-s certificate -s upgrade -s export_vars -s backup
+		-s certificate -s upgrade -s export_vars \
+		-s facts -s command -s user_password -s reset \
+		-s backup -s restore -s reboot
 	molecule test -s chr
 else
 	molecule test -s $(SCENARIO)

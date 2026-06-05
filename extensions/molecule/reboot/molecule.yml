@@ -1,0 +1,7 @@
+---
+scenario:
+  name: reboot
+  test_sequence:
+    - dependency
+    - converge
+    - verify
