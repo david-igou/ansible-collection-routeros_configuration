@@ -1,0 +1,40 @@
+---
+- name: Converge — back up the device, with a known service secret present
+  hosts: molecule
+  gather_facts: false
+  # network_cli at play level (the chr/verify.yml pattern) so the backup role's
+  # /export runs over SSH. ansible_host/ansible_port come from the runtime
+  # inventory; +cet1024w stops RouterOS' interactive cursor probe.
+  vars:
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: community.routeros.routeros
+    ansible_network_cli_ssh_type: libssh
+    ansible_user: "admin+cet1024w"
+    ansible_password: "{{ chr_admin_password }}"
+    ansible_ssh_common_args: >-
+      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+    routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"
+  tasks:
+    # A WireGuard interface auto-generates a private-key (a readable service
+    # secret), so the export can prove "with secrets". api_modify (over the API)
+    # is idempotent, so the idempotence run sees no change.
+    - name: Ensure a wireguard interface exists (readable service secret)
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: interface wireguard
+        data:
+          - name: bk-wg
+        handle_absent_entries: ignore
+      delegate_to: localhost
+      connection: local
+
+    - name: Back up the device (text export + binary backup)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.backup
+      vars:
+        routeros_backup_binary: true

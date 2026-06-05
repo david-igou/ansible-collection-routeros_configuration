@@ -100,20 +100,26 @@ inventory's connection vars, not the API contract.
 5. When `routeros_backup_binary`: `community.routeros.command` —
    `/system backup save name=<> [password=<>]`.
 
-## Molecule (`extensions/molecule/backup/`, network_cli)
+## Molecule (`extensions/molecule/backup/`, network_cli on the shared CHR)
 
-Modeled on the `chr` scenario (its own CHR VM, libssh, opts out of
-`shared_state`), because the role needs SSH/network_cli, not the API hostfwd the
-shared scenarios use.
+The shared CHR already forwards SSH on `127.0.0.1:2222` and bootstraps
+`admin`/`molecule` (`utils/prepare.yml`), so the scenario **joins the shared
+pass** (`shared_state`, inherits create/prepare/destroy) and connects via
+network_cli at *play* level — exactly the `chr/verify.yml` pattern, but against
+the shared instance. No separate VM.
 
-- `converge.yml`: first set a recognizable secret (a WireGuard interface with a
-  known private-key, or an IPsec identity PSK) via the API, then run the
-  `backup` role with `routeros_backup_dir` pointed at the scenario's ephemeral
-  dir and `routeros_backup_binary: true`.
-- `verify.yml`: assert (a) the `.rsc` exists and contains the WireGuard
-  interface/secret (proves "export with secrets" on a real CHR), (b) it contains
-  no `set password=` for `/user` (documents the known gap), and (c) the binary
-  `<name>.backup` file is present in `/file` via `api_info`/command.
+- `converge.yml`: play sets the network_cli connection vars (libssh,
+  `admin+cet1024w`, `chr_admin_password`). First ensure a WireGuard interface
+  named `bk-wg` exists via `community.routeros.api_modify` (`delegate_to:
+  localhost`, name only — RouterOS auto-generates the private-key; idempotent, no
+  key-normalisation diff). Then `include_role: backup` with
+  `routeros_backup_dir` under `MOLECULE_EPHEMERAL_DIRECTORY` and
+  `routeros_backup_binary: true`.
+- `verify.yml`: assert (a) the `.rsc` exists and contains `bk-wg` plus a
+  `private-key=` line (proves "export with secrets" on a real CHR), (b) it
+  contains no `/user` `set ... password=` (documents the known gap), and (c) the
+  binary `ansible.backup` is present in `/file` (via a `/file print where name=…`
+  command).
 - Idempotence: the scenario keeps the default `converge → idempotence → verify`
   sequence. Only the controller `copy` reports *changed* (and only when the
   config changed); both `command` tasks are `changed_when: false` — reading the
@@ -123,8 +129,8 @@ shared scenarios use.
   rewritten each run (a fresh point-in-time artifact) though the task reports
   `ok`.
 
-Wire the scenario into the CI `molecule-qemu` matrix (its own leg, like `chr`,
-since it needs its own network_cli VM) and the `Makefile`.
+Add `backup` to the shared-pass scenario list (CI `molecule-qemu` `shared` leg
+and the `Makefile`), after `configure_full`.
 
 ## Error handling
 

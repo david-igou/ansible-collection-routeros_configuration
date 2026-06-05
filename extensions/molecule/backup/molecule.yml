@@ -1,0 +1,7 @@
+---
+# Provisioner wiring, test_sequence, and verifier are centralised in
+# extensions/molecule/config.yml. This scenario joins the shared pass (one CHR)
+# and reaches it over network_cli at play level (see converge.yml/verify.yml),
+# since the backup role uses /export over SSH rather than the binary API.
+scenario:
+  name: backup

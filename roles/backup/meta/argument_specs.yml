@@ -1,0 +1,47 @@
+---
+argument_specs:
+  main:
+    short_description: Back up RouterOS configuration over network_cli.
+    description:
+      - Writes a text configuration export (C(/export)) to a file on the Ansible
+        controller, rewriting it only when the device config changed (idempotent).
+      - Optionally takes a full-fidelity binary backup (C(/system backup save)) on
+        the device.
+      - Runs over network_cli (C(community.routeros.command)); C(/export) is not
+        available over the binary API.
+    options:
+      routeros_backup_dir:
+        type: str
+        default: ./routeros-backups
+        description:
+          - Controller directory for the C(.rsc) export, one file per host
+            (C(<inventory_hostname>.rsc)).
+      routeros_backup_show_sensitive:
+        type: bool
+        default: true
+        description:
+          - Run C(/export show-sensitive) to include service secrets. C(/export)
+            still never includes C(/user) passwords, certificates, SSH keys, Dude,
+            or the User-manager database.
+      routeros_backup_export_options:
+        type: str
+        default: ""
+        description:
+          - Extra arguments appended to C(/export) (e.g. a menu path like
+            C(ip firewall), or C(terse)).
+      routeros_backup_binary:
+        type: bool
+        default: false
+        description:
+          - Also take a binary backup (C(/system backup save)) on the device.
+            Restore with C(/system backup load). Stays on the device.
+      routeros_backup_name:
+        type: str
+        default: ansible
+        description: Binary backup file name.
+      routeros_backup_password:
+        type: str
+        default: ""
+        description:
+          - Encryption password for the binary backup. Secret — supply via
+            vault. Recommended, as the binary backup contains sensitive data.
