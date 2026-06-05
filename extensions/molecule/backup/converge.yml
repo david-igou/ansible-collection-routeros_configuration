@@ -10,7 +10,10 @@
     ansible_network_os: community.routeros.routeros
     ansible_network_cli_ssh_type: libssh
     ansible_user: "admin+cet1024w"
-    ansible_password: "{{ chr_admin_password }}"
+    # Via hostvars[inventory_hostname] so it still resolves when a task delegates
+    # to localhost (a connection var is templated against the delegate host,
+    # which is not in the molecule group and so lacks chr_admin_password).
+    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
     ansible_ssh_common_args: >-
       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"
