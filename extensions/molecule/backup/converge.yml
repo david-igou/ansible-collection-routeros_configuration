@@ -3,14 +3,21 @@
   hosts: molecule
   gather_facts: false
   # network_cli at play level (the chr/verify.yml pattern) so the backup role's
-  # /export runs over SSH. ansible_host/ansible_port come from the runtime
-  # inventory; +cet1024w stops RouterOS' interactive cursor probe.
+  # /export runs over SSH. +cet1024w stops RouterOS' interactive cursor probe.
   vars:
+    # Fixed SSH host-forward for the shared CHR (utils/inventory/hosts.yml).
+    # Sibling shared-state scenarios cannot see the provisioner's dynamic SSH
+    # port, so reach the device over this fixed one.
+    ansible_host: "127.0.0.1"
+    ansible_port: 2223
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: community.routeros.routeros
     ansible_network_cli_ssh_type: libssh
     ansible_user: "admin+cet1024w"
-    ansible_password: "{{ chr_admin_password }}"
+    # Via hostvars[inventory_hostname] so it still resolves when a task delegates
+    # to localhost (a connection var is templated against the delegate host,
+    # which is not in the molecule group and so lacks chr_admin_password).
+    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
     ansible_ssh_common_args: >-
       -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"

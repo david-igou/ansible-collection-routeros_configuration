@@ -11,6 +11,9 @@
     state: directory
     mode: "0700"
   delegate_to: localhost
+  # Controller-side task: force the local connection so it does not inherit the
+  # device's network_cli connection (which would try to reach localhost over SSH).
+  connection: local
 
 - name: Export the running configuration (text, on the device console)
   community.routeros.command:
@@ -37,6 +40,7 @@
     dest: "{{ routeros_backup_dir }}/{{ inventory_hostname }}.rsc"
     mode: "0600"
   delegate_to: localhost
+  connection: local
 
 - name: Take a binary backup on the device
   # Full-fidelity, on-device, restorable with /system backup load. Treated as a
