@@ -3,6 +3,9 @@
   hosts: molecule
   gather_facts: false
   vars:
+    # Fixed SSH host-forward for the shared CHR (see converge.yml / hosts.yml).
+    ansible_host: "127.0.0.1"
+    ansible_port: 2223
     ansible_connection: ansible.netcommon.network_cli
     ansible_network_os: community.routeros.routeros
     ansible_network_cli_ssh_type: libssh
