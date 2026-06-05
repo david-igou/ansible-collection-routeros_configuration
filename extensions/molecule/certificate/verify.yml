@@ -1,0 +1,29 @@
+---
+- name: Verify — both certificates exist and are signed
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read certificates
+      community.routeros.api:
+        path: certificate
+      delegate_to: localhost
+      connection: local
+      register: certs
+
+    - name: Assert both certs exist and are signed (non-empty fingerprint)
+      ansible.builtin.assert:
+        that:
+          - certs.msg | selectattr('name', 'equalto', 'mol-ca') | list | length == 1
+          - certs.msg | selectattr('name', 'equalto', 'mol-host') | list | length == 1
+          - (certs.msg | selectattr('name', 'equalto', 'mol-ca') | first)['fingerprint'] | default('') | length > 0
+          - (certs.msg | selectattr('name', 'equalto', 'mol-host') | first)['fingerprint'] | default('') | length > 0
+        success_msg: "mol-ca and mol-host both present and signed"
+        fail_msg: "certs missing or unsigned: {{ certs.msg }}"

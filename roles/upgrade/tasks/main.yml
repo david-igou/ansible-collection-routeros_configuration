@@ -1,0 +1,65 @@
+---
+# tasks file for david_igou.routeros_configuration.upgrade
+#
+# Idempotent safe path: set the channel only when it differs, and check for
+# updates (read-only). The install+reboot is gated behind routeros_upgrade_install
+# and only fires when an update is actually available.
+
+- name: Manage RouterOS package updates over the API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Read current update settings
+      community.routeros.api:
+        path: system package update
+      register: _upd
+      changed_when: false
+
+    - name: Set the update channel
+      community.routeros.api:
+        path: system package update
+        cmd: "set channel={{ routeros_update_channel }}"
+      when: ((_upd.msg | first).channel | default('')) != routeros_update_channel
+
+    - name: Check for updates
+      community.routeros.api:
+        path: system package update
+        cmd: check-for-updates
+      changed_when: false
+      # Checking needs outbound internet; a failed check should not break a play.
+      # When install is requested but the check failed, the install gate below
+      # simply will not fire.
+      failed_when: false
+
+    - name: Read update status after the check
+      community.routeros.api:
+        path: system package update
+      register: _upd_status
+      changed_when: false
+
+    - name: Install the available update (REBOOTS the device)
+      community.routeros.api:
+        path: system package update
+        cmd: install
+      changed_when: true
+      when:
+        - routeros_upgrade_install | bool
+        - ((_upd_status.msg | first).status | default('')) is search('New version')
+
+    - name: Wait for the API to return after the reboot
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default(8728, true) }}"
+        timeout: "{{ routeros_upgrade_reboot_timeout }}"
+        delay: 20
+      when:
+        - routeros_upgrade_install | bool
+        - ((_upd_status.msg | first).status | default('')) is search('New version')

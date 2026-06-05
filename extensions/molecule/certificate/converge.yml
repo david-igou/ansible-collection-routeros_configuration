@@ -1,0 +1,16 @@
+---
+- name: Converge — create and sign certificates via the certificate role
+  hosts: molecule
+  gather_facts: false
+  vars:
+    routeros_certificates:
+      # Self-signed CA (no `ca:`).
+      - name: mol-ca
+        common_name: Molecule Test CA
+        key_usage: [key-cert-sign, crl-sign]
+      # Host certificate signed by that CA.
+      - name: mol-host
+        common_name: host.molecule.test
+        ca: mol-ca
+  roles:
+    - role: david_igou.routeros_configuration.certificate

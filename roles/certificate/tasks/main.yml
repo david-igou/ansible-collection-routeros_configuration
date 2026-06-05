@@ -1,0 +1,59 @@
+---
+# tasks file for david_igou.routeros_configuration.certificate
+#
+# api_modify treats `certificate` as read-only, so create + sign go through the
+# `api` module. Idempotent: read current state first, then only add the requests
+# that don't exist and sign the certs that aren't signed yet (empty fingerprint).
+
+- name: Manage certificates over the RouterOS API
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Read existing certificates
+      community.routeros.api:
+        path: certificate
+      register: _cert_existing
+      changed_when: false
+
+    - name: Create certificate requests that do not exist yet
+      community.routeros.api:
+        path: certificate
+        # common-name may contain spaces, so quote it; the api module's splitter
+        # (split_routeros_command) is quoting-aware.
+        add: >-
+          name={{ item.name }}
+          common-name={{ item.common_name | community.routeros.quote_argument_value }}
+          key-size={{ item.key_size | default(2048) }}
+          days-valid={{ item.days_valid | default(365) }}
+          {{ ('key-usage=' ~ (item.key_usage | join(','))) if item.key_usage is defined else '' }}
+      loop: "{{ routeros_certificates }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: item.name not in (_cert_existing.msg | map(attribute='name') | list)
+
+    - name: Re-read certificate state after creation
+      community.routeros.api:
+        path: certificate
+      register: _cert_state
+      changed_when: false
+
+    - name: Sign certificates that are not yet signed
+      community.routeros.api:
+        path: certificate
+        cmd: >-
+          sign .id={{ (_cert_state.msg | selectattr('name', 'equalto', item.name) | first)['.id'] }}{{
+          (' ca=' ~ item.ca) if item.ca is defined else '' }} name={{ item.name }}
+      loop: "{{ routeros_certificates }}"
+      loop_control:
+        label: "{{ item.name }}"
+      when: >-
+        not ((_cert_state.msg | selectattr('name', 'equalto', item.name)
+              | first)['fingerprint'] | default(''))
