@@ -1,0 +1,49 @@
+---
+argument_specs:
+  main:
+    short_description: Manage RouterOS package updates over the API.
+    description:
+      - Sets the package update channel (idempotently) and checks for updates.
+      - Optionally installs an available update, which reboots the device — gated
+        behind C(routeros_upgrade_install) and only when an update is available.
+    options:
+      routeros_update_channel:
+        type: str
+        default: stable
+        choices:
+          - stable
+          - testing
+          - long-term
+          - development
+        description: RouterOS package update channel.
+      routeros_upgrade_install:
+        type: bool
+        default: false
+        description: Install an available update. REBOOTS the device.
+      routeros_upgrade_reboot_timeout:
+        type: int
+        default: 300
+        description: Seconds to wait for the API to return after an install/reboot.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault. The module marks it no_log.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

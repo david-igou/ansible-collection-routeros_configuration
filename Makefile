@@ -48,7 +48,8 @@ molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the sh
 ifeq ($(SCENARIO),)
 	molecule test -s default -s configure_lists -s configure_singletons \
 		-s configure_ordered -s configure_modify_only \
-		-s configure_dependency_chain -s configure_full -s backup
+		-s configure_dependency_chain -s configure_full \
+		-s certificate -s upgrade -s backup
 	molecule test -s chr
 else
 	molecule test -s $(SCENARIO)

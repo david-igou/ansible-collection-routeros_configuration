@@ -1,0 +1,62 @@
+---
+argument_specs:
+  main:
+    short_description: Create and sign RouterOS certificates over the API.
+    description:
+      - Creates certificate requests and signs them, idempotently (by name; a cert
+        that already exists and is signed is left untouched).
+      - Uses C(community.routeros.api) because api_modify treats C(certificate) as
+        read-only.
+    options:
+      routeros_certificates:
+        type: list
+        elements: dict
+        default: []
+        description: Certificates to create and sign.
+        options:
+          name:
+            type: str
+            required: true
+            description: Certificate name.
+          common_name:
+            type: str
+            required: true
+            description: Certificate common name (CN).
+          key_size:
+            type: int
+            default: 2048
+            description: RSA key size.
+          days_valid:
+            type: int
+            default: 365
+            description: Validity period in days.
+          key_usage:
+            type: list
+            elements: str
+            description: Key usages (e.g. C(key-cert-sign), C(crl-sign) for a CA).
+          ca:
+            type: str
+            description: Name of the signing CA certificate. Omit for self-signed.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault. The module marks it no_log.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

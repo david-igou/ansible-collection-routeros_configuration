@@ -1,0 +1,19 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# Intentionally left undefined (no default): supply it via vault/group_vars.
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# RouterOS package update channel: stable | testing | long-term | development.
+routeros_update_channel: stable
+
+# Install an available update. This REBOOTS the device. Off by default — gate it
+# behind explicit opt-in and a maintenance window.
+routeros_upgrade_install: false
+
+# Seconds to wait for the API to come back after an install/reboot.
+routeros_upgrade_reboot_timeout: 300

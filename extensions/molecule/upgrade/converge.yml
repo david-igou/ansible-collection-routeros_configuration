@@ -1,0 +1,10 @@
+---
+- name: Converge — set the update channel (install gated off) via the upgrade role
+  hosts: molecule
+  gather_facts: false
+  vars:
+    # long-term differs from the CHR's default (stable), so the channel-set path
+    # actually runs on the first converge and is a no-op on idempotence.
+    routeros_update_channel: long-term
+  roles:
+    - role: david_igou.routeros_configuration.upgrade

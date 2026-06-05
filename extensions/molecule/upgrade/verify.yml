@@ -1,0 +1,26 @@
+---
+- name: Verify — the update channel was set
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read update settings
+      community.routeros.api:
+        path: system package update
+      delegate_to: localhost
+      connection: local
+      register: upd
+
+    - name: Assert the channel is long-term
+      ansible.builtin.assert:
+        that:
+          - (upd.msg | first).channel == 'long-term'
+        success_msg: "update channel set to long-term"
+        fail_msg: "unexpected update settings: {{ upd.msg }}"
