@@ -25,7 +25,7 @@
     - name: Wait for the API to return after the reboot
       ansible.builtin.wait_for:
         host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default(8728, true) }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
         timeout: "{{ routeros_reboot_timeout }}"
         delay: 15
       when:

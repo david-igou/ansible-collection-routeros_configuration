@@ -20,14 +20,24 @@
         cmd: >-
           reset-configuration{{ ' keep-users=yes' if routeros_reset_keep_users | bool else '' }}{{
           ' no-defaults=yes' if routeros_reset_no_defaults | bool else '' }}{{
-          (' run-after-reset=' ~ routeros_reset_run_after_reset) if routeros_reset_run_after_reset else '' }}
+          (' run-after-reset=' ~ (routeros_reset_run_after_reset | community.routeros.quote_argument_value)) if routeros_reset_run_after_reset else '' }}
       changed_when: true
       when: routeros_reset_confirm | bool
 
     - name: Wait for the API to return after the reset reboot
       ansible.builtin.wait_for:
         host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default(8728, true) }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
         timeout: "{{ routeros_reset_reboot_timeout }}"
         delay: 20
+      when: routeros_reset_confirm | bool
+
+    - name: Wait for the API to actually answer (port opens before login is ready)
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _reset_api_ready
+      until: _reset_api_ready is succeeded
+      retries: 40
+      delay: 5
+      changed_when: false
       when: routeros_reset_confirm | bool

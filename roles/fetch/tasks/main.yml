@@ -17,7 +17,9 @@
       community.routeros.api:  # noqa: args[module]
         path: tool
         cmd: >-
-          fetch url={{ item['url'] }} dst-path={{ item['dst_path'] }} mode={{ item['mode'] | default('http') }}{{
+          fetch url={{ item['url'] | community.routeros.quote_argument_value }}
+          dst-path={{ item['dst_path'] | community.routeros.quote_argument_value }}
+          mode={{ item['mode'] | default('http') }}{{
           (' ' ~ item['extra']) if 'extra' in item else '' }}
       loop: "{{ routeros_fetch }}"
       loop_control:

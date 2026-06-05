@@ -19,8 +19,8 @@
         path: system backup
         # /system backup load requires a password= even for unencrypted backups.
         cmd: >-
-          load name={{ routeros_restore_backup_name }}
-          password={{ routeros_restore_backup_password if routeros_restore_backup_password else '""' }}
+          load name={{ routeros_restore_backup_name | community.routeros.quote_argument_value }}
+          password={{ routeros_restore_backup_password | community.routeros.quote_argument_value }}
       changed_when: true
       no_log: "{{ (routeros_restore_backup_password | length) > 0 }}"
       when: routeros_restore_backup_name | length > 0
@@ -28,7 +28,7 @@
     - name: Wait for the API to return after the backup-load reboot
       ansible.builtin.wait_for:
         host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default(8728, true) }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
         timeout: "{{ routeros_restore_reboot_timeout }}"
         delay: 15
       when: routeros_restore_backup_name | length > 0

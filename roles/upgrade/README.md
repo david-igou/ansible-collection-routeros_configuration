@@ -29,6 +29,7 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 | --- | --- | --- |
 | `routeros_update_channel` | `stable` | `stable` / `testing` / `long-term` / `development` |
 | `routeros_upgrade_install` | `false` | install an available update (**reboots**) |
+| `routeros_routerboard_upgrade` | `false` | flash newer RouterBOARD firmware if available (**reboots**) |
 | `routeros_upgrade_reboot_timeout` | `300` | seconds to wait for the API after reboot |
 
 ## Idempotency & rollback
@@ -46,12 +47,10 @@ This is inherently a one-time change.
 `/system package downgrade` (reboots) or restore a binary backup taken before the
 upgrade (see the `backup` role).
 
-## Out of scope
-
-RouterBOARD firmware upgrade (`/system routerboard upgrade`) — tracked as a
-follow-up.
-
 ## RouterBOARD firmware
 
-`routeros_routerboard_upgrade: true` runs `/system routerboard upgrade` and
-reboots. Gated and **not exercised in CI** (a CHR has no RouterBOARD).
+`routeros_routerboard_upgrade: true` flashes RouterBOARD firmware and reboots —
+but only when the installed firmware differs from the firmware bundled with the
+running RouterOS (`current-firmware` vs `upgrade-firmware`), so an enabled flag
+is a no-op once the device is up to date rather than rebooting on every run.
+Gated and **not exercised in CI** (a CHR has no RouterBOARD).

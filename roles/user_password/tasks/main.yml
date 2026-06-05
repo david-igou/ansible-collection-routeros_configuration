@@ -20,14 +20,28 @@
       register: _users
       changed_when: false
 
+    # Fail loudly instead of silently skipping an unknown user (a typo or a not-
+    # yet-created account would otherwise report success without rotating). Set-
+    # difference rather than a loop so the password-bearing items are never
+    # iterated/logged here.
+    - name: Fail if any requested user does not exist
+      vars:
+        _missing_users: >-
+          {{ routeros_user_passwords | map(attribute='name') | list
+             | difference(_users.msg | map(attribute='name') | list) }}
+      ansible.builtin.assert:
+        that:
+          - _missing_users | length == 0
+        fail_msg: "user(s) not found on the device, cannot set password(s): {{ _missing_users }}"
+        quiet: true
+
     - name: Set passwords
       community.routeros.api:  # noqa: args[module]
         path: user
         cmd: >-
           set .id={{ (_users.msg | selectattr('name', 'equalto', item['name']) | first)['.id'] }}
-          password={{ item['password'] }}
+          password={{ item['password'] | community.routeros.quote_argument_value }}
       loop: "{{ routeros_user_passwords }}"
       loop_control:
         label: "{{ item['name'] }}"
       no_log: true
-      when: _users.msg | selectattr('name', 'equalto', item['name']) | list | length > 0

@@ -1,3 +1,11 @@
 ---
+# The certificate role's export→import flow is imperative — RouterOS deletes a
+# file when it is imported, so export+import cannot converge to a no-op. Create
+# and sign are idempotent, but the scenario as a whole drops the idempotence
+# step, like the other imperative role scenarios (reboot/restore).
 scenario:
   name: certificate
+  test_sequence:
+    - dependency
+    - converge
+    - verify
