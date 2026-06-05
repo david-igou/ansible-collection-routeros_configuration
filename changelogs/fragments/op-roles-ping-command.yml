@@ -1,6 +1,5 @@
 ---
 minor_changes:
-  - New C(facts) role — gather device facts over the API (C(api_facts)).
   - New C(ping) role — connectivity checks via C(/tool ping) over the API.
   - >-
     New C(command) role — run arbitrary RouterOS API operations
