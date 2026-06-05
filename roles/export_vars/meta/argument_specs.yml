@@ -1,0 +1,51 @@
+---
+argument_specs:
+  main:
+    short_description: Capture a running device's config into a routeros_config vars file.
+    description:
+      - The reverse of the C(configure) role. Reads the device over the API
+        (C(community.routeros.api_info)) and writes a per-host vars file containing
+        a C(routeros_config) dict that the C(configure) role can re-apply.
+      - Captured fields are a best-effort equivalent; review before re-applying.
+    options:
+      routeros_export_vars_dir:
+        type: str
+        default: ./routeros-vars
+        description:
+          - Controller directory for the captured C(<inventory_hostname>.yml) files.
+      routeros_export_vars_paths:
+        type: list
+        elements: str
+        description:
+          - Slash paths to capture. When unset, defaults to the configure role's
+            full C(rcfg_path_order) (every configurable path). Paths with no
+            entries are omitted from the output.
+      routeros_export_vars_redact:
+        type: bool
+        default: false
+        description:
+          - Replace sensitive field values (keys, PSKs, passwords) with C(REDACTED).
+            Off by default so the output round-trips; encrypt the file with vault.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault. The module marks it no_log.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.

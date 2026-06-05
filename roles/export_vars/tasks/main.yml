@@ -1,0 +1,51 @@
+---
+# tasks file for david_igou.routeros_configuration.export_vars
+#
+# The reverse of the configure role: read a running device over the API and write
+# an equivalent routeros_config vars file to the controller. Idempotent — only
+# the controller copy reports changed, and only when the captured config differs.
+
+- name: Load the canonical path order from the configure role
+  ansible.builtin.include_vars:
+    file: "{{ role_path }}/../configure/vars/main.yml"
+  when: routeros_export_vars_paths is not defined
+
+- name: Capture the device configuration
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Ensure the output directory exists on the controller
+      ansible.builtin.file:
+        path: "{{ routeros_export_vars_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Read each path from the device (persistent config only)
+      community.routeros.api_info:
+        path: "{{ item | replace('/', ' ') | trim }}"
+        hide_defaults: true
+        include_dynamic: false
+        include_read_only: false
+      loop: "{{ routeros_export_vars_paths | default(rcfg_path_order) }}"
+      loop_control:
+        label: "{{ item }}"
+      register: _captured
+      changed_when: false
+
+    - name: Write the routeros_config vars file
+      ansible.builtin.copy:
+        content: >-
+          {{ {'routeros_config':
+             (_captured.results
+              | david_igou.routeros_configuration.to_routeros_config(redact=routeros_export_vars_redact | bool))}
+             | to_nice_yaml(indent=2) }}
+        dest: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
+        mode: "0600"
