@@ -97,6 +97,9 @@
       /system/watchdog:
         data:
           - auto-send-supout: false
+      /system/ntp/client:
+        data:
+          - enabled: false
 
       # --- firewall (keyless ordered; comments as pseudo-keys) ---
       /ip/firewall/filter:
@@ -272,6 +275,10 @@
           - address: "192.168.81.9"
             mac-address: "00:11:22:33:81:09"
             interface: ether4
+      # NOTE: /ip/route is deliberately NOT applied here. api_modify has no
+      # primary key for it, so it matches keyless by content; a static route's
+      # read-back content differs from what was sent (RouterOS normalises/derives
+      # fields), so a re-apply re-adds it and breaks idempotence. See EXCLUSIONS.md.
 
       # --- dhcp client/relay (disabled; dedicated ports) ---
       /ip/dhcp-client:

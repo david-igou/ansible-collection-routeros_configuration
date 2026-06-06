@@ -1,0 +1,21 @@
+---
+# Dedicated throwaway CHR for the destructive end-to-end: configure -> backup ->
+# restore round-trip (real reboot) -> /import branch -> reset wipe (real
+# reset-configuration with run-after-reset restoring API reachability). Opts out
+# of shared state — a reset would sever the shared device's management plane — so
+# it boots and destroys its OWN CHR. Inventory + create/prepare/destroy are
+# inherited from extensions/molecule/config.yml (the utils/ playbooks). Runs as a
+# separate `molecule test -s lifecycle` invocation (see the Makefile), so its
+# 8728/2223 hostfwd does not collide with the shared pass.
+shared_state: false
+scenario:
+  name: lifecycle
+  # No verify step: every phase asserts inline in converge (the final reset wipe
+  # leaves the device unreachable on the managed interface, so there is no state
+  # to read back afterwards).
+  test_sequence:
+    - dependency
+    - create
+    - prepare
+    - converge
+    - destroy

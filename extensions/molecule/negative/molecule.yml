@@ -1,0 +1,10 @@
+---
+# Negative / failure-path scenario: assert roles FAIL as designed. All checks
+# fail at validation before any device mutation (or are read-only), so they are
+# safe on the shared CHR. block/rescue captures the expected failure; no
+# idempotence or verify step.
+scenario:
+  name: negative
+  test_sequence:
+    - dependency
+    - converge

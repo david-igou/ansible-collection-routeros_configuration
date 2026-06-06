@@ -27,6 +27,20 @@
       delegate_to: localhost
       connection: local
 
+    - name: Ensure a known /system/identity exists
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: system identity
+        data:
+          - name: export-vars-id
+      delegate_to: localhost
+      connection: local
+
     - name: Capture the device configuration
       ansible.builtin.include_role:
         name: david_igou.routeros_configuration.export_vars

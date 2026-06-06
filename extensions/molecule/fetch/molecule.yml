@@ -1,3 +1,11 @@
 ---
+# The fetch op is idempotent-safe (api returns changed=False for cmd ops), but
+# the remove branch deletes a file the next fetch re-creates, so the combined
+# fetch+remove flow is NOT idempotent — drop the idempotence step. The verify
+# read-back (kept file present, removed file gone) is the real proof.
 scenario:
   name: fetch
+  test_sequence:
+    - dependency
+    - converge
+    - verify

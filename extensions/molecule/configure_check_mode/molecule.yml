@@ -1,0 +1,9 @@
+---
+# Check-mode proof. A check_mode task always reports `changed`, so the idempotence
+# step is dropped (it would re-run the check-mode apply and never settle).
+scenario:
+  name: configure_check_mode
+  test_sequence:
+    - dependency
+    - converge
+    - verify

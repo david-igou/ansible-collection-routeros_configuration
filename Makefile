@@ -3,7 +3,11 @@ COLLECTION_NAME      := routeros_configuration
 COLLECTION           := $(COLLECTION_NAMESPACE).$(COLLECTION_NAME)
 COLLECTION_VERSION   := $(shell grep '^version:' galaxy.yml | awk '{print $$2}')
 
-MOLECULE_SCENARIOS := system_identity ip_address ip_firewall_filter
+# Scenarios that own their own CHR lifecycle (create/prepare/destroy in their
+# test_sequence) run standalone; every other (shared-state) scenario relies on
+# the `default` scenario to boot the shared CHR, so a single-scenario run must
+# prepend it (see the `molecule` target's SCENARIO= branch).
+SELF_OWNING := chr lifecycle default integration_hello_world
 
 # PROVISIONER picks which mp.<backend> block a scenario uses when its inventory
 # declares more than one. The chr scenario declares only qemu, so leaving this
@@ -48,13 +52,16 @@ molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the sh
 ifeq ($(SCENARIO),)
 	molecule test -s default -s ping -s fetch -s configure_lists -s configure_singletons \
 		-s configure_ordered -s configure_modify_only \
-		-s configure_dependency_chain -s configure_full \
+		-s configure_dependency_chain -s configure_full -s configure_check_mode \
 		-s certificate -s upgrade -s export_vars \
 		-s command -s user_password -s reset \
-		-s backup -s restore -s reboot
+		-s backup -s restore -s reboot -s negative
 	molecule test -s chr
-else
+	molecule test -s lifecycle
+else ifeq ($(filter $(SCENARIO),$(SELF_OWNING)),$(SCENARIO))
 	molecule test -s $(SCENARIO)
+else
+	molecule test -s default -s $(SCENARIO)
 endif
 
 test: molecule ## Run the molecule test suite

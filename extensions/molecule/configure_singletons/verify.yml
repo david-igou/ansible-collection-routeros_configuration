@@ -23,9 +23,17 @@
       delegate_to: localhost
       connection: local
       register: dns
-    - name: Assert identity + dns applied
+    - name: Read /ip/settings
+      community.routeros.api_info:
+        path: ip settings
+      delegate_to: localhost
+      connection: local
+      register: ipsettings
+    - name: Assert identity, dns servers, allow-remote-requests, and tcp-syncookies applied
       ansible.builtin.assert:
         that:
           - ident.result | selectattr('name', 'equalto', 'configure-chr') | list | length == 1
           - dns.result | selectattr('servers', 'search', '1.1.1.1') | list | length == 1
-        fail_msg: "identity={{ ident.result }} dns={{ dns.result }}"
+          - (dns.result | first)['allow-remote-requests'] | string | lower == 'false'
+          - (ipsettings.result | first)['tcp-syncookies'] | string | lower == 'true'
+        fail_msg: "identity={{ ident.result }} dns={{ dns.result }} ipsettings={{ ipsettings.result }}"

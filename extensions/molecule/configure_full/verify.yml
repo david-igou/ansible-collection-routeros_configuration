@@ -44,6 +44,24 @@
       delegate_to: localhost
       connection: local
       register: ident
+    - name: Read /ip/firewall/nat (keyless)
+      community.routeros.api_info:
+        path: ip firewall nat
+      delegate_to: localhost
+      connection: local
+      register: nat
+    - name: Read /ip/firewall/address-list (keyed list)
+      community.routeros.api_info:
+        path: ip firewall address-list
+      delegate_to: localhost
+      connection: local
+      register: alist
+    - name: Read /interface/bridge/vlan (dependency child)
+      community.routeros.api_info:
+        path: interface bridge vlan
+      delegate_to: localhost
+      connection: local
+      register: brvlan
 
     - name: Collect firewall comments in device order
       ansible.builtin.set_fact:
@@ -56,5 +74,8 @@
           - fc.index('f-a') < fc.index('f-b') and fc.index('f-b') < fc.index('f-c')
           - ports.result | selectattr('bridge', 'equalto', 'full-br') | list | length == 2
           - leases.result | selectattr('address', 'equalto', '192.168.80.100') | list | length == 1
-        success_msg: "comprehensive apply verified: keyed/singleton/ordered/dependency-chain all present"
+          - nat.result | selectattr('comment', 'equalto', 'n-a') | list | length == 1
+          - alist.result | selectattr('list', 'equalto', 'full-block') | list | length == 1
+          - brvlan.result | selectattr('bridge', 'equalto', 'full-br') | list | length >= 1
+        success_msg: "comprehensive apply verified: keyed/singleton/ordered/dependency-chain/nat all present"
         fail_msg: "pool={{ pool.result }} ident={{ ident.result }} fw={{ fc }} ports={{ ports.result }} leases={{ leases.result }}"

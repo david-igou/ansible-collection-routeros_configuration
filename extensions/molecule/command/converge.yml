@@ -1,10 +1,41 @@
 ---
-- name: Converge — run an arbitrary command (set system note)
+- name: Converge — cmd (set note), then add + remove an address-list entry
   hosts: molecule
   gather_facts: false
-  vars:
-    routeros_command:
-      - path: "system note"
-        cmd: "set note=cmd-role-marker"
-  roles:
-    - role: david_igou.routeros_configuration.command
+  tasks:
+    - name: cmd op — set system note
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.command
+      vars:
+        routeros_command:
+          - path: "system note"
+            cmd: "set note=cmd-role-marker"
+
+    - name: add op — create an address-list entry
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.command
+      vars:
+        routeros_command:
+          - path: "ip firewall address-list"
+            add: "list=cmd-list address=198.51.100.7"
+
+    - name: Read the address-list id (for the remove op)
+      community.routeros.api:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port | default(omit, true) }}"
+        path: ip firewall address-list
+      delegate_to: localhost
+      connection: local
+      register: _al
+
+    - name: remove op — delete that address-list entry by id
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.command
+      vars:
+        routeros_command:
+          - path: "ip firewall address-list"
+            remove: "{{ (_al.msg | selectattr('list', 'equalto', 'cmd-list') | first)['.id'] }}"
