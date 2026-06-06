@@ -1,0 +1,175 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>david_igou.routeros_configuration.ping role &mdash; RouterOS Configuration Collection  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=41de9001" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/ansible.css?v=b54c304f" />
+      <link rel="stylesheet" type="text/css" href="../_static/antsibull-minimal.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/rtd-ethical-ads.css?v=289b023e" />
+
+  
+    <link rel="shortcut icon" href="../_static/images/Ansible-Mark-RGB_Black.png"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=7f41d439"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="david_igou.routeros_configuration.reboot role" href="reboot_role.html" />
+    <link rel="prev" title="david_igou.routeros_configuration.fetch role" href="fetch_role.html" /><!-- extra head elements for Ansible beyond RTD Sphinx Theme -->
+
+
+
+
+</head>
+
+<body class="wy-body-for-nav"><!-- extra body elements for Ansible beyond RTD Sphinx Theme -->
+
+<div class="DocSite-globalNav ansibleNav">
+  <ul>
+    <li><a href="https://www.ansible.com/blog" target="_blank">Blog</a></li>
+    <li><a href="https://forum.ansible.com/" target="_blank">Ansible community forum</a></li>
+    <li><a href="https://docs.ansible.com/" target="_blank">Documentation</a></li>
+  </ul>
+</div>
+
+<a class="DocSite-nav" href="https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/" style="padding-bottom: 30px;">
+
+  <img class="DocSiteNav-logo"
+    src="../_static/images/Ansible-Mark-RGB_White.png"
+    alt="Ansible Logo">
+  <div class="DocSiteNav-title">RouterOS Configuration Docs</div>
+</a>
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            RouterOS Configuration Collection
+          </a><!--- Based on https://github.com/rtfd/sphinx_rtd_theme/pull/438/files -->
+
+<div class="version">
+  
+    
+  
+</div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <label class="sr-only" for="q">Search docs:</label>
+    <input type="text" class="st-default-search-input" id="q" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+  
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="guide.html">Getting started</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="configure_role.html">david_igou.routeros_configuration.configure role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="export_vars_role.html">david_igou.routeros_configuration.export_vars role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="backup_role.html">david_igou.routeros_configuration.backup role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="restore_role.html">david_igou.routeros_configuration.restore role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="certificate_role.html">david_igou.routeros_configuration.certificate role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="upgrade_role.html">david_igou.routeros_configuration.upgrade role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user_password_role.html">david_igou.routeros_configuration.user_password role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_role.html">david_igou.routeros_configuration.command role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="fetch_role.html">david_igou.routeros_configuration.fetch role</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.ping role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reboot_role.html">david_igou.routeros_configuration.reboot role</a></li>
+<li class="toctree-l1"><a class="reference internal" href="reset_role.html">david_igou.routeros_configuration.reset role</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../to_routeros_config_filter.html">david_igou.routeros_configuration.to_routeros_config filter – Build a routeros_config dict from api_info results.</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../_reconcile_role.html">david_igou.routeros_configuration._reconcile role – Reconcile one RouterOS config path declaratively via the API.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../backup_role.html">david_igou.routeros_configuration.backup role – Back up RouterOS configuration over network_cli.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../certificate_role.html">david_igou.routeros_configuration.certificate role – Create and sign RouterOS certificates over the API.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_role.html">david_igou.routeros_configuration.command role – Run arbitrary RouterOS API commands (escape hatch).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../configure_role.html">david_igou.routeros_configuration.configure role – Declaratively manage RouterOS paths from one data structure.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../export_vars_role.html">david_igou.routeros_configuration.export_vars role – Capture a running device’s config into a routeros_config vars file.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../fetch_role.html">david_igou.routeros_configuration.fetch role – Transfer files to/from RouterOS via /tool fetch.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ping_role.html">david_igou.routeros_configuration.ping role – Connectivity checks via /tool ping over the API.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../poe_role.html">david_igou.routeros_configuration.poe role – Imperative PoE-out operations on a RouterOS device.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reboot_role.html">david_igou.routeros_configuration.reboot role – Reboot or shut down a RouterOS device.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reset_role.html">david_igou.routeros_configuration.reset role – Reset RouterOS configuration (gated, destructive).</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../restore_role.html">david_igou.routeros_configuration.restore role – Restore a RouterOS device from a backup or config import.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../upgrade_role.html">david_igou.routeros_configuration.upgrade role – Manage RouterOS package updates over the API.</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../user_password_role.html">david_igou.routeros_configuration.user_password role – Set/rotate RouterOS /user passwords over the API.</a></li>
+</ul>
+<!-- extra nav elements for Ansible beyond RTD Sphinx Theme -->
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">RouterOS Configuration Collection</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">david_igou.routeros_configuration.ping role</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+
+  
+           <div itemprop="articleBody">
+             
+  <section id="david-igou-routeros-configuration-ping-role">
+<span id="ansible-collections-david-igou-routeros-configuration-docsite-ping-role"></span><h1>david_igou.routeros_configuration.ping role<a class="headerlink" href="#david-igou-routeros-configuration-ping-role" title="Link to this heading"></a></h1>
+<p>Read-only connectivity checks via <code class="docutils literal notranslate"><span class="pre">/tool</span> <span class="pre">ping</span></code>.</p>
+<p>See the <a class="reference internal" href="../ping_role.html#ansible-collections-david-igou-routeros-configuration-ping-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
+</section>
+
+
+           </div>
+          </div>
+          
+
+<footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="fetch_role.html" class="btn btn-neutral float-left" title="david_igou.routeros_configuration.fetch role" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="reboot_role.html" class="btn btn-neutral float-right" title="david_igou.routeros_configuration.reboot role" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright david_igou.routeros_configuration contributors.</p>
+  </div>
+
+  
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script><!-- extra footer elements for Ansible beyond RTD Sphinx Theme -->
+
+</body>
+</html>
