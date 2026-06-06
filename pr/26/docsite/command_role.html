@@ -83,15 +83,7 @@
 <li class="toctree-l1"><a class="reference internal" href="certificate_role.html">david_igou.routeros_configuration.certificate role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade_role.html">david_igou.routeros_configuration.upgrade role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_password_role.html">david_igou.routeros_configuration.user_password role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.command role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#run-a-command-cmd">Run a command (<code class="docutils literal notranslate"><span class="pre">cmd</span></code>)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#add-an-entry-add">Add an entry (<code class="docutils literal notranslate"><span class="pre">add</span></code>)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#remove-an-entry-by-id-remove">Remove an entry by id (<code class="docutils literal notranslate"><span class="pre">remove</span></code>)</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.command role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fetch_role.html">david_igou.routeros_configuration.fetch role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ping_role.html">david_igou.routeros_configuration.ping role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reboot_role.html">david_igou.routeros_configuration.reboot role</a></li>
@@ -146,55 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-command-role"></span><h1>david_igou.routeros_configuration.command role<a class="headerlink" href="#david-igou-routeros-configuration-command-role" title="Link to this heading"></a></h1>
 <p>Escape hatch for arbitrary RouterOS API operations (<code class="docutils literal notranslate"><span class="pre">cmd</span></code> / <code class="docutils literal notranslate"><span class="pre">add</span></code> / <code class="docutils literal notranslate"><span class="pre">remove</span></code> / <code class="docutils literal notranslate"><span class="pre">update</span></code>). Explicitly not idempotent.</p>
 <p>See the <a class="reference internal" href="../command_role.html#ansible-collections-david-igou-routeros-configuration-command-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>This role is the escape hatch for operations the declarative <code class="docutils literal notranslate"><span class="pre">configure</span></code> role
-does not cover. It is <strong>not idempotent</strong> — prefer <code class="docutils literal notranslate"><span class="pre">configure</span></code> where possible.</p>
-<section id="run-a-command-cmd">
-<h3>Run a command (<code class="docutils literal notranslate"><span class="pre">cmd</span></code>)<a class="headerlink" href="#run-a-command-cmd" title="Link to this heading"></a></h3>
-<p>Invoke an arbitrary operation under an API path — here, setting the system note.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.command</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_command</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">system note</span>
-<span class="w">            </span><span class="nt">cmd</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">set note=managed-by-ansible</span>
-</pre></div>
-</div>
-</section>
-<section id="add-an-entry-add">
-<h3>Add an entry (<code class="docutils literal notranslate"><span class="pre">add</span></code>)<a class="headerlink" href="#add-an-entry-add" title="Link to this heading"></a></h3>
-<p>Create an entry under a path with <code class="docutils literal notranslate"><span class="pre">key=value</span></code> arguments.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.command</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_command</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip firewall address-list</span>
-<span class="w">            </span><span class="nt">add</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">list=blocklist address=198.51.100.7</span>
-</pre></div>
-</div>
-</section>
-<section id="remove-an-entry-by-id-remove">
-<h3>Remove an entry by id (<code class="docutils literal notranslate"><span class="pre">remove</span></code>)<a class="headerlink" href="#remove-an-entry-by-id-remove" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">remove</span></code> takes a <code class="docutils literal notranslate"><span class="pre">.id</span></code>. Set <code class="docutils literal notranslate"><span class="pre">no_log:</span> <span class="pre">true</span></code> on any command whose arguments
-carry a secret.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.command</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_command</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip firewall address-list</span>
-<span class="w">            </span><span class="nt">remove</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*1&quot;</span>
-<span class="w">            </span><span class="nt">no_log</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

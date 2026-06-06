@@ -79,15 +79,7 @@
 <li class="toctree-l1"><a class="reference internal" href="configure_role.html">david_igou.routeros_configuration.configure role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="export_vars_role.html">david_igou.routeros_configuration.export_vars role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup_role.html">david_igou.routeros_configuration.backup role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.restore role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#restore-from-a-binary-backup">Restore from a binary backup</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#import-a-configuration-script">Import a configuration script</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#load-a-backup-then-import-with-a-longer-reboot-wait">Load a backup, then import, with a longer reboot wait</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.restore role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="certificate_role.html">david_igou.routeros_configuration.certificate role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade_role.html">david_igou.routeros_configuration.upgrade role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_password_role.html">david_igou.routeros_configuration.user_password role</a></li>
@@ -146,50 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-restore-role"></span><h1>david_igou.routeros_configuration.restore role<a class="headerlink" href="#david-igou-routeros-configuration-restore-role" title="Link to this heading"></a></h1>
 <p>Restores configuration: loads a binary backup (reboots the device) and/or imports a <code class="docutils literal notranslate"><span class="pre">.rsc</span></code> script with <code class="docutils literal notranslate"><span class="pre">/import</span></code>. The reverse of <code class="docutils literal notranslate"><span class="pre">backup</span></code>.</p>
 <p>See the <a class="reference internal" href="../restore_role.html#ansible-collections-david-igou-routeros-configuration-restore-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<section id="restore-from-a-binary-backup">
-<h3>Restore from a binary backup<a class="headerlink" href="#restore-from-a-binary-backup" title="Link to this heading"></a></h3>
-<p>Loads an on-device binary backup and reboots, waiting for the API to return.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.restore</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_restore_backup_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nightly</span>
-<span class="w">        </span><span class="nt">routeros_restore_backup_password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_routeros_backup_password</span><span class="nv"> </span><span class="s">}}&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="import-a-configuration-script">
-<h3>Import a configuration script<a class="headerlink" href="#import-a-configuration-script" title="Link to this heading"></a></h3>
-<p>Imports an on-device <code class="docutils literal notranslate"><span class="pre">.rsc</span></code> script with <code class="docutils literal notranslate"><span class="pre">/import</span></code> (no reboot).</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.restore</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_restore_import_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">edge-router.rsc</span>
-</pre></div>
-</div>
-</section>
-<section id="load-a-backup-then-import-with-a-longer-reboot-wait">
-<h3>Load a backup, then import, with a longer reboot wait<a class="headerlink" href="#load-a-backup-then-import-with-a-longer-reboot-wait" title="Link to this heading"></a></h3>
-<p>Combine both: the binary backup is loaded first (reboot), then the script is
-imported. Raise the timeout for a device that is slow to come back.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.restore</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_restore_backup_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nightly</span>
-<span class="w">        </span><span class="nt">routeros_restore_backup_password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_routeros_backup_password</span><span class="nv"> </span><span class="s">}}&quot;</span>
-<span class="w">        </span><span class="nt">routeros_restore_import_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">extra-tweaks.rsc</span>
-<span class="w">        </span><span class="nt">routeros_restore_reboot_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

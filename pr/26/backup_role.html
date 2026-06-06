@@ -98,7 +98,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.backup role – Back up RouterOS configuration over network_cli.</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#entry-point-main-back-up-routeros-configuration-over-network-cli">Entry point <code class="docutils literal notranslate"><span class="pre">main</span></code> – Back up RouterOS configuration over network_cli.</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#collection-links">Collection links</a></li>
 </ul>
 </li>
@@ -163,6 +164,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <ul>
 <li><p><a class="reference internal" href="#synopsis" id="id2">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
 </ul>
 </li>
 </ul>
@@ -244,6 +246,41 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </tr>
 </tbody>
 </table>
+</section>
+<section id="examples">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h3>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># The text /export runs over network_cli (SSH); the device must be reachable</span>
+<span class="c1"># over an SSH connection (see the getting started guide).</span>
+<span class="c1">#</span>
+<span class="c1"># Export the running config to the controller as &lt;inventory_hostname&gt;.rsc,</span>
+<span class="c1"># rewritten only when the device config changed (idempotent).</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_backup_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./routeros-backups</span>
+
+<span class="c1"># Include service secrets and scope the export to a menu path.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_backup_show_sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">routeros_backup_export_options</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip firewall</span>
+
+<span class="c1"># Also take an encrypted binary backup on the device (password via Vault).</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_backup_binary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">routeros_backup_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nightly</span>
+<span class="w">        </span><span class="nt">routeros_backup_password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">vault_routeros_backup_password</span> <span class="cp">}}</span><span class="s">&quot;</span>
+</pre></div>
+</div>
 <section id="collection-links">
 <h4>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h4>
 <ul class="ansible-links">

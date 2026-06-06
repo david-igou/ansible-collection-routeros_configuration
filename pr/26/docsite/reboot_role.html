@@ -86,15 +86,7 @@
 <li class="toctree-l1"><a class="reference internal" href="command_role.html">david_igou.routeros_configuration.command role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="fetch_role.html">david_igou.routeros_configuration.fetch role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ping_role.html">david_igou.routeros_configuration.ping role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.reboot role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#reboot-and-wait-for-the-device">Reboot and wait for the device</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reboot-with-a-longer-timeout">Reboot with a longer timeout</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#shut-the-device-down">Shut the device down</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.reboot role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reset_role.html">david_igou.routeros_configuration.reset role</a></li>
 </ul>
 <ul>
@@ -146,45 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-reboot-role"></span><h1>david_igou.routeros_configuration.reboot role<a class="headerlink" href="#david-igou-routeros-configuration-reboot-role" title="Link to this heading"></a></h1>
 <p>Reboots the device and waits for the API to return, or shuts it down.</p>
 <p>See the <a class="reference internal" href="../reboot_role.html#ansible-collections-david-igou-routeros-configuration-reboot-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<section id="reboot-and-wait-for-the-device">
-<h3>Reboot and wait for the device<a class="headerlink" href="#reboot-and-wait-for-the-device" title="Link to this heading"></a></h3>
-<p>The default: reboot and wait for the API to return.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reboot</span>
-</pre></div>
-</div>
-</section>
-<section id="reboot-with-a-longer-timeout">
-<h3>Reboot with a longer timeout<a class="headerlink" href="#reboot-with-a-longer-timeout" title="Link to this heading"></a></h3>
-<p>Raise the reconnect wait for a device that is slow to come back.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reboot</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_reboot_timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">600</span>
-</pre></div>
-</div>
-</section>
-<section id="shut-the-device-down">
-<h3>Shut the device down<a class="headerlink" href="#shut-the-device-down" title="Link to this heading"></a></h3>
-<p>Power off instead of rebooting (no reconnect wait). Gated behind
-<code class="docutils literal notranslate"><span class="pre">routeros_shutdown</span></code>.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reboot</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_reboot</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">        </span><span class="nt">routeros_shutdown</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

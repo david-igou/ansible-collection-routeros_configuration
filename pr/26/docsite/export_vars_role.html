@@ -77,15 +77,7 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="configure_role.html">david_igou.routeros_configuration.configure role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.export_vars role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#capture-the-full-configuration">Capture the full configuration</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#capture-a-focused-set-of-paths">Capture a focused set of paths</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#redact-secrets-for-safe-storage">Redact secrets for safe storage</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.export_vars role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup_role.html">david_igou.routeros_configuration.backup role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restore_role.html">david_igou.routeros_configuration.restore role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="certificate_role.html">david_igou.routeros_configuration.certificate role</a></li>
@@ -146,52 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-export-vars-role"></span><h1>david_igou.routeros_configuration.export_vars role<a class="headerlink" href="#david-igou-routeros-configuration-export-vars-role" title="Link to this heading"></a></h1>
 <p>Captures a running device’s configuration over the API into a <code class="docutils literal notranslate"><span class="pre">routeros_config</span></code> vars file that <code class="docutils literal notranslate"><span class="pre">configure</span></code> can re-apply. The reverse of <code class="docutils literal notranslate"><span class="pre">configure</span></code>.</p>
 <p>See the <a class="reference internal" href="../export_vars_role.html#ansible-collections-david-igou-routeros-configuration-export-vars-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<section id="capture-the-full-configuration">
-<h3>Capture the full configuration<a class="headerlink" href="#capture-the-full-configuration" title="Link to this heading"></a></h3>
-<p>Writes <code class="docutils literal notranslate"><span class="pre">&lt;inventory_hostname&gt;.yml</span></code> containing a <code class="docutils literal notranslate"><span class="pre">routeros_config</span></code> dict that
-<code class="docutils literal notranslate"><span class="pre">configure</span></code> can re-apply. With no path list, every configurable path is
-captured.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.export_vars</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_export_vars_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./routeros-vars</span>
-</pre></div>
-</div>
-</section>
-<section id="capture-a-focused-set-of-paths">
-<h3>Capture a focused set of paths<a class="headerlink" href="#capture-a-focused-set-of-paths" title="Link to this heading"></a></h3>
-<p>Limit the capture to specific slash paths for a fast, targeted snapshot. Paths
-with no entries are omitted from the output.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.export_vars</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_export_vars_paths</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/ip/address</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/system/identity</span>
-</pre></div>
-</div>
-</section>
-<section id="redact-secrets-for-safe-storage">
-<h3>Redact secrets for safe storage<a class="headerlink" href="#redact-secrets-for-safe-storage" title="Link to this heading"></a></h3>
-<p>Replace sensitive values (keys, PSKs, passwords) with <code class="docutils literal notranslate"><span class="pre">REDACTED</span></code>. The output
-no longer round-trips, so prefer encrypting the unredacted file with Ansible
-Vault when you need to re-apply it.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.export_vars</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_export_vars_redact</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

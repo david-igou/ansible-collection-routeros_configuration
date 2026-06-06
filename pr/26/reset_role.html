@@ -106,7 +106,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.reset role – Reset RouterOS configuration (gated, destructive).</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#entry-point-main-reset-routeros-configuration-gated-destructive">Entry point <code class="docutils literal notranslate"><span class="pre">main</span></code> – Reset RouterOS configuration (gated, destructive).</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#collection-links">Collection links</a></li>
 </ul>
 </li>
@@ -163,6 +164,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <ul>
 <li><p><a class="reference internal" href="#synopsis" id="id2">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
 </ul>
 </li>
 </ul>
@@ -293,6 +295,39 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </tr>
 </tbody>
 </table>
+</section>
+<section id="examples">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h3>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Destructive: a confirmed run wipes the configuration and reboots. The</span>
+<span class="c1"># routeros_reset_confirm gate defaults to false as a safeguard.</span>
+<span class="c1">#</span>
+<span class="c1"># Safe by default (gate off) — a no-op you can leave in a playbook.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
+
+<span class="c1"># Reset but keep users, and re-enable the API afterward so Ansible can</span>
+<span class="c1"># reconnect.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_reset_confirm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">routeros_reset_keep_users</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">routeros_reset_run_after_reset</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/ip</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">enable</span><span class="nv"> </span><span class="s">api-ssl&quot;</span>
+
+<span class="c1"># Reset to a bare configuration (skip RouterOS&#39; default config).</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_reset_confirm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<span class="w">        </span><span class="nt">routeros_reset_no_defaults</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</pre></div>
+</div>
 <section id="collection-links">
 <h4>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h4>
 <ul class="ansible-links">

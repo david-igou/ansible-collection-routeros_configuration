@@ -80,15 +80,7 @@
 <li class="toctree-l1"><a class="reference internal" href="export_vars_role.html">david_igou.routeros_configuration.export_vars role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup_role.html">david_igou.routeros_configuration.backup role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restore_role.html">david_igou.routeros_configuration.restore role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.certificate role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#create-a-self-signed-ca-and-a-signed-host-certificate">Create a self-signed CA and a signed host certificate</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#export-a-certificate-to-a-file">Export a certificate to a file</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#import-a-certificate-from-a-file">Import a certificate from a file</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.certificate role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade_role.html">david_igou.routeros_configuration.upgrade role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="user_password_role.html">david_igou.routeros_configuration.user_password role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="command_role.html">david_igou.routeros_configuration.command role</a></li>
@@ -146,62 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-certificate-role"></span><h1>david_igou.routeros_configuration.certificate role<a class="headerlink" href="#david-igou-routeros-configuration-certificate-role" title="Link to this heading"></a></h1>
 <p>Creates and signs certificates, exports and imports them to and from files, and requests ACME certificates.</p>
 <p>See the <a class="reference internal" href="../certificate_role.html#ansible-collections-david-igou-routeros-configuration-certificate-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<section id="create-a-self-signed-ca-and-a-signed-host-certificate">
-<h3>Create a self-signed CA and a signed host certificate<a class="headerlink" href="#create-a-self-signed-ca-and-a-signed-host-certificate" title="Link to this heading"></a></h3>
-<p>The CA omits <code class="docutils literal notranslate"><span class="pre">ca:</span></code> (self-signed); the host certificate references it by name.
-Idempotent by name — a cert that already exists and is signed is left untouched.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.certificate</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_certificates</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-ca</span>
-<span class="w">            </span><span class="nt">common_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Local CA</span>
-<span class="w">            </span><span class="nt">key_usage</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">key-cert-sign</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">crl-sign</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-cert</span>
-<span class="w">            </span><span class="nt">common_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">router.example.com</span>
-<span class="w">            </span><span class="nt">ca</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-ca</span>
-</pre></div>
-</div>
-</section>
-<section id="export-a-certificate-to-a-file">
-<h3>Export a certificate to a file<a class="headerlink" href="#export-a-certificate-to-a-file" title="Link to this heading"></a></h3>
-<p>Export the CA to a PEM file on the device, protecting the private key with a
-passphrase.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.certificate</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_certificates_export</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-ca</span>
-<span class="w">            </span><span class="nt">file_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">local-ca</span>
-<span class="w">            </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pem</span>
-<span class="w">            </span><span class="nt">export_passphrase</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_cert_passphrase</span><span class="nv"> </span><span class="s">}}&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="import-a-certificate-from-a-file">
-<h3>Import a certificate from a file<a class="headerlink" href="#import-a-certificate-from-a-file" title="Link to this heading"></a></h3>
-<p>Import a certificate already present on the device, naming it on import.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.certificate</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_certificates_import</span><span class="p">:</span>
-<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">file_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-cert.crt</span>
-<span class="w">            </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">api-cert-imported</span>
-<span class="w">            </span><span class="nt">passphrase</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_cert_passphrase</span><span class="nv"> </span><span class="s">}}&quot;</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

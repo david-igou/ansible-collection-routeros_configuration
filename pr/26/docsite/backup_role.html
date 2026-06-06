@@ -78,15 +78,7 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="configure_role.html">david_igou.routeros_configuration.configure role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="export_vars_role.html">david_igou.routeros_configuration.export_vars role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.backup role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#export-the-running-config-to-the-controller">Export the running config to the controller</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#include-service-secrets-and-scope-the-export">Include service secrets and scope the export</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#also-take-an-encrypted-binary-backup">Also take an encrypted binary backup</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.backup role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restore_role.html">david_igou.routeros_configuration.restore role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="certificate_role.html">david_igou.routeros_configuration.certificate role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="upgrade_role.html">david_igou.routeros_configuration.upgrade role</a></li>
@@ -146,53 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-backup-role"></span><h1>david_igou.routeros_configuration.backup role<a class="headerlink" href="#david-igou-routeros-configuration-backup-role" title="Link to this heading"></a></h1>
 <p>Exports the running configuration as a text <code class="docutils literal notranslate"><span class="pre">.rsc</span></code> to the controller, and optionally takes an on-device binary backup.</p>
 <p>See the <a class="reference internal" href="../backup_role.html#ansible-collections-david-igou-routeros-configuration-backup-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>The text <code class="docutils literal notranslate"><span class="pre">/export</span></code> runs over <code class="docutils literal notranslate"><span class="pre">network_cli</span></code> (SSH), so the device must be
-reachable over an SSH connection; see the getting started guide for setup.</p>
-<section id="export-the-running-config-to-the-controller">
-<h3>Export the running config to the controller<a class="headerlink" href="#export-the-running-config-to-the-controller" title="Link to this heading"></a></h3>
-<p>Writes <code class="docutils literal notranslate"><span class="pre">&lt;inventory_hostname&gt;.rsc</span></code> under the backup directory, rewritten only
-when the device config changed (idempotent).</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_backup_dir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./routeros-backups</span>
-</pre></div>
-</div>
-</section>
-<section id="include-service-secrets-and-scope-the-export">
-<h3>Include service secrets and scope the export<a class="headerlink" href="#include-service-secrets-and-scope-the-export" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">show-sensitive</span></code> includes service secrets; <code class="docutils literal notranslate"><span class="pre">export_options</span></code> appends
-arguments to <code class="docutils literal notranslate"><span class="pre">/export</span></code> (here, a menu path so only the firewall is captured).</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_backup_show_sensitive</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_backup_export_options</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ip firewall</span>
-</pre></div>
-</div>
-</section>
-<section id="also-take-an-encrypted-binary-backup">
-<h3>Also take an encrypted binary backup<a class="headerlink" href="#also-take-an-encrypted-binary-backup" title="Link to this heading"></a></h3>
-<p>In addition to the text export, save a full-fidelity binary backup on the
-device. Supply the encryption password via Ansible Vault.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.backup</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_backup_binary</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_backup_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">nightly</span>
-<span class="w">        </span><span class="nt">routeros_backup_password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_routeros_backup_password</span><span class="nv"> </span><span class="s">}}&quot;</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

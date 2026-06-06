@@ -87,15 +87,7 @@
 <li class="toctree-l1"><a class="reference internal" href="fetch_role.html">david_igou.routeros_configuration.fetch role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="ping_role.html">david_igou.routeros_configuration.ping role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="reboot_role.html">david_igou.routeros_configuration.reboot role</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.reset role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#safe-by-default-gate-off">Safe by default (gate off)</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reset-but-keep-users-and-re-enable-the-api">Reset but keep users and re-enable the API</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#reset-to-a-bare-configuration">Reset to a bare configuration</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.reset role</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../to_routeros_config_filter.html">david_igou.routeros_configuration.to_routeros_config filter – Build a routeros_config dict from api_info results.</a></li>
@@ -146,50 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-reset-role"></span><h1>david_igou.routeros_configuration.reset role<a class="headerlink" href="#david-igou-routeros-configuration-reset-role" title="Link to this heading"></a></h1>
 <p>Wipes the configuration with <code class="docutils literal notranslate"><span class="pre">/system</span> <span class="pre">reset-configuration</span></code> and reboots. Destructive; gated behind an explicit confirm flag.</p>
 <p>See the <a class="reference internal" href="../reset_role.html#ansible-collections-david-igou-routeros-configuration-reset-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>This role is <strong>destructive</strong> — a confirmed run wipes the configuration and
-reboots. The <code class="docutils literal notranslate"><span class="pre">routeros_reset_confirm</span></code> gate defaults to false as a safeguard.</p>
-<section id="safe-by-default-gate-off">
-<h3>Safe by default (gate off)<a class="headerlink" href="#safe-by-default-gate-off" title="Link to this heading"></a></h3>
-<p>Without <code class="docutils literal notranslate"><span class="pre">routeros_reset_confirm</span></code>, the role does nothing — a no-op you can leave
-in a playbook until you deliberately enable it.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
-</pre></div>
-</div>
-</section>
-<section id="reset-but-keep-users-and-re-enable-the-api">
-<h3>Reset but keep users and re-enable the API<a class="headerlink" href="#reset-but-keep-users-and-re-enable-the-api" title="Link to this heading"></a></h3>
-<p>Wipe the configuration while preserving user accounts, and run a script
-afterward to re-enable the API so Ansible can reconnect.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_reset_confirm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_reset_keep_users</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_reset_run_after_reset</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/ip</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">enable</span><span class="nv"> </span><span class="s">api-ssl&quot;</span>
-</pre></div>
-</div>
-</section>
-<section id="reset-to-a-bare-configuration">
-<h3>Reset to a bare configuration<a class="headerlink" href="#reset-to-a-bare-configuration" title="Link to this heading"></a></h3>
-<p>Skip RouterOS’ default configuration for a completely clean device.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.reset</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_reset_confirm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_reset_no_defaults</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 

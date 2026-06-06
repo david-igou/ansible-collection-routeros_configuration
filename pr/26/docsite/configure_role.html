@@ -76,15 +76,7 @@
 <li class="toctree-l1"><a class="reference internal" href="guide.html">Getting started</a></li>
 </ul>
 <ul class="current">
-<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.configure role</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#set-the-identity-and-an-address-pool">Set the identity and an address pool</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#several-paths-with-automatic-dependency-ordering">Several paths with automatic dependency ordering</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#enforce-exact-firewall-state-with-purge-and-order">Enforce exact firewall state with purge and order</a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.configure role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="export_vars_role.html">david_igou.routeros_configuration.export_vars role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="backup_role.html">david_igou.routeros_configuration.backup role</a></li>
 <li class="toctree-l1"><a class="reference internal" href="restore_role.html">david_igou.routeros_configuration.restore role</a></li>
@@ -146,80 +138,6 @@
 <span id="ansible-collections-david-igou-routeros-configuration-docsite-configure-role"></span><h1>david_igou.routeros_configuration.configure role<a class="headerlink" href="#david-igou-routeros-configuration-configure-role" title="Link to this heading"></a></h1>
 <p>Reconciles many RouterOS paths to a desired state from one <code class="docutils literal notranslate"><span class="pre">routeros_config</span></code> dict, applied in canonical dependency order. The declarative core of the collection.</p>
 <p>See the <a class="reference internal" href="../configure_role.html#ansible-collections-david-igou-routeros-configuration-configure-role"><span class="std std-ref">full role reference</span></a> for all parameters and defaults.</p>
-<section id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
-<p>The connection comes from the shared <code class="docutils literal notranslate"><span class="pre">routeros_api_*</span></code> variables (typically set
-once in <code class="docutils literal notranslate"><span class="pre">group_vars</span></code>); see the getting started guide for inventory setup.</p>
-<section id="set-the-identity-and-an-address-pool">
-<h3>Set the identity and an address pool<a class="headerlink" href="#set-the-identity-and-an-address-pool" title="Link to this heading"></a></h3>
-<p>A minimal single-path example. Each key is a RouterOS slash path with a <code class="docutils literal notranslate"><span class="pre">data</span></code>
-list of the desired entries.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.configure</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_config</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">/system/identity</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">edge-router</span>
-<span class="w">          </span><span class="nt">/ip/pool</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lan-pool</span>
-<span class="w">                </span><span class="nt">ranges</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.88.10-192.168.88.254</span>
-</pre></div>
-</div>
-</section>
-<section id="several-paths-with-automatic-dependency-ordering">
-<h3>Several paths with automatic dependency ordering<a class="headerlink" href="#several-paths-with-automatic-dependency-ordering" title="Link to this heading"></a></h3>
-<p>Keys may be authored in any order; the role re-sorts them into a canonical
-dependency order, so the pool is applied before the DHCP server that references
-it.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.configure</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_config</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">/ip/dhcp-server</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lan-dhcp</span>
-<span class="w">                </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bridge</span>
-<span class="w">                </span><span class="nt">address-pool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lan-pool</span>
-<span class="w">          </span><span class="nt">/ip/pool</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">lan-pool</span>
-<span class="w">                </span><span class="nt">ranges</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.88.10-192.168.88.254</span>
-<span class="w">          </span><span class="nt">/ip/dns</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">servers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1.1,9.9.9.9</span>
-<span class="w">                </span><span class="nt">allow-remote-requests</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</pre></div>
-</div>
-</section>
-<section id="enforce-exact-firewall-state-with-purge-and-order">
-<h3>Enforce exact firewall state with purge and order<a class="headerlink" href="#enforce-exact-firewall-state-with-purge-and-order" title="Link to this heading"></a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">purge</span></code> removes on-device entries absent from <code class="docutils literal notranslate"><span class="pre">data</span></code>; <code class="docutils literal notranslate"><span class="pre">order</span></code> (which
-requires <code class="docutils literal notranslate"><span class="pre">purge</span></code>) enforces rule order. Review a <code class="docutils literal notranslate"><span class="pre">--check</span> <span class="pre">--diff</span></code> run before
-applying <code class="docutils literal notranslate"><span class="pre">purge</span></code>/<code class="docutils literal notranslate"><span class="pre">order</span></code> to a production chain.</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
-<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
-<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.configure</span>
-<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">routeros_config</span><span class="p">:</span>
-<span class="w">          </span><span class="nt">/ip/firewall/filter</span><span class="p">:</span>
-<span class="w">            </span><span class="nt">purge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">            </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">            </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_as_much_as_possible</span>
-<span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">accept</span><span class="p p-Indicator">,</span><span class="nt"> connection-state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;established,related&quot;</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">est</span><span class="p p-Indicator">}</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">accept</span><span class="p p-Indicator">,</span><span class="nt"> protocol</span><span class="p">:</span><span class="w"> </span><span class="nv">tcp</span><span class="p p-Indicator">,</span><span class="nt"> dst-port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;22,8728&quot;</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">mgmt</span><span class="p p-Indicator">}</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">drop</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">drop-rest</span><span class="p p-Indicator">}</span>
-</pre></div>
-</div>
-</section>
-</section>
 </section>
 
 
