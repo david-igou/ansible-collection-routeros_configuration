@@ -9,8 +9,11 @@ argument_specs:
         type: list
         elements: dict
         default: []
-        description: Users and the passwords to set.
-        no_log: true
+        # Secret — supply via Ansible Vault. Redaction is enforced at the task
+        # level (no_log on the password-setting task), consistent with
+        # routeros_api_password below; option-level no_log is omitted because the
+        # role argument-spec schema (antsibull-docs) does not model it.
+        description: Users and the passwords to set (secret — supply via Vault).
         options:
           name:
             type: str
