@@ -1,0 +1,99 @@
+---
+argument_specs:
+  main:
+    short_description: Imperative PoE-out operations on a RouterOS device.
+    description:
+      - Power-cycle, force off/on, or monitor PoE-out interfaces over the binary API.
+      - >-
+        The operational counterpart to the C(configure) role. Persistent PoE
+        configuration (the ping watchdog, priority, voltage, LLDP, and the global
+        power budget) stays in C(configure); this role performs the one-shot
+        actions that have no steady state to reconcile.
+    examples: |
+      # Read-only: monitor every PoE-out port (the default action).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.poe
+
+      # Power-cycle two ports for 10 seconds.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.poe
+            vars:
+              routeros_poe_action: power_cycle
+              routeros_poe_duration: 10s
+              routeros_poe_interfaces:
+                - ether5
+                - ether6
+
+      # Per-host model: each powered device carries its switch + port as hostvars.
+      - hosts: poe_powered_devices
+        gather_facts: false
+        tasks:
+          - name: Cut power to this device's port
+            ansible.builtin.include_role:
+              name: david_igou.routeros_configuration.poe
+            vars:
+              routeros_api_hostname: "{{ poe_switch }}"
+              routeros_poe_action: power_off
+              routeros_poe_interfaces:
+                - "{{ poe_port }}"
+    options:
+      routeros_poe_action:
+        type: str
+        default: monitor
+        choices:
+          - monitor
+          - power_cycle
+          - power_off
+          - power_on
+        description: >-
+          The PoE-out action. monitor reads live status (read-only); power_cycle
+          drops then restores power; power_off sets poe-out=off; power_on restores
+          poe-out to routeros_poe_mode.
+      routeros_poe_interfaces:
+        type: list
+        elements: str
+        default: []
+        description: >-
+          Target PoE-out interfaces by ethernet interface name. Required (non-empty)
+          for power_cycle/power_off/power_on; an empty list with monitor reads all
+          PoE-out ports.
+      routeros_poe_duration:
+        type: str
+        default: 5s
+        description: power_cycle only — how long to drop power (RouterOS duration, 0..1m).
+      routeros_poe_mode:
+        type: str
+        default: auto-on
+        choices:
+          - auto-on
+          - forced-on
+          - forced-on-a
+          - forced-on-bt
+        description: power_on only — the poe-out value to restore.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description: API password. Secret — supply via vault.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl).
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.
