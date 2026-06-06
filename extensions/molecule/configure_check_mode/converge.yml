@@ -1,0 +1,53 @@
+---
+- name: Converge — check-mode apply must not touch the device, then a real apply does
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_modify: &conn
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+    community.routeros.api_info: *conn
+  tasks:
+    - name: Apply a brand-new pool IN CHECK MODE (predicts a change, writes nothing)
+      community.routeros.api_modify:
+        path: ip pool
+        data:
+          - name: checkmode-pool
+            ranges: "192.168.222.10-192.168.222.50"
+        handle_absent_entries: ignore
+      delegate_to: localhost
+      connection: local
+      check_mode: true
+      register: cm
+
+    - name: Assert check mode predicted a change
+      ansible.builtin.assert:
+        that:
+          - cm is changed
+        fail_msg: "check mode did not predict a change: {{ cm }}"
+
+    - name: Read /ip/pool — checkmode-pool must NOT exist (check mode wrote nothing)
+      community.routeros.api_info:
+        path: ip pool
+      delegate_to: localhost
+      connection: local
+      register: pools_after_check
+    - name: Assert check mode did not mutate the device
+      ansible.builtin.assert:
+        that:
+          - pools_after_check.result | selectattr('name', 'equalto', 'checkmode-pool') | list | length == 0
+        fail_msg: "check mode LEAKED a write: {{ pools_after_check.result }}"
+
+    - name: Apply the same pool FOR REAL
+      community.routeros.api_modify:
+        path: ip pool
+        data:
+          - name: checkmode-pool
+            ranges: "192.168.222.10-192.168.222.50"
+        handle_absent_entries: ignore
+      delegate_to: localhost
+      connection: local

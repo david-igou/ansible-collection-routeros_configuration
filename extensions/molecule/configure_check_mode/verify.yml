@@ -1,0 +1,25 @@
+---
+- name: Verify — the real apply created checkmode-pool
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    community.routeros.api_info:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read /ip/pool
+      community.routeros.api_info:
+        path: ip pool
+      delegate_to: localhost
+      connection: local
+      register: pools
+    - name: Assert checkmode-pool exists after the real apply
+      ansible.builtin.assert:
+        that:
+          - pools.result | selectattr('name', 'equalto', 'checkmode-pool') | map(attribute='ranges') | first == '192.168.222.10-192.168.222.50'
+        success_msg: "check mode wrote nothing; real apply created checkmode-pool"
+        fail_msg: "real apply missing: {{ pools.result }}"
