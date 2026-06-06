@@ -1,0 +1,136 @@
+---
+- name: Converge — poe validation + read-only monitor (CHR has no PoE)
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    # Each block sets its flag false at the END (reached only if the role did NOT
+    # fail) and true in rescue (reached when the role fails). The final assert
+    # requires every flag true, so a role that WRONGLY accepts bad input fails.
+
+    # 1. write action with no interfaces -> empty-interface guard
+    - name: power_off with no interfaces is rejected
+      block:
+        - name: Attempt power_off with empty interfaces
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: power_off
+            routeros_poe_interfaces: []
+        - name: poe wrongly accepted empty interfaces
+          ansible.builtin.set_fact:
+            _poe_empty_rejected: false
+      rescue:
+        - name: Expected — empty-interface guard fired
+          ansible.builtin.set_fact:
+            _poe_empty_rejected: true
+
+    # 2. invalid action -> argument-spec choices
+    - name: invalid action is rejected
+      block:
+        - name: Attempt a bogus action
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: bogus
+        - name: poe wrongly accepted a bogus action
+          ansible.builtin.set_fact:
+            _poe_action_rejected: false
+      rescue:
+        - name: Expected — action choices validation failed
+          ansible.builtin.set_fact:
+            _poe_action_rejected: true
+
+    # 3. invalid mode -> argument-spec choices
+    - name: invalid mode is rejected
+      block:
+        - name: Attempt power_on with a bogus mode
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: power_on
+            routeros_poe_interfaces:
+              - ether1
+            routeros_poe_mode: bogus
+        - name: poe wrongly accepted a bogus mode
+          ansible.builtin.set_fact:
+            _poe_mode_rejected: false
+      rescue:
+        - name: Expected — mode choices validation failed
+          ansible.builtin.set_fact:
+            _poe_mode_rejected: true
+
+    # 4. invalid duration -> duration assert (fires before the menu read)
+    - name: invalid duration is rejected
+      block:
+        - name: Attempt power_cycle with a bad duration
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: power_cycle
+            routeros_poe_interfaces:
+              - ether1
+            routeros_poe_duration: 99x
+        - name: poe wrongly accepted a bad duration
+          ansible.builtin.set_fact:
+            _poe_duration_rejected: false
+      rescue:
+        - name: Expected — duration assert failed
+          ansible.builtin.set_fact:
+            _poe_duration_rejected: true
+
+    # 5. named interface with no PoE-out entry -> find-and-modify require_matches_min
+    #    (on a CHR: empty menu -> "found 0" failure; absent menu -> path error;
+    #    either way the role fails as designed)
+    - name: power_off of an interface without a PoE entry is rejected
+      block:
+        - name: Attempt power_off of ether1 (no PoE on a CHR)
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: power_off
+            routeros_poe_interfaces:
+              - ether1
+        - name: poe wrongly accepted a non-PoE interface
+          ansible.builtin.set_fact:
+            _poe_noentry_rejected: false
+      rescue:
+        - name: Expected — no PoE-out entry failure
+          ansible.builtin.set_fact:
+            _poe_noentry_rejected: true
+
+    # 6. read-only monitor of all ports -> empty on a CHR (or menu absent)
+    - name: monitor all PoE-out ports (read-only)
+      block:
+        - name: Monitor all ports
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.poe
+          vars:
+            routeros_poe_action: monitor
+            routeros_poe_interfaces: []
+        - name: Record that monitor-all succeeded and returned a list
+          ansible.builtin.set_fact:
+            _poe_monitor_ok: "{{ routeros_poe_monitor is defined and routeros_poe_monitor == [] }}"
+      rescue:
+        - name: Acceptable — CHR exposes no PoE menu/ports
+          ansible.builtin.set_fact:
+            _poe_monitor_ok: true
+
+    - name: Assert every validation path behaved as designed
+      ansible.builtin.assert:
+        that:
+          - _poe_empty_rejected | default(false)
+          - _poe_action_rejected | default(false)
+          - _poe_mode_rejected | default(false)
+          - _poe_duration_rejected | default(false)
+          - _poe_noentry_rejected | default(false)
+          - _poe_monitor_ok | default(false)
+        success_msg: >-
+          poe rejected empty interfaces, bad action/mode/duration, and a
+          non-PoE interface; read-only monitor-all was safe
+        fail_msg: >-
+          empty={{ _poe_empty_rejected | default('unset') }}
+          action={{ _poe_action_rejected | default('unset') }}
+          mode={{ _poe_mode_rejected | default('unset') }}
+          duration={{ _poe_duration_rejected | default('unset') }}
+          noentry={{ _poe_noentry_rejected | default('unset') }}
+          monitor={{ _poe_monitor_ok | default('unset') }}

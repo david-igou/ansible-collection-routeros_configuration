@@ -1,0 +1,14 @@
+---
+# PoE is hardware-specific; the CHR used in CI has no PoE controller, so this
+# scenario exercises only the hardware-independent paths: input validation
+# (empty interfaces, bad action/mode/duration), the "no PoE-out entry" failure,
+# and a read-only monitor of all ports (empty on a CHR). No mutation reaches a
+# real PoE port, so it is safe on the shared instance. Imperative role — no
+# idempotence step, and the menu-touching cases use block/rescue so the scenario
+# passes whether the CHR exposes an empty `/interface ethernet poe` menu or omits
+# it entirely.
+scenario:
+  name: poe
+  test_sequence:
+    - dependency
+    - converge
