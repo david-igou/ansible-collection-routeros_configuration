@@ -4,6 +4,43 @@ argument_specs:
     short_description: Set/rotate RouterOS /user passwords over the API.
     description:
       - Sets passwords for existing users. Not idempotent (passwords are write-only).
+    examples: |
+      # Passwords are secrets — always supply them via Ansible Vault.
+      #
+      # Rotate one user's password. Not idempotent (passwords are write-only), so
+      # the task reports changed on every run.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.user_password
+            vars:
+              routeros_user_passwords:
+                - name: admin
+                  password: "{{ vault_admin_password }}"
+
+      # Rotate several users at once.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.user_password
+            vars:
+              routeros_user_passwords:
+                - name: admin
+                  password: "{{ vault_admin_password }}"
+                - name: monitoring
+                  password: "{{ vault_monitoring_password }}"
+
+      # Source the credentials from a vaulted group_vars file so no secret appears
+      # in the playbook:
+      #
+      #   # group_vars/routers/vault.yml  (encrypt with ansible-vault)
+      #   routeros_user_passwords:
+      #     - name: admin
+      #       password: S3cr3t-admin
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.user_password
     options:
       routeros_user_passwords:
         type: list

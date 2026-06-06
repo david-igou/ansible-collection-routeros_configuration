@@ -29,9 +29,7 @@ dependency:
 # This base is merged into EVERY scenario under the glob. merge_dicts() applies
 # a scenario's molecule.yml on top, replacing list values wholesale and
 # overriding dict values per key, so a scenario can opt out: chr supplies its
-# own inventory list + local create/destroy, and integration_hello_world zeroes
-# the inventory args (ansible_args: []) so this CHR inventory does not leak into
-# its localhost-only smoke run.
+# own inventory list + local create/destroy.
 ansible:
   executor:
     args:

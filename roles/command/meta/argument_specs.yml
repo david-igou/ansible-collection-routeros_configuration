@@ -4,6 +4,40 @@ argument_specs:
     short_description: Run arbitrary RouterOS API commands (escape hatch).
     description:
       - Each entry is passed to C(community.routeros.api). Not idempotent.
+    examples: |
+      # Escape hatch for operations the declarative configure role does not cover.
+      # NOT idempotent — prefer configure where possible.
+      #
+      # cmd op — set the system note.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.command
+            vars:
+              routeros_command:
+                - path: system note
+                  cmd: set note=managed-by-ansible
+
+      # add op — create an entry with key=value arguments.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.command
+            vars:
+              routeros_command:
+                - path: ip firewall address-list
+                  add: list=blocklist address=198.51.100.7
+
+      # remove op — delete an entry by its .id. Set no_log: true on any command
+      # whose arguments carry a secret.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.command
+            vars:
+              routeros_command:
+                - path: ip firewall address-list
+                  remove: "*1"
     options:
       routeros_command:
         type: list

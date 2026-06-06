@@ -1,0 +1,17 @@
+---
+doc_changes:
+  - >-
+    Every role's reference documentation now includes three worked examples
+    (configure, export_vars, backup, restore, certificate, upgrade,
+    user_password, command, fetch, ping, reboot, reset), added via each role's
+    C(meta/argument_specs.yml) so they render in the role reference, and derived
+    from the collection's molecule scenarios so the shown invocations match what
+    CI exercises against a CHR.
+trivial:
+  - >-
+    Removed the ansible-creator skeleton sample plugins
+    (C(sample_module), C(sample_action), C(sample_filter), C(sample_lookup),
+    C(sample_test)) together with their C(hello_world) integration target and
+    the C(integration_hello_world) molecule scenario. These only documented and
+    tested the scaffolding, not this collection, and generated stray example
+    plugin pages on the docsite. Unreleased — no change to shipped behaviour.

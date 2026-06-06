@@ -9,6 +9,37 @@ argument_specs:
         the device.
       - Runs over network_cli (C(community.routeros.command)); C(/export) is not
         available over the binary API.
+    examples: |
+      # The text /export runs over network_cli (SSH); the device must be reachable
+      # over an SSH connection (see the getting started guide).
+      #
+      # Export the running config to the controller as <inventory_hostname>.rsc,
+      # rewritten only when the device config changed (idempotent).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.backup
+            vars:
+              routeros_backup_dir: ./routeros-backups
+
+      # Include service secrets and scope the export to a menu path.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.backup
+            vars:
+              routeros_backup_show_sensitive: true
+              routeros_backup_export_options: ip firewall
+
+      # Also take an encrypted binary backup on the device (password via Vault).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.backup
+            vars:
+              routeros_backup_binary: true
+              routeros_backup_name: nightly
+              routeros_backup_password: "{{ vault_routeros_backup_password }}"
     options:
       routeros_backup_dir:
         type: str
