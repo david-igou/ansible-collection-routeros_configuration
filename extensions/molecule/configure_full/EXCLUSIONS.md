@@ -2,8 +2,17 @@
 
 `api_modify` exposes **523** paths. This CHR (7.21.4, bare VM) makes:
 
-- **128 configurable** — of which **74 are exercised** by `configure_full`.
+- **128 configurable** — of which **75 are exercised** by `configure_full`.
 - **192 read-only / status** — not configurable (no write mechanism in the registry).
+  Note: the probe's `writable()` heuristic only counts paths with
+  primary_keys/single_value/fixed_entries, so it under-counts *keyless* paths
+  (matched by content, like `/ip/firewall/nat`) as read-only. `configure_full`
+  exercises several of these (`/ip/firewall/{nat,mangle,raw}`). `/ip/route` is
+  also keyless but is **not idempotently reconcilable** on a bare CHR: with no
+  primary key, a static route's read-back content differs from what was sent, so
+  `api_modify` re-adds it on re-apply. It is therefore left out of this
+  idempotence-checked scenario (verified empirically — `changed=1` on the second
+  pass).
 - **203 absent** — the feature/hardware/license is not present on a CHR.
 
 Reproduce: boot the shared CHR, then `python3 extensions/molecule/utils/scripts/probe_paths.py`.
@@ -54,7 +63,6 @@ Reproduce: boot the shared CHR, then `python3 extensions/molecule/utils/scripts/
 | `routing ospf area range` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
 | `routing pimsm instance` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
 | `system clock manual` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
-| `system ntp client` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
 | `system ntp client servers` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
 | `system ups` | needs a UPS device |
 | `tool graphing` | configurable but not authored in this pass (no representative idempotent value within the test budget) |
