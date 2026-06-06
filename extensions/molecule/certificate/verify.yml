@@ -1,5 +1,5 @@
 ---
-- name: Verify — both certificates exist and are signed
+- name: Verify — both certificates exist, are signed, and form a trust chain
   hosts: molecule
   gather_facts: false
   module_defaults:
@@ -25,15 +25,35 @@
       connection: local
       register: certfiles
 
-    - name: Assert certs are signed and the exported cert file exists
+    - name: Resolve the mol-ca and mol-host entries
+      ansible.builtin.set_fact:
+        _ca: "{{ certs.msg | selectattr('name', 'equalto', 'mol-ca') | first }}"
+        _host: "{{ certs.msg | selectattr('name', 'equalto', 'mol-host') | first }}"
+
+    - name: Assert certs are signed, chained to the CA, and the export/import files are correct
       ansible.builtin.assert:
         that:
+          # Both certificates exist and are signed (non-empty fingerprint).
           - certs.msg | selectattr('name', 'equalto', 'mol-ca') | list | length == 1
           - certs.msg | selectattr('name', 'equalto', 'mol-host') | list | length == 1
-          - (certs.msg | selectattr('name', 'equalto', 'mol-ca') | first)['fingerprint'] | default('') | length > 0
-          - (certs.msg | selectattr('name', 'equalto', 'mol-host') | first)['fingerprint'] | default('') | length > 0
-          - certs.msg | selectattr('name', 'equalto', 'mol-host-imported') | list | length == 1
+          - _ca['fingerprint'] | default('') | length > 0
+          - _host['fingerprint'] | default('') | length > 0
+          # Trust chain: RouterOS records the signing CA name on the host cert,
+          # and the host's Authority Key Id must equal the CA's Subject Key Id —
+          # cryptographic proof mol-host was signed by mol-ca.
+          - _host['ca'] | default('') == 'mol-ca'
+          - _host['akid'] | default('') | length > 0
+          - _host['akid'] == _ca['skid']
+          # Export kept mol-ca-keep.crt; import consumed mol-host-imp.crt.
+          # (Re-importing a cert the device already holds is a RouterOS no-op —
+          # it dedups by fingerprint and creates no new entry — so the import's
+          # observable effect here is that it consumes its source file.)
           - certfiles.msg | selectattr('name', 'equalto', 'mol-ca-keep.crt') | list | length == 1
           - certfiles.msg | selectattr('name', 'equalto', 'mol-host-imp.crt') | list | length == 0
-        success_msg: "certs signed; mol-host-imported created; export made mol-ca-keep.crt; import consumed mol-host-imp.crt"
-        fail_msg: "export/import wrong: {{ certfiles.msg | map(attribute='name') | list }}"
+        success_msg: >-
+          mol-ca + mol-host signed; mol-host chained to mol-ca
+          (ca=mol-ca, akid==ca.skid); export kept mol-ca-keep.crt; import consumed mol-host-imp.crt
+        fail_msg: >-
+          host.ca={{ _host['ca'] | default('?') }} host.akid={{ _host['akid'] | default('?') }}
+          ca.skid={{ _ca['skid'] | default('?') }}
+          files={{ certfiles.msg | map(attribute='name') | list }}
