@@ -99,6 +99,7 @@ Operational roles
 Beyond ``configure``, the collection provides focused roles for day-2
 operations — back up and restore configuration, manage certificates, set update
 channels and install upgrades, rotate user passwords, reboot or reset the
-device, transfer files, and run connectivity checks or arbitrary API commands.
+device, transfer files, manage PoE-out power (power-cycle, off/on, monitor), and
+run connectivity checks or arbitrary API commands.
 Each role's parameters, defaults, and behavior are documented in the role
 reference (see the **Roles** section in the navigation).

@@ -1,6 +1,76 @@
-This should be updated by antsibull-changelog. Do not edit this manually!
+============================================================
+David\_igou Routeros\_configuration Collection Release Notes
+============================================================
 
-See https://github.com/ansible-community/antsibull-changelog/blob/main/docs/changelogs.rst for
-information on how to use antsibull-changelog.
+.. contents:: Topics
 
-Check out ``changelogs/config.yaml`` for its configuration. You need to change at least the ``title`` field in there.
+v0.0.1-alpha
+============
+
+Release Summary
+---------------
+
+Initial alpha release of ``david_igou.routeros_configuration`` — an Ansible
+collection for managing MikroTik RouterOS declaratively. At its core, the
+``configure`` role reconciles a single ``routeros_config`` data structure
+against the device (driving any ``community.routeros`` ``api_modify`` path in a
+canonical dependency order), with ``export_vars`` for the reverse capture.
+Around it sit single-purpose operational roles — ``backup``, ``restore``,
+``certificate``, ``upgrade``, ``user_password``, ``command``, ``fetch``,
+``ping``, ``poe``, ``reboot``, and ``reset`` — most over the binary API, with
+``backup`` over ``network_cli``. This is an early ``0.0.x`` release; expect
+breaking changes before ``1.0.0``.
+
+Minor Changes
+-------------
+
+- New C(backup) role: backs up RouterOS configuration following the official backup/restore mechanisms. It writes an idempotent text export (C(/export show-sensitive)) to a C(.rsc) file on the controller — rewritten only when the device config changed — and can optionally take a full-fidelity binary backup (C(/system backup save)) on the device. Runs over network_cli (C(/export) is console-only, not on the binary API). The README documents the C(/import) and C(/system backup load) restore procedures and that the text export omits user passwords, certificates, SSH keys, Dude, and the User-manager database.
+- New C(certificate) role: creates and signs RouterOS certificates over the API (C(community.routeros.api), since api_modify treats C(certificate) as read-only), idempotently by name. Supports self-signed CAs and CA-signed host certificates via C(routeros_certificates). Closes the TLS-bootstrap gap.
+- New C(command) role — run arbitrary RouterOS API operations (C(cmd)/C(add)/C(remove)/C(update)); an escape hatch for one-off actions.
+- New C(export_vars) role: the reverse of C(configure). Reads a running device over the API (C(community.routeros.api_info)) and writes an equivalent C(routeros_config) vars file to the controller (one per host), so an existing device can be brought under declarative management (capture, version-control, re-apply). Captures every configurable path by default (omitting empty ones), overridable via C(routeros_export_vars_paths); includes secrets by default (encrypt with vault) with a C(routeros_export_vars_redact) toggle.
+- New C(fetch) role — transfer files to/from the device via C(/tool fetch) and remove files via C(/file remove) (stages firmware/scripts/certs, pulls backups).
+- New C(ping) role — connectivity checks via C(/tool ping) over the API.
+- New C(poe) role — imperative PoE-out operations over the binary API: C(power_cycle) a port, force C(power_off)/C(power_on) (C(poe-out=off|auto-on|forced-on|...)), or read-only C(monitor) of live PoE-out status (returned in the C(routeros_poe_monitor) fact). The operational counterpart to C(configure), which retains the persistent PoE knobs (ping watchdog, C(power-cycle-interval), priority, voltage, LLDP, and the global power budget). Write actions fail on an empty interface list, and a named interface with no PoE-out entry fails clearly. Live PoE operations are hardware-dependent and untested on the CHR used in CI (no PoE controller); molecule covers the input-validation and no-entry paths.
+- New C(reboot) role — reboot (and wait for the API) or shut down the device.
+- New C(reset) role — C(/system reset-configuration), gated behind an explicit confirm var (destructive).
+- New C(restore) role — restore from a binary backup (C(/system backup load), reboots) or import a config script (C(/import)). The reverse of C(backup).
+- New C(upgrade) role: manages the RouterOS package update channel idempotently and checks for updates over the API, with an opt-in, gated install+reboot (C(routeros_upgrade_install)) that only fires when an update is available.
+- New C(user_password) role — set/rotate C(/user) account passwords (the write-only field C(configure) cannot manage).
+- New filter C(david_igou.routeros_configuration.to_routeros_config): shapes looped C(api_info) results into a C(routeros_config) dict (drops C(.id), omits empty paths, optional redaction). Used by the C(export_vars) role.
+- The C(certificate) role can now export certificates to files (C(routeros_certificates_export)), import them (C(routeros_certificates_import)), and request ACME/Let's Encrypt certs (C(routeros_acme), gated).
+- The C(certificate) role's mutating tasks now report C(changed) correctly, and import skips certificates that already exist so re-runs do not create duplicate entries; the ACME task is now C(no_log).
+- The C(command) role now validates that each item specifies exactly one of C(cmd)/C(add)/C(remove)/C(update), failing on a typo'd or ambiguous key instead of silently no-op'ing or running twice.
+- The C(fetch) role's C(mode) option is now constrained to C(http)/C(https)/C(ftp)/C(tftp)/C(sftp) via argument-spec C(choices), so an invalid mode fails validation instead of at runtime.
+- The C(reset) and C(upgrade) install paths now wait for the API to actually answer (not just for the TCP port to open) after the reboot, matching C(reboot) and C(restore).
+- The C(upgrade) role can now upgrade RouterBOARD firmware (C(routeros_routerboard_upgrade), gated).
+- The C(upgrade) role's RouterBOARD firmware path now only flashes and reboots when the installed firmware differs from the available firmware, instead of rebooting on every run when the feature is enabled.
+- The C(user_password) role now fails loudly when a named user does not exist instead of silently skipping it and reporting success.
+- The ``_reconcile`` role no longer ships an empty ``routeros_api_password`` default. The password is now intentionally undefined so a missing value fails loudly instead of silently attempting an empty-password login; supply it via vault/group_vars.
+- The ``configure`` role README and ``_reconcile`` README gained an "Idempotency & rollback" section, and ``configure``'s argument spec now documents the nested ``routeros_config`` keys (``data``/``purge``/``order``/ ``content``).
+- The ``configure`` role's ``rcfg_path_order`` now covers every configurable path in ``community.routeros`` ``api_modify`` (508 paths), arranged in a dependency-correct order — referenced objects before referencers and parents before children (e.g. IPsec proposal/profile before peer/policy, pools before DHCP servers, bridge before ports/VLANs, OSPF/BGP instances before their areas/peers, wireless/wifi/CAPsMAN profile chains, containers, IPv6 addressing). Previously only ~50 interface/IP paths were ordered, so dependency-sensitive paths outside that set relied on the user's declaration order.
+- The operational roles now quote user-supplied values (C(community.routeros.quote_argument_value)) before interpolating them into RouterOS API command strings — C(user_password) passwords, C(restore) backup name/password, C(certificate) names/CA/passphrases, C(fetch) url/dst-path, C(ping) address/interface, and C(reset) run-after-reset — so values containing spaces or special characters no longer break the command.
+- The post-reboot C(wait_for) in C(reboot), C(restore), C(reset), and C(upgrade) now derives the API port from C(routeros_api_tls) (8729 when TLS, 8728 otherwise) instead of hardcoding 8728, so the wait works with the default TLS connection.
+- YAML examples in the documentation, and the collection's own YAML, use block style throughout instead of flow-style ("JSON in YAML") mappings and sequences.
+- ``_reconcile`` ``meta/argument_specs.yml`` now mirrors the role defaults for the shared ``routeros_api_*`` connection vars and documents the password as a secret.
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- The 41 per-path roles are replaced by a single ``configure`` role driven by a ``routeros_config`` dict keyed by RouterOS slash path (e.g. ``/ip/pool``). Adding a new path no longer requires a new role; ``configure`` applies all paths in a canonical dependency order. The internal ``_reconcile`` engine is unchanged.
+
+Bugfixes
+--------
+
+- Fixed the broken C(CHANGELOG.rst) link in C(README.md) (it pointed at a non-existent C(ansible-collections/david_igou.routeros_configuration) repo).
+- Role C(meta/main.yml) and role README footers declared C(GPL-2.0-or-later) while the collection is licensed C(GPL-3.0-or-later) (the shipped C(LICENSE) is GPLv3); the declarations were corrected to match, and a C(LICENSES/GPL-3.0-or-later.txt) was added so the filter plugin's SPDX header resolves.
+- The two firewall examples in C(README.md) and C(roles/configure/README.md) purged a keyless path (C(/ip/firewall/filter)) with the default C(content: ignore), a combination C(community.routeros.api_modify) rejects at runtime; the examples now set C(content: remove_as_much_as_possible) so they run as written.
+
+Documentation Changes
+---------------------
+
+- Corrected the connection-method description in C(README.md) and the guide: only C(configure)/C(_reconcile) use C(api_modify) and C(export_vars) uses C(api_info); the operational roles use the generic C(community.routeros.api) module, and C(backup) runs over C(network_cli) (SSH) because RouterOS C(/export) is console-only.
+- Every role's reference documentation now includes three worked examples (configure, export_vars, backup, restore, certificate, upgrade, user_password, command, fetch, ping, reboot, reset), added via each role's C(meta/argument_specs.yml) so they render in the role reference, and derived from the collection's molecule scenarios so the shown invocations match what CI exercises against a CHR.
+- Expanded the C(README.md) Roles table to list all shipped roles (it previously listed only C(configure) and C(_reconcile)), populated the C(requires_ansible) section, and filled in the Roadmap and More-information sections.
+- Removed a stale C(integration_hello_world) row from the molecule scenario catalogue, fixed the C(ping) role's example playbook (the C(assert) was a malformed second play), and tightened several role-doc wordings (C(/import file-name=), certificate value quoting, C(user_password) C(no_log) scope).
+- The declarative-config examples in the getting-started guide and the C(configure) argument spec were converted from flow-style ("JSON in YAML") firewall mappings to block style, completing the block-style convention.
+- The getting-started guide's inventory example now sets C(routeros_api_hostname) so it connects to C(ansible_host) rather than the literal C(inventory_hostname).

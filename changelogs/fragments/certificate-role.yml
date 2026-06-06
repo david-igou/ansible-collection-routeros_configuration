@@ -1,7 +1,0 @@
----
-minor_changes:
-  - >-
-    New C(certificate) role: creates and signs RouterOS certificates over the API
-    (C(community.routeros.api), since api_modify treats C(certificate) as
-    read-only), idempotently by name. Supports self-signed CAs and CA-signed host
-    certificates via C(routeros_certificates). Closes the TLS-bootstrap gap.

@@ -15,5 +15,6 @@ sections:
       - command_role
       - fetch_role
       - ping_role
+      - poe_role
       - reboot_role
       - reset_role
