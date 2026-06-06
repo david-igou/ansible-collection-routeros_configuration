@@ -1,0 +1,12 @@
+---
+galaxy_info:
+  author: David Igou
+  description: Imperative PoE-out operations (power-cycle, off/on, monitor) over the API.
+  company: david_igou
+  license: GPL-3.0-or-later
+  min_ansible_version: "2.15"
+  galaxy_tags:
+    - routeros
+    - mikrotik
+    - networking
+dependencies: []

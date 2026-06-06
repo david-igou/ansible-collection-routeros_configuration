@@ -1,0 +1,19 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+routeros_api_port: ""
+
+# The PoE-out action: monitor | power_cycle | power_off | power_on.
+# Default is the read-only monitor, so a bare include is harmless.
+routeros_poe_action: monitor
+# Target PoE-out interfaces (by ethernet interface name). Write actions require a
+# non-empty list; monitor with an empty list reads all PoE-out ports.
+routeros_poe_interfaces: []
+# power_cycle only: how long to drop power (RouterOS duration, 0..1m).
+routeros_poe_duration: 5s
+# power_on only: the poe-out value to restore.
+routeros_poe_mode: auto-on
