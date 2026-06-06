@@ -23,6 +23,18 @@
           - pools.result | selectattr('name', 'equalto', 'pool-a') | map(attribute='ranges') | first == '192.168.60.10-192.168.60.50'
           - pools.result | selectattr('name', 'equalto', 'pool-b') | list | length == 1
 
+    - name: Read /ip/dns/static after converge
+      community.routeros.api_info:
+        path: ip dns static
+      delegate_to: localhost
+      connection: local
+      register: dnsstatic
+    - name: Assert the static DNS record was applied
+      ansible.builtin.assert:
+        that:
+          - dnsstatic.result | selectattr('name', 'equalto', 'router.lan') | selectattr('address', 'equalto', '192.168.88.1') | list | length == 1
+        fail_msg: "static dns missing: {{ dnsstatic.result }}"
+
     - name: Update pool-a ranges (non-key field) and purge pool-b
       ansible.builtin.include_role:
         name: david_igou.routeros_configuration.configure
