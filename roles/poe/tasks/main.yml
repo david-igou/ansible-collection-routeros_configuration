@@ -108,7 +108,9 @@
     - name: Monitor PoE-out ports
       community.routeros.api:  # noqa: args[module]
         path: interface ethernet poe
-        cmd: "monitor .id={{ item['.id'] }} once"
+        # `once=yes`, not a bare `once`: the api cmd parser requires key=value
+        # (a bare token errors "missing '='", and an empty `once=` is dropped).
+        cmd: "monitor .id={{ item['.id'] }} once=yes"
       loop: "{{ _poe_targets }}"
       loop_control:
         label: "{{ item['name'] }}"
