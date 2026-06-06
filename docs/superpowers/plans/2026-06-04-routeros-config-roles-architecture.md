@@ -149,7 +149,7 @@ galaxy_info:
   author: David Igou
   description: Internal engine — reconciles one RouterOS path via api_modify.
   company: david_igou
-  license: GPL-2.0-or-later
+  license: GPL-3.0-or-later
   min_ansible_version: "2.15"
   galaxy_tags:
     - routeros
@@ -479,7 +479,7 @@ galaxy_info:
   author: David Igou
   description: Declaratively manage /system/identity (device name).
   company: david_igou
-  license: GPL-2.0-or-later
+  license: GPL-3.0-or-later
   min_ansible_version: "2.15"
   galaxy_tags:
     - routeros
@@ -654,7 +654,7 @@ galaxy_info:
   author: David Igou
   description: Declaratively manage /ip/address entries.
   company: david_igou
-  license: GPL-2.0-or-later
+  license: GPL-3.0-or-later
   min_ansible_version: "2.15"
   galaxy_tags:
     - routeros
@@ -889,7 +889,7 @@ galaxy_info:
   author: David Igou
   description: Declaratively manage /ip/firewall/filter rules (ordered).
   company: david_igou
-  license: GPL-2.0-or-later
+  license: GPL-3.0-or-later
   min_ansible_version: "2.15"
   galaxy_tags:
     - routeros

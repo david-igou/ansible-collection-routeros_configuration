@@ -62,15 +62,16 @@ Example Playbook
                 count: 5
                 interface: ether1
 
-    - name: Fail if the uplink is down
-      ansible.builtin.assert:
-        that:
-          - (_routeros_ping.results[0].msg | last).received | int > 0
+      tasks:
+        - name: Fail if the uplink is down
+          ansible.builtin.assert:
+            that:
+              - (_routeros_ping.results[0].msg | last).received | int > 0
 
 License
 -------
 
-GPL-2.0-or-later. See [LICENSE](../../LICENSE).
+GPL-3.0-or-later. See [LICENSE](../../LICENSE).
 
 Author Information
 ------------------

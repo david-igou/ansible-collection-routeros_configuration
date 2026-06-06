@@ -66,7 +66,7 @@ spurious diffs). The optional binary backup writes a fresh point-in-time file
 each run but is reported as a non-change so it does not break idempotence.
 
 **Restore (run on the device, per the official docs):**
-- Text export: `/import file=<name>.rsc` — merges the config; review first.
+- Text export: `/import file-name=<name>.rsc` — merges the config; review first.
 - Binary backup: `/system backup load name=<name> password=<password>` — full
   restore, reboots the device; restore on the **same RouterOS version**.
 

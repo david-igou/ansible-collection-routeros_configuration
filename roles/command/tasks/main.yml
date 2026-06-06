@@ -1,8 +1,8 @@
 ---
 # tasks file for david_igou.routeros_configuration.command
 # Run arbitrary RouterOS API operations (community.routeros.api). Escape hatch.
-# Grouped by operation type. Uses 'op' in item / item['op'] (key access) rather
-# than selectattr, because attribute access on keys like 'update' resolves to the
+# Grouped by operation type. Uses literal-key access ('cmd' in item / item['cmd'])
+# rather than selectattr, because attribute access on keys like 'update' resolves to the
 # dict's built-in method, not the value. Set no_log on an item to hide a command
 # that carries a secret.
 

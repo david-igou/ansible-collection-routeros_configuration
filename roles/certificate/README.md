@@ -65,8 +65,8 @@ Create/sign are idempotent (only creates absent names, only signs unsigned
 certs); import skips a file when a cert with the target `name` already exists, so
 re-runs don't duplicate. Export and import are imperative file operations
 (RouterOS deletes a file when it is imported), so that flow does not converge to
-a no-op. Free-form values are quoted before being sent; passphrase-bearing and
-ACME tasks are `no_log`.
+a no-op. Free-form name/CN/CA/file/passphrase values are quoted before being
+sent; passphrase-bearing and ACME tasks are `no_log`.
 
 Dependencies
 ------------
@@ -101,7 +101,7 @@ Example Playbook
 License
 -------
 
-GPL-2.0-or-later. See [LICENSE](../../LICENSE).
+GPL-3.0-or-later. See [LICENSE](../../LICENSE).
 
 Author Information
 ------------------

@@ -81,7 +81,6 @@ the full suite.
 | Scenario | Proves |
 | --- | --- |
 | `negative` | Failure paths: `command` two-op item, `user_password` missing user, `configure` `order` without `purge` all fail as designed; an unreachable `ping` returns 0 received. No mutation occurs (validation fires first). |
-| `integration_hello_world` | Localhost smoke test of the integration-target harness (no CHR). |
 
 ### dedicated-CHR (Tier 2)
 

@@ -8,8 +8,10 @@ devices **declaratively**. You describe the desired configuration as data and a
 single role — :ansplugin:`configure <david_igou.routeros_configuration.configure#role>`
 — reconciles the device to match it (add, update, and optionally purge entries),
 idempotently. Around that core sit single-purpose operational roles for backup,
-restore, certificates, upgrades, reboots, and more. Every role talks to the
-device over the ``community.routeros`` binary API, run from the controller.
+restore, certificates, upgrades, reboots, and more. Most roles talk to the
+device over the ``community.routeros`` binary API, run from the controller; the
+``backup`` role is the exception, running over ``network_cli`` (SSH) because
+RouterOS ``/export`` is console-only.
 
 .. note::
 
@@ -40,6 +42,7 @@ minimal inventory:
            router-01:
              ansible_host: 192.0.2.1
          vars:
+           routeros_api_hostname: "{{ ansible_host }}"  # API target; else defaults to inventory_hostname
            routeros_api_username: admin
            routeros_api_password: "{{ vault_routeros_api_password }}"  # via Ansible Vault
            routeros_api_tls: true
@@ -72,9 +75,18 @@ the role re-sorts them into a canonical dependency order before applying:
                order: true        # enforce rule order
                content: remove_as_much_as_possible
                data:
-                 - {chain: input, action: accept, connection-state: "established,related", comment: est}
-                 - {chain: input, action: accept, protocol: tcp, dst-port: "22,8728", comment: mgmt}
-                 - {chain: input, action: drop, comment: drop-rest}
+                 - chain: input
+                   action: accept
+                   connection-state: "established,related"
+                   comment: est
+                 - chain: input
+                   action: accept
+                   protocol: tcp
+                   dst-port: "22,8728"
+                   comment: mgmt
+                 - chain: input
+                   action: drop
+                   comment: drop-rest
 
 A second run with the same data reports no changes. Capture an existing device's
 configuration into a re-appliable ``routeros_config`` file with the
