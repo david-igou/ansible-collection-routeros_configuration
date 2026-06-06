@@ -146,8 +146,10 @@ devices <strong>declaratively</strong>. You describe the desired configuration a
 single role — <a class="reference internal" href="../configure_role.html#ansible-collections-david-igou-routeros-configuration-configure-role"><span class="std std-ref">configure</span></a>
 — reconciles the device to match it (add, update, and optionally purge entries),
 idempotently. Around that core sit single-purpose operational roles for backup,
-restore, certificates, upgrades, reboots, and more. Every role talks to the
-device over the <code class="docutils literal notranslate"><span class="pre">community.routeros</span></code> binary API, run from the controller.</p>
+restore, certificates, upgrades, reboots, and more. Most roles talk to the
+device over the <code class="docutils literal notranslate"><span class="pre">community.routeros</span></code> binary API, run from the controller; the
+<code class="docutils literal notranslate"><span class="pre">backup</span></code> role is the exception, running over <code class="docutils literal notranslate"><span class="pre">network_cli</span></code> (SSH) because
+RouterOS <code class="docutils literal notranslate"><span class="pre">/export</span></code> is console-only.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Early-stage 0.0.x — expect breaking changes between releases. Pin a specific
@@ -171,6 +173,7 @@ minimal inventory:</p>
 <span class="w">        </span><span class="nt">router-01</span><span class="p">:</span>
 <span class="w">          </span><span class="nt">ansible_host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.1</span>
 <span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_api_hostname</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">ansible_host</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w">  </span><span class="c1"># API target; else defaults to inventory_hostname</span>
 <span class="w">        </span><span class="nt">routeros_api_username</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">admin</span>
 <span class="w">        </span><span class="nt">routeros_api_password</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;{{</span><span class="nv"> </span><span class="s">vault_routeros_api_password</span><span class="nv"> </span><span class="s">}}&quot;</span><span class="w">  </span><span class="c1"># via Ansible Vault</span>
 <span class="w">        </span><span class="nt">routeros_api_tls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
@@ -201,9 +204,18 @@ the role re-sorts them into a canonical dependency order before applying:</p>
 <span class="w">            </span><span class="nt">order</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">        </span><span class="c1"># enforce rule order</span>
 <span class="w">            </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remove_as_much_as_possible</span>
 <span class="w">            </span><span class="nt">data</span><span class="p">:</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">accept</span><span class="p p-Indicator">,</span><span class="nt"> connection-state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;established,related&quot;</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">est</span><span class="p p-Indicator">}</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">accept</span><span class="p p-Indicator">,</span><span class="nt"> protocol</span><span class="p">:</span><span class="w"> </span><span class="nv">tcp</span><span class="p p-Indicator">,</span><span class="nt"> dst-port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;22,8728&quot;</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">mgmt</span><span class="p p-Indicator">}</span>
-<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="p p-Indicator">{</span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="nv">input</span><span class="p p-Indicator">,</span><span class="nt"> action</span><span class="p">:</span><span class="w"> </span><span class="nv">drop</span><span class="p p-Indicator">,</span><span class="nt"> comment</span><span class="p">:</span><span class="w"> </span><span class="nv">drop-rest</span><span class="p p-Indicator">}</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">input</span>
+<span class="w">                </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">accept</span>
+<span class="w">                </span><span class="nt">connection-state</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;established,related&quot;</span>
+<span class="w">                </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">est</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">input</span>
+<span class="w">                </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">accept</span>
+<span class="w">                </span><span class="nt">protocol</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">tcp</span>
+<span class="w">                </span><span class="nt">dst-port</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;22,8728&quot;</span>
+<span class="w">                </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mgmt</span>
+<span class="w">              </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">chain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">input</span>
+<span class="w">                </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">drop</span>
+<span class="w">                </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">drop-rest</span>
 </pre></div>
 </div>
 <p>A second run with the same data reports no changes. Capture an existing device’s
