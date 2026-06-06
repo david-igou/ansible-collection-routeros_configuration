@@ -1,0 +1,176 @@
+---
+- name: Lifecycle — configure, backup/restore round-trip, import, reset wipe
+  hosts: molecule
+  gather_facts: false
+  # network_cli at play level for /export, /file, /import over SSH (port 2223);
+  # API tasks below delegate_to localhost (overriding this) for 127.0.0.1:8728.
+  vars:
+    ansible_host: "127.0.0.1"
+    ansible_port: 2223
+    ansible_connection: ansible.netcommon.network_cli
+    ansible_network_os: community.routeros.routeros
+    ansible_network_cli_ssh_type: libssh
+    ansible_user: "admin+cet1024w"
+    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
+    ansible_ssh_common_args: >-
+      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+  module_defaults:
+    community.routeros.api: &conn
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+    community.routeros.api_modify: *conn
+  tasks:
+    # --- Phase 1: configure a distinctive baseline via the configure role ---
+    - name: Configure a distinctive baseline
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.configure
+      vars:
+        routeros_config:
+          /system/identity:
+            data:
+              - name: lc-baseline
+          /ip/pool:
+            data:
+              - name: lc-pool
+                ranges: "192.168.123.10-192.168.123.50"
+
+    - name: Save a binary backup of the baseline
+      community.routeros.api:
+        path: system backup
+        cmd: "save name=lc-test password=lc-pw-123"
+      delegate_to: localhost
+      connection: local
+
+    # --- Phase 2: wrong-password restore must fail without harming the device ---
+    - name: Restore with the WRONG password must fail
+      block:
+        - name: Attempt restore with a bad password
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.restore
+          vars:
+            routeros_restore_backup_name: lc-test
+            routeros_restore_backup_password: wrong-pw
+        - name: Should not reach here
+          ansible.builtin.fail:
+            msg: "restore accepted a wrong backup password"
+      rescue:
+        - name: Expected — wrong-password restore failed, device intact
+          ansible.builtin.debug:
+            msg: "restore correctly rejected the wrong backup password"
+
+    - name: Confirm the device is still up and still lc-baseline after the failed restore
+      community.routeros.api:
+        path: system identity
+      delegate_to: localhost
+      connection: local
+      register: _id_after_badpw
+    - name: Assert the failed restore did not reboot/alter the device
+      ansible.builtin.assert:
+        that:
+          - (_id_after_badpw.msg | first).name == 'lc-baseline'
+        fail_msg: "device altered by a wrong-password restore: {{ _id_after_badpw.msg }}"
+
+    # --- Phase 3: restore round-trip (real reboot) ---
+    - name: Change the identity so the restore is observable
+      community.routeros.api_modify:
+        path: system identity
+        data:
+          - name: lc-changed
+      delegate_to: localhost
+      connection: local
+
+    - name: Restore the baseline backup (reboots, role reconnects)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.restore
+      vars:
+        routeros_restore_backup_name: lc-test
+        routeros_restore_backup_password: lc-pw-123
+
+    - name: Read identity after restore
+      community.routeros.api:
+        path: system identity
+      delegate_to: localhost
+      connection: local
+      register: _id_after_restore
+    - name: Assert the binary restore reverted the identity across a real reboot
+      ansible.builtin.assert:
+        that:
+          - (_id_after_restore.msg | first).name == 'lc-baseline'
+        fail_msg: "binary restore did not revert: {{ _id_after_restore.msg }}"
+
+    # --- Phase 4: /import branch (no reboot) ---
+    # Export ONLY the /system/identity submenu: a submenu export emits `set`
+    # commands (not `add`), so re-importing it onto the populated device does not
+    # collide with existing objects (a full /export is add-based and would fail
+    # with "... such name exists"). This is the realistic /import use — a partial,
+    # set-based script.
+    - name: Export the identity submenu to an on-device .rsc (set-based)
+      community.routeros.command:
+        commands:
+          - "/system identity export file=lc-id"
+      register: _exp
+      changed_when: false
+
+    - name: Change the identity (so the import is observable)
+      community.routeros.api_modify:
+        path: system identity
+        data:
+          - name: lc-import-changed
+      delegate_to: localhost
+      connection: local
+
+    - name: Import the identity script (re-applies identity=lc-baseline; no reboot)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.restore
+      vars:
+        routeros_restore_import_file: lc-id.rsc
+
+    - name: Read identity after import
+      community.routeros.api:
+        path: system identity
+      delegate_to: localhost
+      connection: local
+      register: _id_after_import
+    - name: Assert /import re-applied the exported identity
+      ansible.builtin.assert:
+        that:
+          - (_id_after_import.msg | first).name == 'lc-baseline'
+        fail_msg: "import did not re-apply baseline identity: {{ _id_after_import.msg }}"
+
+    # --- Phase 5: real reset wipe (verified by unreachability) ---
+    # /system reset-configuration wipes the api service + the ether2 dhcp-client
+    # address that the 127.0.0.1:8728 hostfwd lands on, so the device becomes
+    # unreachable on the managed interface. We deliberately do NOT restore
+    # reachability (run-after-reset needs a staged .rsc — fragile, and out of
+    # molecule's scope): the reset role's own reconnect FAILING is the proof the
+    # wipe took effect. The reconnect *success* path is already covered by the
+    # reboot and restore scenarios.
+    - name: Reset the configuration FOR REAL — reconnect must fail (proves the wipe)
+      block:
+        - name: Issue the destructive reset (short timeout; it will not come back)
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.reset
+          vars:
+            routeros_reset_confirm: true
+            routeros_reset_keep_users: true
+            routeros_reset_reboot_timeout: 30
+        - name: Reset role unexpectedly reconnected (device was NOT wiped)
+          ansible.builtin.set_fact:
+            _reset_wiped: false
+      rescue:
+        - name: Expected — reset wiped API reachability, reconnect failed
+          ansible.builtin.set_fact:
+            _reset_wiped: true
+
+    - name: Assert the reset wiped the device (unreachable on the managed interface)
+      ansible.builtin.assert:
+        that:
+          - _reset_wiped | default(false)
+        success_msg: >-
+          real reset-configuration wiped the device (API unreachable after reset,
+          as expected — reconnect on 127.0.0.1:8728 failed)
+        fail_msg: "reset did not wipe as expected (device still reachable after reset)"
