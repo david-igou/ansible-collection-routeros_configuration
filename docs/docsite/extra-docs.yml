@@ -1,0 +1,19 @@
+---
+sections:
+  - title: General
+    toctree:
+      - guide
+  - title: Roles
+    toctree:
+      - configure_role
+      - export_vars_role
+      - backup_role
+      - restore_role
+      - certificate_role
+      - upgrade_role
+      - user_password_role
+      - command_role
+      - fetch_role
+      - ping_role
+      - reboot_role
+      - reset_role

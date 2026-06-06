@@ -32,7 +32,7 @@ dependencies:
   "ansible.utils": "*"
 
 repository: https://github.com/david-igou/ansible-collection-routeros_configuration
-documentation: https://github.com/david-igou/ansible-collection-routeros_configuration
+documentation: https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/
 homepage: https://github.com/david-igou/ansible-collection-routeros_configuration
 issues: https://github.com/david-igou/ansible-collection-routeros_configuration/issues
 
