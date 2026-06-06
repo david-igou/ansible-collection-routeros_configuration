@@ -1,12 +1,20 @@
 ---
-- name: Converge — fetch a file onto the device
+- name: Converge — fetch two files, then remove one
   hosts: molecule
   gather_facts: false
   vars:
     # The device's own web service is always reachable from itself.
+    # NOTE: /tool fetch is a `cmd` op; community.routeros.api returns
+    # changed=False for cmd ops, so molecule's idempotence step is vacuous for
+    # this role — the verify read-back below is the real proof.
     routeros_fetch:
       - url: "http://127.0.0.1/"
-        dst_path: fetch-role-test.html
+        dst_path: fetch-keep.html
         mode: http
+      - url: "http://127.0.0.1/"
+        dst_path: fetch-remove.html
+        mode: http
+    routeros_fetch_remove:
+      - fetch-remove.html
   roles:
     - role: david_igou.routeros_configuration.fetch

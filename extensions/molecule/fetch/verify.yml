@@ -17,9 +17,10 @@
       delegate_to: localhost
       connection: local
       register: files
-    - name: Assert the fetched file is present
+    - name: Assert the kept file is present and the removed file is gone
       ansible.builtin.assert:
         that:
-          - files.msg | selectattr('name', 'equalto', 'fetch-role-test.html') | list | length == 1
-        success_msg: "fetch-role-test.html present"
-        fail_msg: "fetched file missing: {{ files.msg | map(attribute='name') | list }}"
+          - files.msg | selectattr('name', 'equalto', 'fetch-keep.html') | list | length == 1
+          - files.msg | selectattr('name', 'equalto', 'fetch-remove.html') | list | length == 0
+        success_msg: "fetch created fetch-keep.html; fetch_remove deleted fetch-remove.html"
+        fail_msg: "unexpected files: {{ files.msg | map(attribute='name') | list }}"
