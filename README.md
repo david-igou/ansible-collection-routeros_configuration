@@ -46,6 +46,7 @@ documentation.
 | `command` | Run arbitrary RouterOS API commands — an escape hatch for unmodeled operations. |
 | `fetch` | Transfer files to/from the device via `/tool fetch`. |
 | `ping` | Run connectivity checks via `/tool ping` over the API. |
+| `poe` | Power-cycle, force off/on, or monitor PoE-out ports (imperative; persistent PoE config stays in `configure`). |
 | `reboot` | Reboot or shut down a RouterOS device. |
 | `reset` | Reset RouterOS configuration (gated; destructive). |
 | `_reconcile` | Internal engine — reconciles a single path via `community.routeros.api_modify`. Not called directly. |

@@ -1,0 +1,13 @@
+---
+minor_changes:
+  - >-
+    New C(poe) role — imperative PoE-out operations over the binary API:
+    C(power_cycle) a port, force C(power_off)/C(power_on)
+    (C(poe-out=off|auto-on|forced-on|...)), or read-only C(monitor) of live
+    PoE-out status (returned in the C(routeros_poe_monitor) fact). The
+    operational counterpart to C(configure), which retains the persistent PoE
+    knobs (ping watchdog, C(power-cycle-interval), priority, voltage, LLDP, and
+    the global power budget). Write actions fail on an empty interface list, and
+    a named interface with no PoE-out entry fails clearly. Live PoE operations
+    are hardware-dependent and untested on the CHR used in CI (no PoE
+    controller); molecule covers the input-validation and no-entry paths.

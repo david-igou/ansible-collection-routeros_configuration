@@ -54,7 +54,7 @@ ifeq ($(SCENARIO),)
 		-s configure_ordered -s configure_modify_only \
 		-s configure_dependency_chain -s configure_full -s configure_check_mode \
 		-s certificate -s upgrade -s export_vars \
-		-s command -s user_password -s reset \
+		-s command -s poe -s user_password -s reset \
 		-s backup -s restore -s reboot -s negative
 	molecule test -s chr
 	molecule test -s lifecycle
