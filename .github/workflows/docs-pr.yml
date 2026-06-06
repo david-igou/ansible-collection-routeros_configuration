@@ -35,6 +35,7 @@ jobs:
       init-html-short-title: RouterOS Configuration Docs
       init-extra-html-theme-options: |
         documentation_home_url=https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/branch/main/
+      # yamllint disable-line rule:line-length
       render-file-line: '> * `$<status>` [$<path_tail>](https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/pr/${{ github.event.number }}/$<path_tail>)'
 
   publish-docs-gh-pages:

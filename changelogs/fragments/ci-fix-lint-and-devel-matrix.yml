@@ -1,0 +1,9 @@
+---
+trivial:
+  - >-
+    CI: stop pairing Python 3.12 with the ansible-core C(devel) branch in the
+    sanity and unit test matrices (ansible-core 2.21+ requires Python >= 3.13,
+    so the combo could not install) by adding C(py3.12-devel) to the
+    C(tox-ansible.ini) skip list; py3.12 is still tested on stable cores and
+    devel on py3.13+. Also silence a C(yaml[line-length]) ansible-lint failure
+    on the long C(render-file-line) input in the docs PR workflow.
