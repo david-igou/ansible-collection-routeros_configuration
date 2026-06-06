@@ -28,10 +28,12 @@ state". This role owns the former; `configure` owns the latter.
   A *command* (not a settable property in ROS7) that drops power to the port for
   a duration, then restores it. No state to reconcile — the headline
   "power-cycle a host" feature.
-- `off` / `on` — `set <iface> poe-out=off | auto-on | forced-on | forced-on-a |
-  forced-on-bt`. `poe-out` *is* a reconcilable property (so `configure` owns
-  steady state), but "shut this PD down now / power it back up" is a legitimate
-  one-shot action.
+- `power_off` / `power_on` — `set <iface> poe-out=off | auto-on | forced-on |
+  forced-on-a | forced-on-bt`. `poe-out` *is* a reconcilable property (so
+  `configure` owns steady state), but "shut this PD down now / power it back up"
+  is a legitimate one-shot action. (Action names are `power_off`/`power_on`, not
+  bare `off`/`on`, because YAML parses bare `on`/`off` as booleans — a footgun in
+  `routeros_poe_action: on`.)
 - `monitor` — `/interface ethernet poe monitor <iface> once`. Read-only live
   telemetry: `poe-out-status` (`powered-on`, `waiting-for-load`,
   `short-circuit`, `overload`, `voltage-too-low/high`, `current-too-low`,
@@ -65,13 +67,13 @@ routeros_api_validate_certs: true
 routeros_api_port: ""
 
 # The PoE action to perform.
-routeros_poe_action: monitor          # monitor | power_cycle | off | on
+routeros_poe_action: monitor          # monitor | power_cycle | power_off | power_on
 # Target PoE-out interfaces. Write actions REQUIRE a non-empty list (empty =
 # hard fail). monitor with an empty list reads all PoE-out ports.
 routeros_poe_interfaces: []
 # power_cycle only: how long to drop power (RouterOS duration, 0..1m).
 routeros_poe_duration: 5s
-# action=on only: the poe-out value to restore.
+# action=power_on only: the poe-out value to restore.
 routeros_poe_mode: auto-on            # auto-on | forced-on | forced-on-a | forced-on-bt
 ```
 
@@ -84,11 +86,12 @@ read-only and harmless.
 | --- | --- | --- |
 | `monitor` | resolve each iface → `.id`, then `community.routeros.api` `cmd: "monitor .id=<id> once"`; collect into a registered fact + `debug` | `false` |
 | `power_cycle` | resolve `.id`, `cmd: "power-cycle .id=<id> duration=<dur>"` | `true` |
-| `off` | `community.routeros.api_find_and_modify` find `{name: <iface>}` set `{poe-out: "off"}` | module-reported |
-| `on` | `api_find_and_modify` find `{name: <iface>}` set `{poe-out: <routeros_poe_mode>}` | module-reported |
+| `power_off` | `community.routeros.api_find_and_modify` find `{name: <iface>}` set `{poe-out: "off"}`, `require_matches_min: 1` | module-reported |
+| `power_on` | `api_find_and_modify` find `{name: <iface>}` set `{poe-out: <routeros_poe_mode>}`, `require_matches_min: 1` | module-reported |
 
-`off`/`on` set a field, so `api_find_and_modify` (find-by-name) is cleanest — no
-manual id juggling, honest `changed`. `monitor`/`power_cycle` are keyed-menu
+`power_off`/`power_on` set a field, so `api_find_and_modify` (find-by-name) is
+cleanest — no manual id juggling, honest `changed`, and `require_matches_min: 1`
+fails when the interface has no PoE-out entry. `monitor`/`power_cycle` are keyed-menu
 *commands*, so the `api` `cmd` form needs the entry `.id` (the `api` `cmd` takes
 `key=value` only — no CLI positionals / `[find]`); a small pre-read maps
 interface name → `.id`. Results land under `.msg`.
@@ -131,13 +134,13 @@ group_var.) The router-centric model — `hosts: routers`, many interfaces in on
 
 ## Safety / validation (baked in; no extra gate)
 
-Per the user's choice, selecting the action **is** the opt-in (`off` is
-reversible via `on`, so it is not gated like `reset`/`shutdown`). Guards:
+Per the user's choice, selecting the action **is** the opt-in (`power_off` is
+reversible via `power_on`, so it is not gated like `reset`/`shutdown`). Guards:
 
-- Write actions (`off`/`on`/`power_cycle`) **hard-fail on an empty
+- Write actions (`power_off`/`power_on`/`power_cycle`) **hard-fail on an empty
   `routeros_poe_interfaces`** — never act on every port by accident.
-- `routeros_poe_action` ∈ {`monitor`, `power_cycle`, `off`, `on`} (argument-spec
-  `choices`).
+- `routeros_poe_action` ∈ {`monitor`, `power_cycle`, `power_off`, `power_on`}
+  (argument-spec `choices`).
 - `routeros_poe_mode` ∈ {`auto-on`, `forced-on`, `forced-on-a`, `forced-on-bt`}
   (argument-spec `choices`).
 - `routeros_poe_duration` validated as a RouterOS duration ≤ 1m.
@@ -156,8 +159,8 @@ precedent — shutdown, ACME, RouterBOARD firmware, real reset):
   `/interface ethernet poe` is empty or absent → clean failure / empty
   `monitor`). This is the molecule `poe` scenario's core.
 - **Untested-on-CHR (no PoE hardware), validated later on a real device:** the
-  actual `power_cycle` / `off` / `on` / live `monitor` readings, documented as
-  such (no silent caps).
+  actual `power_cycle` / `power_off` / `power_on` / live `monitor` readings,
+  documented as such (no silent caps).
 - The scenario drops idempotence (imperative role, like `command`).
 - First confirm what CHR's `/interface ethernet poe` actually returns and shape
   the validation assertions to match.
