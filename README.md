@@ -3,21 +3,29 @@
 This repository contains the `david_igou.routeros_configuration` Ansible Collection.
 
 <!--start requires_ansible-->
+This collection requires **ansible-core >= 2.15.0** (see `meta/runtime.yml`).
 <!--end requires_ansible-->
 
 ## External requirements
 
-The roles in this collection manage RouterOS declaratively over the **binary
-API** via `community.routeros.api_modify`/`api_info`. This requires:
+Most roles in this collection manage RouterOS over the **binary API** — the
+declarative `configure`/`_reconcile` engine via `community.routeros.api_modify`,
+`export_vars` via `api_info`, and the operational roles via the generic
+`community.routeros.api` module. This requires:
 
 - The **`librouteros`** Python library on the Ansible controller
   (`pip install librouteros`).
 - The device's **`api`** service enabled (port 8728), or **`api-ssl`** (port
   8729) for TLS — strongly preferred in production.
 
-Connection details are supplied once through the shared `routeros_api_*`
-variables (see the internal `_reconcile` role). Other modules and plugins may
-require additional external libraries — check each module's documentation.
+The exception is the `backup` role, which runs over **`network_cli`** (SSH) via
+`community.routeros.command`, because RouterOS `/export` is console-only; it
+needs SSH access to the device rather than the API service.
+
+Connection details for the API roles are supplied once through the shared
+`routeros_api_*` variables (see the internal `_reconcile` role). Other modules
+and plugins may require additional external libraries — check each module's
+documentation.
 
 ## Included content
 
@@ -29,6 +37,17 @@ require additional external libraries — check each module's documentation.
 | Role | Purpose |
 | --- | --- |
 | `configure` | Declaratively manage RouterOS from one `routeros_config` data structure (the public entrypoint). |
+| `export_vars` | Capture a running device's config into a re-appliable `routeros_config` vars file. |
+| `backup` | Back up RouterOS configuration — text `/export` over network_cli, plus an optional binary backup. |
+| `restore` | Restore a device from a binary backup or a config import. |
+| `certificate` | Create, sign, export, and import RouterOS certificates (and ACME requests) over the API. |
+| `upgrade` | Set the update channel and install RouterOS package/firmware upgrades over the API. |
+| `user_password` | Set or rotate RouterOS `/user` passwords over the API. |
+| `command` | Run arbitrary RouterOS API commands — an escape hatch for unmodeled operations. |
+| `fetch` | Transfer files to/from the device via `/tool fetch`. |
+| `ping` | Run connectivity checks via `/tool ping` over the API. |
+| `reboot` | Reboot or shut down a RouterOS device. |
+| `reset` | Reset RouterOS configuration (gated; destructive). |
 | `_reconcile` | Internal engine — reconciles a single path via `community.routeros.api_modify`. Not called directly. |
 
 Set `routeros_config` — a dict keyed by RouterOS **slash path** — and run the
@@ -47,6 +66,7 @@ routeros_config:
   /ip/firewall/filter:
     purge: true          # exact-state for this path
     order: true          # enforce rule order (requires purge)
+    content: remove_as_much_as_possible   # required to purge a keyless path
     data:
       - chain: input
         action: accept
@@ -105,16 +125,22 @@ for more details.
 ## Release notes
 
 See the
-[changelog](https://github.com/ansible-collections/david_igou.routeros_configuration/tree/main/CHANGELOG.rst).
+[changelog](https://github.com/david-igou/ansible-collection-routeros_configuration/tree/main/CHANGELOG.rst).
 
 ## Roadmap
 
-<!-- Optional. Include the roadmap for this collection, and the proposed release/versioning strategy so users can anticipate the upgrade/update cycle. -->
+This collection is in early **0.0.x** development — expect breaking changes
+between releases until **1.0.0**. Near-term focus is stabilizing the `configure`
+`routeros_config` data contract and broadening role coverage. Pin a specific
+version in your `requirements.yml` and review the
+[changelog](https://github.com/david-igou/ansible-collection-routeros_configuration/tree/main/CHANGELOG.rst)
+before upgrading.
 
 ## More information
 
-<!-- List out where the user can find additional information, such as working group meeting times, slack/matrix channels, or documentation for the product this collection automates. At a minimum, link to: -->
-
+- [Collection documentation](https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/)
+- [MikroTik RouterOS documentation](https://help.mikrotik.com/docs/)
+- [`community.routeros` collection](https://galaxy.ansible.com/ui/repo/published/community/routeros/)
 - [Ansible collection development forum](https://forum.ansible.com/c/project/collection-development/27)
 - [Ansible User guide](https://docs.ansible.com/ansible/devel/user_guide/index.html)
 - [Ansible Developer guide](https://docs.ansible.com/ansible/devel/dev_guide/index.html)

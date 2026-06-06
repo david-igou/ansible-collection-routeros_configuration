@@ -3,7 +3,7 @@ galaxy_info:
   author: David Igou
   description: Declaratively manage RouterOS over the API from one data structure.
   company: david_igou
-  license: GPL-2.0-or-later
+  license: GPL-3.0-or-later
   min_ansible_version: "2.15"
   galaxy_tags:
     - routeros

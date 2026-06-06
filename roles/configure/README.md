@@ -12,6 +12,7 @@ by one `routeros_config` dict.
       /ip/firewall/filter:
         purge: true
         order: true
+        content: remove_as_much_as_possible   # required to purge a keyless path
         data:
           - chain: input
             action: accept

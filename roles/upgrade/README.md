@@ -69,7 +69,7 @@ Example Playbook
 License
 -------
 
-GPL-2.0-or-later. See [LICENSE](../../LICENSE).
+GPL-3.0-or-later. See [LICENSE](../../LICENSE).
 
 Author Information
 ------------------

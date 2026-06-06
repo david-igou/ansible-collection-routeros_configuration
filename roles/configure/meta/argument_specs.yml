@@ -59,9 +59,18 @@ argument_specs:
                   order: true
                   content: remove_as_much_as_possible
                   data:
-                    - {chain: input, action: accept, connection-state: "established,related", comment: est}
-                    - {chain: input, action: accept, protocol: tcp, dst-port: "22,8728", comment: mgmt}
-                    - {chain: input, action: drop, comment: drop-rest}
+                    - chain: input
+                      action: accept
+                      connection-state: "established,related"
+                      comment: est
+                    - chain: input
+                      action: accept
+                      protocol: tcp
+                      dst-port: "22,8728"
+                      comment: mgmt
+                    - chain: input
+                      action: drop
+                      comment: drop-rest
     options:
       routeros_config:
         type: dict

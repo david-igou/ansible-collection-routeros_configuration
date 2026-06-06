@@ -22,7 +22,7 @@ via Ansible Vault.
 
 | Variable | Required | Default | Choices | Comments |
 |-------------------------------|----------|------------------------|-------------|------------------------------------------------------------|
-| `routeros_user_passwords` | no | `[]` | | Users and the passwords to set (see item keys below; the whole list is `no_log`). |
+| `routeros_user_passwords` | no | `[]` | | Users and the passwords to set (see item keys below; the password-setting task is `no_log`). |
 | `routeros_api_hostname` | no | `{{ inventory_hostname }}` | | API host/IP of the device. |
 | `routeros_api_username` | no | `admin` | | API username. |
 | `routeros_api_password` | yes | _(undefined)_ | | API password — secret; supply via Vault. |
@@ -65,7 +65,7 @@ Example Playbook
 License
 -------
 
-GPL-2.0-or-later. See [LICENSE](../../LICENSE).
+GPL-3.0-or-later. See [LICENSE](../../LICENSE).
 
 Author Information
 ------------------
