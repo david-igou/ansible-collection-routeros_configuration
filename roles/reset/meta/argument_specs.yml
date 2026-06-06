@@ -5,6 +5,35 @@ argument_specs:
     description:
       - Runs C(/system reset-configuration) only when C(routeros_reset_confirm) is
         true. Wipes the configuration and reboots.
+    examples: |
+      # Destructive: a confirmed run wipes the configuration and reboots. The
+      # routeros_reset_confirm gate defaults to false as a safeguard.
+      #
+      # Safe by default (gate off) — a no-op you can leave in a playbook.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reset
+
+      # Reset but keep users, and re-enable the API afterward so Ansible can
+      # reconnect.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reset
+            vars:
+              routeros_reset_confirm: true
+              routeros_reset_keep_users: true
+              routeros_reset_run_after_reset: "/ip service enable api-ssl"
+
+      # Reset to a bare configuration (skip RouterOS' default config).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reset
+            vars:
+              routeros_reset_confirm: true
+              routeros_reset_no_defaults: true
     options:
       routeros_reset_confirm:
         type: bool

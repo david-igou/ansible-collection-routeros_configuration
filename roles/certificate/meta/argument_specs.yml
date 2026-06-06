@@ -7,6 +7,46 @@ argument_specs:
         that already exists and is signed is left untouched).
       - Uses C(community.routeros.api) because api_modify treats C(certificate) as
         read-only.
+    examples: |
+      # Create a self-signed CA (no ca:) and a host certificate signed by it.
+      # Idempotent by name.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.certificate
+            vars:
+              routeros_certificates:
+                - name: local-ca
+                  common_name: Local CA
+                  key_usage:
+                    - key-cert-sign
+                    - crl-sign
+                - name: api-cert
+                  common_name: router.example.com
+                  ca: local-ca
+
+      # Export a certificate to a PEM file on the device (passphrase-protected key).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.certificate
+            vars:
+              routeros_certificates_export:
+                - name: local-ca
+                  file_name: local-ca
+                  type: pem
+                  export_passphrase: "{{ vault_cert_passphrase }}"
+
+      # Import a certificate from a file already on the device, naming it on import.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.certificate
+            vars:
+              routeros_certificates_import:
+                - file_name: api-cert.crt
+                  name: api-cert-imported
+                  passphrase: "{{ vault_cert_passphrase }}"
     options:
       routeros_certificates:
         type: list

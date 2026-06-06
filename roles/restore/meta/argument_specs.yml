@@ -5,6 +5,35 @@ argument_specs:
     description:
       - Loads a binary backup (C(/system backup load), reboots) and/or imports a
         config script (C(/import)). The reverse of the backup role.
+    examples: |
+      # Restore from a binary backup (loads it and reboots, waiting for the API).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.restore
+            vars:
+              routeros_restore_backup_name: nightly
+              routeros_restore_backup_password: "{{ vault_routeros_backup_password }}"
+
+      # Import a configuration script with /import (no reboot).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.restore
+            vars:
+              routeros_restore_import_file: edge-router.rsc
+
+      # Load a backup (reboot), then import a script; raise the reboot timeout for
+      # a device that is slow to come back.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.restore
+            vars:
+              routeros_restore_backup_name: nightly
+              routeros_restore_backup_password: "{{ vault_routeros_backup_password }}"
+              routeros_restore_import_file: extra-tweaks.rsc
+              routeros_restore_reboot_timeout: 600
     options:
       routeros_restore_backup_name:
         type: str

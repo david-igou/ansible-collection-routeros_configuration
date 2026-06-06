@@ -4,6 +4,29 @@ argument_specs:
     short_description: Reboot or shut down a RouterOS device.
     description:
       - Reboots and waits for the API, or (gated) shuts the device down.
+    examples: |
+      # Reboot and wait for the API to return (the default).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reboot
+
+      # Reboot with a longer reconnect wait for a slow device.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reboot
+            vars:
+              routeros_reboot_timeout: 600
+
+      # Shut the device down instead of rebooting (no reconnect wait; gated).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.reboot
+            vars:
+              routeros_reboot: false
+              routeros_shutdown: true
     options:
       routeros_reboot:
         type: bool

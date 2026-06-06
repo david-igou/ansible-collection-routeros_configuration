@@ -7,6 +7,35 @@ argument_specs:
         (C(community.routeros.api_info)) and writes a per-host vars file containing
         a C(routeros_config) dict that the C(configure) role can re-apply.
       - Captured fields are a best-effort equivalent; review before re-applying.
+    examples: |
+      # Capture the full configuration. Writes <inventory_hostname>.yml with a
+      # routeros_config dict that the configure role can re-apply.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.export_vars
+            vars:
+              routeros_export_vars_dir: ./routeros-vars
+
+      # Capture a focused set of paths for a fast, targeted snapshot. Paths with
+      # no entries are omitted from the output.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.export_vars
+            vars:
+              routeros_export_vars_paths:
+                - /ip/address
+                - /system/identity
+
+      # Redact secrets (keys, PSKs, passwords) as REDACTED. The output no longer
+      # round-trips; prefer encrypting the unredacted file with Ansible Vault.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.export_vars
+            vars:
+              routeros_export_vars_redact: true
     options:
       routeros_export_vars_dir:
         type: str

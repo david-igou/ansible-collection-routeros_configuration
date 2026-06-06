@@ -5,6 +5,63 @@ argument_specs:
     description:
       - Reconciles each path in C(routeros_config) via the internal C(_reconcile)
         engine, in a canonical dependency order (see C(vars/main.yml)).
+    examples: |
+      # Minimal: set the identity and an address pool. Each key is a RouterOS
+      # slash path with a data list of the desired entries.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.configure
+            vars:
+              routeros_config:
+                /system/identity:
+                  data:
+                    - name: edge-router
+                /ip/pool:
+                  data:
+                    - name: lan-pool
+                      ranges: 192.168.88.10-192.168.88.254
+
+      # Several paths: keys may be authored in any order; the role re-sorts them
+      # into a canonical dependency order, so the pool is applied before the DHCP
+      # server that references it.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.configure
+            vars:
+              routeros_config:
+                /ip/dhcp-server:
+                  data:
+                    - name: lan-dhcp
+                      interface: bridge
+                      address-pool: lan-pool
+                /ip/pool:
+                  data:
+                    - name: lan-pool
+                      ranges: 192.168.88.10-192.168.88.254
+                /ip/dns:
+                  data:
+                    - servers: 1.1.1.1,9.9.9.9
+                      allow-remote-requests: true
+
+      # Exact firewall state: purge removes on-device entries absent from data;
+      # order (requires purge) enforces rule order. Review a --check --diff run
+      # before applying purge/order to a production chain.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.configure
+            vars:
+              routeros_config:
+                /ip/firewall/filter:
+                  purge: true
+                  order: true
+                  content: remove_as_much_as_possible
+                  data:
+                    - {chain: input, action: accept, connection-state: "established,related", comment: est}
+                    - {chain: input, action: accept, protocol: tcp, dst-port: "22,8728", comment: mgmt}
+                    - {chain: input, action: drop, comment: drop-rest}
     options:
       routeros_config:
         type: dict

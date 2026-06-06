@@ -4,6 +4,46 @@ argument_specs:
     short_description: Connectivity checks via /tool ping over the API.
     description:
       - Pings each target; results are registered in C(_routeros_ping).
+    examples: |
+      # Ping a single target.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.ping
+            vars:
+              routeros_ping:
+                - address: 1.1.1.1
+                  count: 3
+
+      # Ping several targets.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.ping
+            vars:
+              routeros_ping:
+                - address: 1.1.1.1
+                  count: 4
+                - address: 9.9.9.9
+                  count: 4
+
+      # Ping from a source interface and use the registered result. Results are
+      # in _routeros_ping; .results aligns with routeros_ping and each entry's
+      # final row carries the running totals.
+      - hosts: routers
+        gather_facts: false
+        tasks:
+          - name: Ping the gateway from the WAN interface
+            ansible.builtin.include_role:
+              name: david_igou.routeros_configuration.ping
+            vars:
+              routeros_ping:
+                - address: 192.0.2.1
+                  interface: ether1
+                  count: 5
+          - name: Show how many replies came back
+            ansible.builtin.debug:
+              msg: "received {{ (_routeros_ping.results[0].msg | last).received }}"
     options:
       routeros_ping:
         type: list

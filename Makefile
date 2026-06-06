@@ -7,7 +7,7 @@ COLLECTION_VERSION   := $(shell grep '^version:' galaxy.yml | awk '{print $$2}')
 # test_sequence) run standalone; every other (shared-state) scenario relies on
 # the `default` scenario to boot the shared CHR, so a single-scenario run must
 # prepend it (see the `molecule` target's SCENARIO= branch).
-SELF_OWNING := chr lifecycle default integration_hello_world
+SELF_OWNING := chr lifecycle default
 
 # PROVISIONER picks which mp.<backend> block a scenario uses when its inventory
 # declares more than one. The chr scenario declares only qemu, so leaving this
@@ -43,7 +43,7 @@ install: ## Install runtime collection dependencies (community.routeros, ansible
 # With no SCENARIO: run the shared-state pass (all subsystem-role scenarios on a
 # single CHR via the `default` scenario — see extensions/molecule/config.yml),
 # then the standalone `chr` scenario. The shared pass excludes `chr` (network_cli,
-# opts out of shared_state) and `integration_hello_world` (localhost smoke).
+# opts out of shared_state).
 molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the shared pass + chr)
 # `default` MUST be listed first: under shared_state it owns create/prepare, and
 # molecule runs explicitly-listed scenarios in the given order (whereas `--all`

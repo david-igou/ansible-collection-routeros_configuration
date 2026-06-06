@@ -6,6 +6,32 @@ argument_specs:
       - Sets the package update channel (idempotently) and checks for updates.
       - Optionally installs an available update, which reboots the device — gated
         behind C(routeros_upgrade_install) and only when an update is available.
+    examples: |
+      # Set the update channel only (install gated off by default; never reboots).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.upgrade
+            vars:
+              routeros_update_channel: long-term
+
+      # Install an available update (REBOOTS the device; waits for the API).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.upgrade
+            vars:
+              routeros_update_channel: stable
+              routeros_upgrade_install: true
+              routeros_upgrade_reboot_timeout: 600
+
+      # Upgrade RouterBOARD bootloader firmware and reboot (gated; not on a CHR).
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.upgrade
+            vars:
+              routeros_routerboard_upgrade: true
     options:
       routeros_update_channel:
         type: str

@@ -4,6 +4,44 @@ argument_specs:
     short_description: Transfer files to/from RouterOS via /tool fetch.
     description:
       - Downloads/uploads files with C(/tool fetch) and removes files with C(/file remove).
+    examples: |
+      # Download a file onto the device over HTTPS.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.fetch
+            vars:
+              routeros_fetch:
+                - url: https://example.com/firmware.npk
+                  dst_path: firmware.npk
+                  mode: https
+
+      # Download a file, and clean up a stale one with routeros_fetch_remove.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.fetch
+            vars:
+              routeros_fetch:
+                - url: https://config.example.com/edge.rsc
+                  dst_path: edge.rsc
+                  mode: https
+              routeros_fetch_remove:
+                - old-edge.rsc
+
+      # Fetch over SFTP with extra arguments (appended verbatim); set no_log when
+      # the URL or arguments carry a credential.
+      - hosts: routers
+        gather_facts: false
+        roles:
+          - role: david_igou.routeros_configuration.fetch
+            vars:
+              routeros_fetch:
+                - url: sftp://files.example.com/backup.rsc
+                  dst_path: backup.rsc
+                  mode: sftp
+                  extra: "user=svc password={{ vault_sftp_password }}"
+                  no_log: true
     options:
       routeros_fetch:
         type: list
