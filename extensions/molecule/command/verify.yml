@@ -1,5 +1,5 @@
 ---
-- name: Verify — the command took effect
+- name: Verify — cmd set the note; add+remove left no address-list entry
   hosts: molecule
   gather_facts: false
   module_defaults:
@@ -17,9 +17,16 @@
       delegate_to: localhost
       connection: local
       register: note
-    - name: Assert note was set
+    - name: Read address-list
+      community.routeros.api:
+        path: ip firewall address-list
+      delegate_to: localhost
+      connection: local
+      register: al
+    - name: Assert cmd set the note and the add/remove round-trip cleaned up
       ansible.builtin.assert:
         that:
           - (note.msg | first).note == 'cmd-role-marker'
-        success_msg: "system note set by command role"
-        fail_msg: "unexpected note: {{ note.msg }}"
+          - al.msg | selectattr('list', 'equalto', 'cmd-list') | list | length == 0
+        success_msg: "cmd set note; add+remove round-trip left no cmd-list entry"
+        fail_msg: "note={{ note.msg }} address_list={{ al.msg }}"

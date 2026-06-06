@@ -1,3 +1,10 @@
 ---
+# The cmd-op set-note is idempotent-safe (api returns changed=False for cmd), but
+# this scenario also exercises add/remove ops, which are NOT idempotent — so the
+# idempotence step is dropped.
 scenario:
   name: command
+  test_sequence:
+    - dependency
+    - converge
+    - verify
