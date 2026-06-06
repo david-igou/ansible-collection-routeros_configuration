@@ -16,7 +16,6 @@ skip_list:
   #   routeros_<path>  — user-facing desired-state vars, consistent across roles
   #   routeros_api_*   — the shared connection contract every role authenticates with
   #   rcfg_*           — private inputs passed into the internal _reconcile engine
-  # See docs/superpowers/specs/2026-06-04-routeros-config-roles-architecture-design.md.
   - var-naming[no-role-prefix]
   # _reconcile is an intentionally-internal engine role; the leading underscore
   # signals "not a user entrypoint". Ansible has no role-privacy mechanism, so
