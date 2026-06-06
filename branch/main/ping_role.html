@@ -91,18 +91,7 @@
 <li class="toctree-l1"><a class="reference internal" href="docsite/reset_role.html">david_igou.routeros_configuration.reset role</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="sample_action_module.html">david_igou.routeros_configuration.sample_action module – A custom action plugin for Ansible.</a></li>
-<li class="toctree-l1"><a class="reference internal" href="sample_module_module.html">david_igou.routeros_configuration.sample_module module – A custom module plugin for Ansible.</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="sample_filter_filter.html">david_igou.routeros_configuration.sample_filter filter – A custom filter plugin for Ansible.</a></li>
 <li class="toctree-l1"><a class="reference internal" href="to_routeros_config_filter.html">david_igou.routeros_configuration.to_routeros_config filter – Build a routeros_config dict from api_info results.</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="sample_lookup_lookup.html">david_igou.routeros_configuration.sample_lookup lookup – A custom lookup plugin for Ansible.</a></li>
-</ul>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="sample_test_test.html">david_igou.routeros_configuration.sample_test test – A custom test plugin for Ansible.</a></li>
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="_reconcile_role.html">david_igou.routeros_configuration._reconcile role – Reconcile one RouterOS config path declaratively via the API.</a></li>
@@ -115,7 +104,8 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">david_igou.routeros_configuration.ping role – Connectivity checks via /tool ping over the API.</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#entry-point-main-connectivity-checks-via-tool-ping-over-the-api">Entry point <code class="docutils literal notranslate"><span class="pre">main</span></code> – Connectivity checks via /tool ping over the API.</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#synopsis">Synopsis</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#parameters">Parameters</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#examples">Examples</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#collection-links">Collection links</a></li>
 </ul>
 </li>
@@ -174,6 +164,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <ul>
 <li><p><a class="reference internal" href="#synopsis" id="id2">Synopsis</a></p></li>
 <li><p><a class="reference internal" href="#parameters" id="id3">Parameters</a></p></li>
+<li><p><a class="reference internal" href="#examples" id="id4">Examples</a></p></li>
 </ul>
 </li>
 </ul>
@@ -282,6 +273,50 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </tr>
 </tbody>
 </table>
+</section>
+<section id="examples">
+<h3><a class="toc-backref" href="#id4" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h3>
+<div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ping a single target.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.ping</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_ping</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1.1</span>
+<span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+
+<span class="c1"># Ping several targets.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">roles</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.ping</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_ping</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1.1.1.1</span>
+<span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">9.9.9.9</span>
+<span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+
+<span class="c1"># Ping from a source interface and use the registered result. Results are</span>
+<span class="c1"># in _routeros_ping; .results aligns with routeros_ping and each entry&#39;s</span>
+<span class="c1"># final row carries the running totals.</span>
+<span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
+<span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<span class="w">  </span><span class="nt">tasks</span><span class="p">:</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Ping the gateway from the WAN interface</span>
+<span class="w">      </span><span class="nt">ansible.builtin.include_role</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">david_igou.routeros_configuration.ping</span>
+<span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">routeros_ping</span><span class="p">:</span>
+<span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">address</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.0.2.1</span>
+<span class="w">            </span><span class="nt">interface</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ether1</span>
+<span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Show how many replies came back</span>
+<span class="w">      </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
+<span class="w">        </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;received</span><span class="nv"> </span><span class="cp">{{</span> <span class="o">(</span><span class="nv">_routeros_ping.results</span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="nv">.msg</span> <span class="o">|</span> <span class="nf">last</span><span class="o">)</span><span class="nv">.received</span> <span class="cp">}}</span><span class="s">&quot;</span>
+</pre></div>
+</div>
 <section id="collection-links">
 <h4>Collection links<a class="headerlink" href="#collection-links" title="Link to this heading"></a></h4>
 <ul class="ansible-links">
