@@ -1,7 +1,0 @@
----
-trivial:
-  - >-
-    CI: the ``all_green`` gate now also fails on ``build-import`` failures and on
-    cancelled jobs (previously only ``failure`` of a subset was checked); ``skipped``
-    is still allowed for the dispatch-only changelog job. Dropped the non-existent
-    ``master`` branch from the pull_request trigger.

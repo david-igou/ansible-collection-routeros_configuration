@@ -165,3 +165,10 @@ cython_debug/
 
 # Ansible
 .ansible/
+
+# Built collection artifacts (produced by `ansible-galaxy collection build`)
+*.tar.gz
+
+# Internal planning artifacts (superpowers brainstorming specs/plans); also
+# build_ignored in galaxy.yml so any locally-regenerated copies never ship.
+docs/superpowers/

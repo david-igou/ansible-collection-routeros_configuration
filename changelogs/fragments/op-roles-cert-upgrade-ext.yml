@@ -1,9 +1,0 @@
----
-minor_changes:
-  - >-
-    The C(certificate) role can now export certificates to files
-    (C(routeros_certificates_export)), import them (C(routeros_certificates_import)),
-    and request ACME/Let's Encrypt certs (C(routeros_acme), gated).
-  - >-
-    The C(upgrade) role can now upgrade RouterBOARD firmware
-    (C(routeros_routerboard_upgrade), gated).

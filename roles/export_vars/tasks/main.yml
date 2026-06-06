@@ -29,7 +29,7 @@
         mode: "0700"
 
     - name: Read each path from the device (persistent config only)
-      community.routeros.api_info:
+      community.routeros.api_info:  # noqa: args[module]
         path: "{{ item | replace('/', ' ') | trim }}"
         hide_defaults: true
         include_dynamic: false

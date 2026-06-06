@@ -1,15 +1,18 @@
 # _reconcile (internal engine)
 
 Reconciles one RouterOS config path declaratively via
-`community.routeros.api_modify`. Not a user entrypoint — subsystem roles
-include it:
+`community.routeros.api_modify`. Not a user entrypoint — the `configure` role
+includes it once per path, looping over `routeros_config` (the leading slash is
+trimmed and inner slashes become spaces, e.g. `/ip/pool` -> `ip pool`):
 
     - ansible.builtin.include_role:
         name: _reconcile
       vars:
-        rcfg_path: ip address
-        rcfg_data: "{{ routeros_ip_address }}"
-        rcfg_purge: "{{ routeros_ip_address_purge }}"
+        rcfg_path: ip pool
+        rcfg_data: "{{ routeros_config['/ip/pool'].data }}"
+        rcfg_purge: "{{ routeros_config['/ip/pool'].purge | default(false) }}"
+        rcfg_order: "{{ routeros_config['/ip/pool'].order | default(false) }}"
+        rcfg_content: "{{ routeros_config['/ip/pool'].content | default('ignore') }}"
 
 Connection comes from the shared `routeros_api_*` vars (see defaults).
 `rcfg_order: true` requires `rcfg_purge: true`.

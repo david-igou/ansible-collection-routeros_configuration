@@ -1,0 +1,79 @@
+objects:
+  role:
+    _reconcile:
+      description: Reconcile one RouterOS config path declaratively via the API.
+      name: _reconcile
+      version_added: null
+    backup:
+      description: Back up RouterOS configuration over network_cli.
+      name: backup
+      version_added: null
+    certificate:
+      description: Create and sign RouterOS certificates over the API.
+      name: certificate
+      version_added: null
+    command:
+      description: Run arbitrary RouterOS API commands (escape hatch).
+      name: command
+      version_added: null
+    configure:
+      description: Declaratively manage RouterOS paths from one data structure.
+      name: configure
+      version_added: null
+    export_vars:
+      description: Capture a running device's config into a routeros_config vars file.
+      name: export_vars
+      version_added: null
+    fetch:
+      description: Transfer files to/from RouterOS via /tool fetch.
+      name: fetch
+      version_added: null
+    ping:
+      description: Connectivity checks via /tool ping over the API.
+      name: ping
+      version_added: null
+    poe:
+      description: Imperative PoE-out operations on a RouterOS device.
+      name: poe
+      version_added: null
+    reboot:
+      description: Reboot or shut down a RouterOS device.
+      name: reboot
+      version_added: null
+    reset:
+      description: Reset RouterOS configuration (gated, destructive).
+      name: reset
+      version_added: null
+    restore:
+      description: Restore a RouterOS device from a backup or config import.
+      name: restore
+      version_added: null
+    upgrade:
+      description: Manage RouterOS package updates over the API.
+      name: upgrade
+      version_added: null
+    user_password:
+      description: Set/rotate RouterOS /user passwords over the API.
+      name: user_password
+      version_added: null
+plugins:
+  become: {}
+  cache: {}
+  callback: {}
+  cliconf: {}
+  connection: {}
+  filter:
+    to_routeros_config:
+      description: Build a routeros_config dict from api_info results.
+      name: to_routeros_config
+      version_added: 1.0.0
+  httpapi: {}
+  inventory: {}
+  lookup: {}
+  module: {}
+  netconf: {}
+  shell: {}
+  strategy: {}
+  test: {}
+  vars: {}
+version: 0.0.1-alpha

@@ -1,6 +1,0 @@
----
-minor_changes:
-  - >-
-    New C(upgrade) role: manages the RouterOS package update channel idempotently
-    and checks for updates over the API, with an opt-in, gated install+reboot
-    (C(routeros_upgrade_install)) that only fires when an update is available.

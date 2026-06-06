@@ -1,6 +1,0 @@
----
-minor_changes:
-  - New C(ping) role — connectivity checks via C(/tool ping) over the API.
-  - >-
-    New C(command) role — run arbitrary RouterOS API operations
-    (C(cmd)/C(add)/C(remove)/C(update)); an escape hatch for one-off actions.
