@@ -1,0 +1,127 @@
+---
+# tasks file for david_igou.routeros_configuration.poe
+# Imperative PoE-out operations over the binary API. Not idempotent on the action
+# paths: power_cycle is a one-shot command; power_off/power_on report changed
+# honestly via api_find_and_modify; monitor is read-only. Persistent PoE config
+# (watchdog, priority, voltage, lldp, global budget) belongs in `configure`.
+#
+# monitor/power_cycle are keyed-menu COMMANDS, so they need the entry .id (the
+# api `cmd` takes key=value only — no CLI positionals / [find]); a path read maps
+# interface name -> .id. power_off/power_on set the poe-out FIELD, so
+# api_find_and_modify (find-by-name, require_matches_min:1) is cleanest and fails
+# when the interface has no PoE-out entry. Results land under `.msg`.
+- name: PoE-out operations
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+    community.routeros.api_find_and_modify:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    # --- Validation (fires before any device read or mutation) ---
+    - name: Require target interfaces for write actions
+      ansible.builtin.assert:
+        that:
+          - routeros_poe_interfaces | length > 0
+        fail_msg: >-
+          routeros_poe_action={{ routeros_poe_action }} requires a non-empty
+          routeros_poe_interfaces list
+        quiet: true
+      when: routeros_poe_action in ['power_cycle', 'power_off', 'power_on']
+
+    - name: Validate the power_cycle duration
+      ansible.builtin.assert:
+        that:
+          - routeros_poe_duration | string is match('^[0-9]+(ms|s|m)?$')
+        fail_msg: >-
+          routeros_poe_duration ({{ routeros_poe_duration }}) must be a RouterOS
+          duration such as 5s, 30s, or 1m (0..1m)
+        quiet: true
+      when: routeros_poe_action == 'power_cycle'
+
+    # --- power_off / power_on: set the poe-out field via find-and-modify ---
+    - name: Set poe-out state
+      community.routeros.api_find_and_modify:  # noqa: args[module]
+        path: interface ethernet poe
+        find:
+          name: "{{ item }}"
+        values:
+          poe-out: "{{ 'off' if routeros_poe_action == 'power_off' else routeros_poe_mode }}"
+        require_matches_min: 1
+      loop: "{{ routeros_poe_interfaces }}"
+      loop_control:
+        label: "{{ item }}"
+      when: routeros_poe_action in ['power_off', 'power_on']
+
+    # --- monitor / power_cycle: resolve .id, then run the keyed-menu command ---
+    - name: Read PoE-out entries (resolve interface -> .id)
+      community.routeros.api:  # noqa: args[module]
+        path: interface ethernet poe
+      register: _poe_entries
+      changed_when: false
+      when: routeros_poe_action in ['monitor', 'power_cycle']
+
+    - name: Fail if a named interface has no PoE-out entry
+      ansible.builtin.assert:
+        that:
+          - (_poe_entries.msg | selectattr('name', 'equalto', item) | list | length) > 0
+        fail_msg: "no PoE-out entry for {{ item }}"
+        quiet: true
+      loop: "{{ routeros_poe_interfaces }}"
+      loop_control:
+        label: "{{ item }}"
+      when:
+        - routeros_poe_action in ['monitor', 'power_cycle']
+        - routeros_poe_interfaces | length > 0
+
+    - name: Select target PoE-out entries
+      ansible.builtin.set_fact:
+        _poe_targets: >-
+          {{ _poe_entries.msg
+             if (routeros_poe_action == 'monitor' and routeros_poe_interfaces | length == 0)
+             else (_poe_entries.msg | selectattr('name', 'in', routeros_poe_interfaces) | list) }}
+      when: routeros_poe_action in ['monitor', 'power_cycle']
+
+    - name: Power-cycle PoE-out ports
+      community.routeros.api:  # noqa: args[module]
+        path: interface ethernet poe
+        cmd: >-
+          power-cycle .id={{ item['.id'] }}
+          duration={{ routeros_poe_duration | community.routeros.quote_argument_value }}
+      loop: "{{ _poe_targets }}"
+      loop_control:
+        label: "{{ item['name'] }}"
+      changed_when: true
+      when: routeros_poe_action == 'power_cycle'
+
+    - name: Monitor PoE-out ports
+      community.routeros.api:  # noqa: args[module]
+        path: interface ethernet poe
+        cmd: "monitor .id={{ item['.id'] }} once"
+      loop: "{{ _poe_targets }}"
+      loop_control:
+        label: "{{ item['name'] }}"
+      register: _poe_monitor
+      changed_when: false
+      when: routeros_poe_action == 'monitor'
+
+    - name: Expose PoE-out monitor results (routeros_poe_monitor)
+      ansible.builtin.set_fact:
+        routeros_poe_monitor: "{{ _poe_monitor.results | map(attribute='msg') | list }}"
+      when: routeros_poe_action == 'monitor'
+
+    - name: Show PoE-out monitor results
+      ansible.builtin.debug:
+        var: routeros_poe_monitor
+      when: routeros_poe_action == 'monitor'
