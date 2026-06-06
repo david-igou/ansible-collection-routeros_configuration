@@ -38,12 +38,14 @@
               - name: lc-pool
                 ranges: "192.168.123.10-192.168.123.50"
 
-    - name: Save a binary backup of the baseline
-      community.routeros.api:
-        path: system backup
-        cmd: "save name=lc-test password=lc-pw-123"
-      delegate_to: localhost
-      connection: local
+    - name: Save a binary backup of the baseline (via the backup role)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.backup
+      vars:
+        routeros_backup_binary: true
+        routeros_backup_name: lc-test
+        routeros_backup_password: lc-pw-123
+        routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"
 
     # --- Phase 2: wrong-password restore must fail without harming the device ---
     - name: Restore with the WRONG password must fail
@@ -101,6 +103,12 @@
         that:
           - (_id_after_restore.msg | first).name == 'lc-baseline'
         fail_msg: "binary restore did not revert: {{ _id_after_restore.msg }}"
+
+    # The restore reboot killed the persistent network_cli SSH channel that the
+    # backup role opened in Phase 1; drop it so the /export below reconnects fresh
+    # (the API tasks above delegate to localhost, so they were unaffected).
+    - name: Reset the stale network_cli connection after the restore reboot
+      ansible.builtin.meta: reset_connection
 
     # --- Phase 4: /import branch (no reboot) ---
     # Export ONLY the /system/identity submenu: a submenu export emits `set`
