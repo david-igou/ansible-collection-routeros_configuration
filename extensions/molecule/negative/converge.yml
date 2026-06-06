@@ -1,0 +1,93 @@
+---
+- name: Negative — roles fail as designed (validation fires before any mutation)
+  hosts: molecule
+  gather_facts: false
+  tasks:
+    # Each case sets its flag to false at the END of the block (reached only if
+    # the role did NOT fail) and true in rescue (reached when the role fails).
+    # A final assert requires every flag true — so a role that WRONGLY accepts
+    # bad input (block completes, flag stays false) fails the test.
+
+    # 1. command: an item with TWO op keys must trip the _cmd_bad assert.
+    - name: command role rejects a malformed item (two op keys)
+      block:
+        - name: Run command with an invalid item
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.command
+          vars:
+            routeros_command:
+              - path: "system note"
+                cmd: "set note=x"
+                add: "name=y"
+        - name: command wrongly accepted the item
+          ansible.builtin.set_fact:
+            _command_rejected: false
+      rescue:
+        - name: Expected — command validation failed
+          ansible.builtin.set_fact:
+            _command_rejected: true
+
+    # 2. user_password: a user that does not exist must trip the missing-user assert.
+    - name: user_password role rejects an unknown user
+      block:
+        - name: Rotate a non-existent user's password
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.user_password
+          vars:
+            routeros_user_passwords:
+              - name: this-user-does-not-exist
+                password: irrelevant
+        - name: user_password wrongly accepted the missing user
+          ansible.builtin.set_fact:
+            _userpw_rejected: false
+      rescue:
+        - name: Expected — user_password validation failed
+          ansible.builtin.set_fact:
+            _userpw_rejected: true
+
+    # 3. _reconcile/configure: order:true without purge:true must trip the assert.
+    - name: configure rejects order without purge
+      block:
+        - name: Apply an ordered path without purge
+          ansible.builtin.include_role:
+            name: david_igou.routeros_configuration.configure
+          vars:
+            routeros_config:
+              /ip/firewall/filter:
+                order: true
+                data:
+                  - chain: input
+                    action: accept
+                    comment: neg-rule
+        - name: configure wrongly accepted order without purge
+          ansible.builtin.set_fact:
+            _order_rejected: false
+      rescue:
+        - name: Expected — order-without-purge assert failed
+          ansible.builtin.set_fact:
+            _order_rejected: true
+
+    # 4. ping: an unreachable target returns received=0 (read-only; no failure).
+    - name: ping an unreachable address
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.ping
+      vars:
+        routeros_ping:
+          - address: "192.0.2.1"   # TEST-NET-1, not globally routed
+            count: 2
+
+    - name: Assert every role rejected its bad input and the unreachable ping got nothing
+      ansible.builtin.assert:
+        that:
+          - _command_rejected | default(false)
+          - _userpw_rejected | default(false)
+          - _order_rejected | default(false)
+          - (_routeros_ping.results[0].msg | last).received | int == 0
+        success_msg: >-
+          command/user_password/configure all rejected bad input;
+          unreachable ping reported 0 received
+        fail_msg: >-
+          command_rejected={{ _command_rejected | default('unset') }}
+          userpw_rejected={{ _userpw_rejected | default('unset') }}
+          order_rejected={{ _order_rejected | default('unset') }}
+          ping={{ _routeros_ping.results[0].msg | default('?') }}
