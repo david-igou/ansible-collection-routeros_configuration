@@ -39,6 +39,31 @@
         label: "{{ item }}"
       register: _captured
       changed_when: false
+      # No device implements the whole canonical path set — wireless, CAPsMAN,
+      # container, LoRa, etc. are absent on most models and RouterOS builds. When
+      # a path is not present api_info errors with "not supported" (api_info's
+      # own version gate) or "no such command" (the device rejects it). Tolerate
+      # exactly those so a full export over the entire canonical order completes;
+      # such a path is simply omitted from the captured config (the
+      # to_routeros_config filter skips results with no entries). Any other
+      # failure — auth, connection, TLS — is real and still aborts the play.
+      failed_when: >-
+        _captured.failed | default(false)
+        and 'not supported' not in (_captured.msg | default(''))
+        and 'no such command' not in (_captured.msg | default(''))
+
+    - name: Report paths the device does not implement (skipped, not captured)
+      ansible.builtin.debug:
+        msg: >-
+          export_vars skipped {{ _export_vars_skipped | length }} path(s) this
+          device does not implement: {{ _export_vars_skipped | join(', ') }}
+      vars:
+        _export_vars_skipped: >-
+          {{ _captured.results
+             | rejectattr('result', 'defined')
+             | map(attribute='item')
+             | list }}
+      when: _export_vars_skipped | length > 0
 
     - name: Write the routeros_config vars file
       ansible.builtin.copy:

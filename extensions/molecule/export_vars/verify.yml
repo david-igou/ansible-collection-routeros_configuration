@@ -25,5 +25,8 @@
           - >-
             captured.routeros_config['/system/identity'].data
             | selectattr('name', 'equalto', 'export-vars-id') | list | length == 1
-        success_msg: "captured /ip/address contains 192.168.99.1/24 and no .id; identity captured"
+          # The unimplemented /interface/wireless path was tolerated (the export
+          # completed) and omitted from the captured config rather than aborting.
+          - "'/interface/wireless' not in captured.routeros_config"
+        success_msg: "captured /ip/address (192.168.99.1/24, no .id) + identity; unsupported /interface/wireless skipped"
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"
