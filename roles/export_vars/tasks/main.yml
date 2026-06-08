@@ -121,7 +121,8 @@
               | david_igou.routeros_configuration.to_routeros_config(
                   redact=routeros_export_vars_redact | bool,
                   volatile_fields=routeros_export_vars_volatile_fields,
-                  ordered_paths=routeros_export_vars_ordered_paths))}
+                  ordered_paths=routeros_export_vars_ordered_paths,
+                  ordered_content=routeros_export_vars_ordered_content))}
              | to_nice_yaml(indent=2) }}
         dest: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
         mode: "0600"

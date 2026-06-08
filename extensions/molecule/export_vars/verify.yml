@@ -52,10 +52,14 @@
           # (routeros_export_vars_exclude_paths_extra) — both must be absent.
           - "'/ip/tftp' not in captured.routeros_config"
           - "'/system/script' not in captured.routeros_config"
-          # Order-sensitive /ip/firewall/filter is captured WITH order + purge.
+          # Order-sensitive /ip/firewall/filter is captured WITH order + purge +
+          # content. content is mandatory: api_modify rejects purge (remove) with
+          # the default content=ignore on these paths — without it the path is
+          # DOA against configure (the round-trip task below proves it applies).
           - "'/ip/firewall/filter' in captured.routeros_config"
           - "captured.routeros_config['/ip/firewall/filter'].order is true"
           - "captured.routeros_config['/ip/firewall/filter'].purge is true"
+          - "captured.routeros_config['/ip/firewall/filter'].content == 'remove_as_much_as_possible'"
           # Volatile date/time stripped from /system/clock; time-zone-name kept.
           - "'/system/clock' in captured.routeros_config"
           - >-
@@ -70,3 +74,32 @@
           stripped; /file (default) + /ip/tftp + /system/script (extra) excluded;
           /interface/wireless + /routing/bfd/interface skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"
+
+    # ROUND-TRIP COVERAGE. The bug that shipped in 0.0.4-alpha: a captured ordered
+    # path carried order+purge but no content, so the configure role passed
+    # handle_absent_entries=remove + handle_entries_content=ignore to api_modify,
+    # which rejects that combination on firewall/routing/queue paths — every
+    # ordered path was DOA against configure. The capture-only assertions above
+    # could not catch it. Replay the captured ordered block through api_modify
+    # EXACTLY as the _reconcile role does — including configure's
+    # content|default('ignore') — in check mode (no device mutation). With the
+    # fix this is accepted; without content it reproduces the production failure
+    # ("handle_absent_entries=remove cannot be combined with ...=ignore").
+    - name: "Round-trip — captured ordered block reconciles via api_modify (check mode)"
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls | bool }}"
+        validate_certs: "{{ routeros_api_validate_certs | bool }}"
+        port: "{{ routeros_api_port | default(omit, true) }}"
+        path: ip firewall filter
+        data: "{{ _fw.data }}"
+        handle_absent_entries: "{{ 'remove' if (_fw.purge | default(false) | bool) else 'ignore' }}"
+        handle_entries_content: "{{ _fw.content | default('ignore') }}"
+        ensure_order: "{{ _fw.order | default(false) | bool }}"
+      vars:
+        _fw: "{{ captured.routeros_config['/ip/firewall/filter'] }}"
+      check_mode: true
+      delegate_to: localhost
+      connection: local

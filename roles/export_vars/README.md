@@ -71,10 +71,14 @@ routeros_export_vars_exclude_paths_extra:
 
 **Order-sensitive paths capture order.** Firewall chains, routing filters, and
 simple queues are evaluated top-down. `routeros_export_vars_ordered_paths` are
-emitted with **`order: true` and `purge: true`** so `configure` enforces the exact
-ordered state. Because `purge` is implied (api_modify's `ensure_order` requires
-it), re-applying **removes any on-device entry not in the captured baseline** for
-those paths — intended for exact-state management.
+emitted with **`order: true`, `purge: true` and `content`** (default
+`remove_as_much_as_possible`, via `routeros_export_vars_ordered_content`) so
+`configure` enforces the exact ordered state. `content` is required: `api_modify`
+rejects `purge` (remove) combined with the default `content: ignore` on these
+paths, so without it the path would abort on re-apply. Because `purge` is implied
+(api_modify's `ensure_order` requires it), re-applying **removes any on-device
+entry not in the captured baseline** for those paths — intended for exact-state
+management.
 
 **Volatile fields are stripped.** `routeros_export_vars_volatile_fields` removes
 runtime values that are state, not config (by default `/system/clock`'s `date`

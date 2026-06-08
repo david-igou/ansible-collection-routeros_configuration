@@ -47,9 +47,17 @@ DOCUMENTATION = """
       ordered_paths:
         description:
           - Slash paths whose entry order is significant. These are emitted with
-            C(order=true) and C(purge=true) so the configure role enforces order.
+            C(order=true), C(purge=true) and C(content) so the configure role
+            enforces order (api_modify rejects purge with the default
+            content=ignore on these paths).
         type: list
         elements: str
+      ordered_content:
+        description:
+          - The C(content) value (handle_entries_content) emitted for ordered
+            paths. Defaults to C(remove_as_much_as_possible).
+        type: str
+        default: remove_as_much_as_possible
 """
 
 EXAMPLES = """
@@ -92,6 +100,7 @@ def to_routeros_config(
     sensitive_fields=None,
     volatile_fields=None,
     ordered_paths=None,
+    ordered_content="remove_as_much_as_possible",
 ):
     """Build a routeros_config dict from looped api_info results.
 
@@ -103,11 +112,16 @@ def to_routeros_config(
             (e.g. /system/clock date/time), so they do not enter the baseline.
         ordered_paths: slash paths whose entry order is significant (firewall
             chains, routing filters, simple queues). These are emitted with
-            ``order: true`` and ``purge: true`` so the configure role enforces
-            both membership and order (api_modify's ensure_order requires purge).
+            ``order: true``, ``purge: true`` AND ``content`` so the configure
+            role enforces both membership and order. api_modify's ensure_order
+            requires purge (handle_absent_entries=remove), and on these paths it
+            also rejects remove combined with the default content=ignore — so
+            content must be pinned or every ordered path is DOA against configure.
+        ordered_content: the ``content`` value emitted for ordered paths
+            (handle_entries_content); defaults to ``remove_as_much_as_possible``.
 
     Returns:
-        dict: {slash_path: {'data': [entries], ['order', 'purge']}} per non-empty path.
+        dict: {slash_path: {'data': [...], ['order', 'purge', 'content']}} per non-empty path.
     """
     if not isinstance(results, list):
         raise AnsibleFilterError(
@@ -150,9 +164,12 @@ def to_routeros_config(
             continue
         entry_block = {"data": cleaned}
         if path in ordered:
-            # ensure_order needs purge — see the _reconcile role's assertion.
+            # ensure_order needs purge (handle_absent_entries=remove), and on
+            # these paths api_modify rejects remove + the default content=ignore.
+            # Pin content too, or configure aborts on every ordered path.
             entry_block["order"] = True
             entry_block["purge"] = True
+            entry_block["content"] = ordered_content
         config[path] = entry_block
     return config
 
