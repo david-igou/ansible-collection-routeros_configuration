@@ -47,6 +47,11 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 When `routeros_export_vars_paths` is unset, the role captures every configurable
 path (omitting empty ones) by loading the `configure` role's canonical
 `rcfg_path_order`. Querying all 508 paths takes a while — pass a subset for speed.
+No device implements every path, so paths this device doesn't expose (wireless,
+CAPsMAN, container, etc.) are skipped rather than fatal — `api_info` errors
+matching "not supported"/"no such command" are tolerated and the path is omitted;
+any other failure (auth, connection, TLS) still aborts. Skipped paths are listed
+in a debug message.
 
 ## Secrets
 

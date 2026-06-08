@@ -8,6 +8,10 @@
     routeros_export_vars_paths:
       - /ip/address
       - /system/identity
+      # Unimplemented on a CHR (no wireless package): api_info errors with
+      # "no such command". export_vars must tolerate it — skip the path rather
+      # than abort — and still capture the supported paths above.
+      - /interface/wireless
   tasks:
     # Ensure a recognizable entry exists (idempotent, via the API) so the capture
     # has a known value to assert on.
