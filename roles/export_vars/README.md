@@ -44,6 +44,9 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 | `routeros_export_vars_paths` | full `rcfg_path_order` (508) | slash paths to capture |
 | `routeros_export_vars_redact` | `false` | replace secret values with `REDACTED` |
 | `routeros_export_vars_handle_disabled` | `omit` | how unset fields are captured: `omit` / `exclamation` / `null-value` |
+| `routeros_export_vars_exclude_paths` | curated list | runtime/state/hardware paths to skip |
+| `routeros_export_vars_ordered_paths` | firewall/routing/queue chains | paths captured with `order` + `purge` |
+| `routeros_export_vars_volatile_fields` | `{/system/clock: [date, time]}` | per-path runtime fields to strip |
 
 **Only configure-modifiable paths are captured.** The role loads the `configure`
 role's canonical `rcfg_path_order` — every path `api_modify` can write
@@ -51,6 +54,23 @@ role's canonical `rcfg_path_order` — every path `api_modify` can write
 the result re-applies cleanly. Any path you request via `routeros_export_vars_paths`
 that the `configure` role cannot modify is dropped before querying and reported
 in a debug message.
+
+**Runtime/state paths are excluded.** `api_modify` "understands" some paths that
+are really device state, not configuration — `/file`, `/system/script/environment`,
+`/ip/pool/used`, `/system/resource/*`, `/partitions`, `/queue/interface`, `/ip/cloud`,
+and `/certificate` (metadata only, no key material). `routeros_export_vars_exclude_paths`
+drops these so the baseline stays declarative; set it to `[]` to capture everything.
+
+**Order-sensitive paths capture order.** Firewall chains, routing filters, and
+simple queues are evaluated top-down. `routeros_export_vars_ordered_paths` are
+emitted with **`order: true` and `purge: true`** so `configure` enforces the exact
+ordered state. Because `purge` is implied (api_modify's `ensure_order` requires
+it), re-applying **removes any on-device entry not in the captured baseline** for
+those paths — intended for exact-state management.
+
+**Volatile fields are stripped.** `routeros_export_vars_volatile_fields` removes
+runtime values that are state, not config (by default `/system/clock`'s `date`
+and `time`, which would otherwise push a stale timestamp on re-apply).
 
 **Unset fields default to `omit`.** `routeros_export_vars_handle_disabled` is
 passed to `api_info`: `omit` (default) captures only fields that are actually

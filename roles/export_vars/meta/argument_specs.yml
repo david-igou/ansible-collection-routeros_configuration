@@ -65,6 +65,29 @@ argument_specs:
             configured. V(exclamation) keeps them as C(!field) markers (the
             C(configure) role reads these as reset-to-default). V(null-value)
             emits C(field=null).
+      routeros_export_vars_exclude_paths:
+        type: list
+        elements: str
+        description:
+          - Slash paths to exclude from the export even when they are
+            configure-modifiable — paths that capture runtime state, hardware
+            enumeration, or auto-generated defaults rather than intent (e.g.
+            C(/file), C(/system/script/environment), C(/ip/pool/used)). Defaults
+            to a curated set; set to C([]) to capture everything.
+      routeros_export_vars_ordered_paths:
+        type: list
+        elements: str
+        description:
+          - Slash paths whose entry order is significant (firewall chains,
+            routing filters, simple queues). Captured with C(order=true) and
+            C(purge=true) so the C(configure) role enforces the exact ordered
+            state. Defaults to the known order-sensitive RouterOS paths.
+      routeros_export_vars_volatile_fields:
+        type: dict
+        description:
+          - Per-path runtime fields stripped from the capture (volatile state,
+            not config). Keys are slash paths, values are lists of field names.
+            Defaults to dropping C(date)/C(time) from C(/system/clock).
       routeros_api_hostname:
         type: str
         default: "{{ inventory_hostname }}"

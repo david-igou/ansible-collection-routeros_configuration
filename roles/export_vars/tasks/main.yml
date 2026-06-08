@@ -13,17 +13,25 @@
   ansible.builtin.include_vars:
     file: "{{ role_path }}/../configure/vars/main.yml"
 
-- name: Restrict the export to paths the configure role can modify
+- name: Restrict the export to configure-modifiable, non-state paths
   ansible.builtin.set_fact:
-    # Effective capture list: the requested paths (or the full canonical order)
-    # intersected with rcfg_path_order, preserving source order.
+    # Effective capture list: requested paths (or the full canonical order)
+    # intersected with rcfg_path_order, minus the runtime/state exclusions.
     _export_vars_paths: >-
       {{ routeros_export_vars_paths | default(rcfg_path_order)
-         | select('in', rcfg_path_order) | list }}
-    # Requested paths the configure role cannot modify — dropped from the export.
+         | select('in', rcfg_path_order)
+         | reject('in', routeros_export_vars_exclude_paths)
+         | list }}
+    # Requested paths the configure role cannot modify at all.
     _export_vars_unmodifiable: >-
       {{ routeros_export_vars_paths | default([])
          | reject('in', rcfg_path_order) | list }}
+    # Paths skipped because they capture runtime/hardware state, not config.
+    _export_vars_excluded: >-
+      {{ routeros_export_vars_paths | default(rcfg_path_order)
+         | select('in', rcfg_path_order)
+         | select('in', routeros_export_vars_exclude_paths)
+         | list }}
 
 - name: Report requested paths the configure role cannot modify (skipped)
   ansible.builtin.debug:
@@ -32,6 +40,14 @@
       path(s) the configure role cannot modify:
       {{ _export_vars_unmodifiable | join(', ') }}
   when: _export_vars_unmodifiable | length > 0
+
+- name: Report paths excluded as runtime/hardware state (not declarative config)
+  ansible.builtin.debug:
+    msg: >-
+      export_vars excluded {{ _export_vars_excluded | length }} state/runtime
+      path(s) (routeros_export_vars_exclude_paths):
+      {{ _export_vars_excluded | join(', ') }}
+  when: _export_vars_excluded | length > 0
 
 - name: Capture the device configuration
   delegate_to: localhost
@@ -99,7 +115,10 @@
         content: >-
           {{ {'routeros_config':
              (_captured.results
-              | david_igou.routeros_configuration.to_routeros_config(redact=routeros_export_vars_redact | bool))}
+              | david_igou.routeros_configuration.to_routeros_config(
+                  redact=routeros_export_vars_redact | bool,
+                  volatile_fields=routeros_export_vars_volatile_fields,
+                  ordered_paths=routeros_export_vars_ordered_paths))}
              | to_nice_yaml(indent=2) }}
         dest: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
         mode: "0600"

@@ -91,6 +91,61 @@ def test_omits_paths_whose_entries_are_all_empty() -> None:
     assert "/ip/pool" not in out
 
 
+def test_strips_volatile_fields_per_path() -> None:
+    """Per-path volatile fields are removed, leaving real config."""
+    out = to_routeros_config(
+        [
+            {
+                "item": "/system/clock",
+                "result": [
+                    {
+                        "date": "2026-06-08",
+                        "time": "15:00:00",
+                        "time-zone-name": "America/New_York",
+                    }
+                ],
+            }
+        ],
+        volatile_fields={"/system/clock": ["date", "time"]},
+    )
+    assert out["/system/clock"]["data"] == [{"time-zone-name": "America/New_York"}]
+
+
+def test_volatile_strip_can_empty_and_drop_path() -> None:
+    """A path left empty after volatile stripping is omitted."""
+    out = to_routeros_config(
+        [{"item": "/system/clock", "result": [{"date": "2026-06-08", "time": "15:00:00"}]}],
+        volatile_fields={"/system/clock": ["date", "time"]},
+    )
+    assert "/system/clock" not in out
+
+
+def test_ordered_paths_get_order_and_purge() -> None:
+    """Order-sensitive paths are emitted with order and purge true."""
+    out = to_routeros_config(
+        [
+            {
+                "item": "/ip/firewall/filter",
+                "result": [{".id": "*1", "chain": "input", "action": "accept"}],
+            }
+        ],
+        ordered_paths=["/ip/firewall/filter"],
+    )
+    assert out["/ip/firewall/filter"]["order"] is True
+    assert out["/ip/firewall/filter"]["purge"] is True
+    assert out["/ip/firewall/filter"]["data"] == [{"chain": "input", "action": "accept"}]
+
+
+def test_unordered_paths_have_no_order_or_purge() -> None:
+    """Paths not in ordered_paths carry neither order nor purge."""
+    out = to_routeros_config(
+        [{"item": "/ip/address", "result": [{"address": "192.168.88.1/24"}]}],
+        ordered_paths=["/ip/firewall/filter"],
+    )
+    assert "order" not in out["/ip/address"]
+    assert "purge" not in out["/ip/address"]
+
+
 def test_rejects_non_list() -> None:
     """A non-list input raises AnsibleFilterError."""
     with pytest.raises(AnsibleFilterError):

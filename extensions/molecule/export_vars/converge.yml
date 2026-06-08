@@ -12,6 +12,13 @@
       # exercises handle_disabled=omit (the default): the capture must contain no
       # "!"-prefixed keys.
       - /ip/service
+      # Order-sensitive: must be captured with order: true AND purge: true.
+      - /ip/firewall/filter
+      # Volatile date/time must be stripped, leaving time-zone-name.
+      - /system/clock
+      # In rcfg_path_order but excluded as runtime state (default
+      # routeros_export_vars_exclude_paths): must never be queried or emitted.
+      - /file
       # Unimplemented on a CHR (no wireless package) but IS configure-modifiable
       # (in rcfg_path_order): api_info errors with "no such command", which
       # export_vars must tolerate — skip the path rather than abort.
@@ -49,6 +56,38 @@
         path: system identity
         data:
           - name: export-vars-id
+      delegate_to: localhost
+      connection: local
+
+    - name: Ensure a known timezone (so /system/clock keeps config after volatile strip)
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: system clock
+        data:
+          - time-zone-name: America/New_York
+      delegate_to: localhost
+      connection: local
+
+    - name: Ensure a known firewall filter rule (order-sensitive path is non-empty)
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip firewall filter
+        data:
+          - chain: input
+            action: accept
+            protocol: icmp
+            comment: export-vars-test
+        handle_absent_entries: ignore
       delegate_to: localhost
       connection: local
 

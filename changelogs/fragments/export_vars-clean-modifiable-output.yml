@@ -11,6 +11,20 @@ minor_changes:
     order) with the configure role's ``rcfg_path_order``; a requested path that
     the configure role cannot modify is dropped before querying the device and
     reported in a debug message, so a captured file always re-applies cleanly.
+  - export_vars role - paths that ``api_modify`` understands but which capture
+    runtime state, hardware enumeration, or auto-generated defaults rather than
+    intent (``/file``, ``/system/script/environment``, ``/ip/pool/used``,
+    ``/system/resource/*``, ``/partitions``, ``/queue/interface``, ``/ip/cloud``,
+    ``/certificate``) are now excluded by default via the new
+    ``routeros_export_vars_exclude_paths`` variable (set to ``[]`` to capture all).
+  - export_vars role - order-sensitive paths (firewall chains, routing filters,
+    simple queues) are now captured with ``order`` and ``purge`` both true so
+    the configure role enforces the exact ordered state. The set is the new
+    ``routeros_export_vars_ordered_paths`` variable.
+  - export_vars role - volatile runtime fields are stripped from the capture via
+    the new ``routeros_export_vars_volatile_fields`` variable (by default
+    ``/system/clock``'s ``date`` and ``time``, which would otherwise re-apply a
+    stale timestamp).
 bugfixes:
   - export_vars role - entries left with no settable fields once ``.id`` is
     removed (all-default singletons, ``.id``-only entries) are now dropped, and
