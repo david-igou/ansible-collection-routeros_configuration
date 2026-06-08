@@ -18,8 +18,11 @@
       # exercises handle_disabled=omit (the default): the capture must contain no
       # "!"-prefixed keys.
       - /ip/service
-      # Order-sensitive: must be captured with order: true AND purge: true.
+      # Order-sensitive: must be captured with order: true AND purge: true, and
+      # the captured data must preserve the exact relative rule sequence.
       - /ip/firewall/filter
+      # Second order-sensitive path: captured with order/purge/content too.
+      - /ip/firewall/nat
       # Volatile date/time must be stripped, leaving time-zone-name.
       - /system/clock
       # In rcfg_path_order but excluded as runtime state (default
@@ -83,7 +86,30 @@
       delegate_to: localhost
       connection: local
 
-    - name: Ensure a known firewall filter rule (order-sensitive path is non-empty)
+    # Establish a REALISTIC, multi-rule /ip/firewall/filter in a deliberate
+    # order so the capture has a meaningful sequence to preserve (not a single
+    # trivial rule). We own the exact state here — handle_absent_entries=remove
+    # + ensure_order=true — which is the same combination the configure role
+    # applies to this ordered path, so re-applying the identical set is a no-op
+    # (idempotent: the idempotence step stays green). Owning the set makes the
+    # captured order deterministic regardless of what earlier shared-CHR
+    # scenarios left behind, giving the order assertion in verify.yml real teeth.
+    #
+    # API-SURVIVAL REASONING (this play talks to the CHR over the apinet hostfwd,
+    # SLIRP gw 10.0.3.2 -> guest 10.0.3.15:8728, arriving on ether2). Even though
+    # the input chain ends in a catch-all drop, the API/SSH path is accepted
+    # BEFORE that drop and cannot be severed:
+    #   - ev-fw-estrel accepts established,related FIRST, so the in-flight API
+    #     (and SSH) connection that carries this very module stays alive through
+    #     and after the apply.
+    #   - ev-fw-mgmt accepts NEW tcp/22 (SSH) and tcp/8728 (API) on input, so a
+    #     fresh API connection from a later task/scenario still gets in.
+    # ev-fw-invalid (drop invalid) and ev-fw-lan (trust a LAN source on ether4 —
+    # a port that always exists on the CHR, no cross-scenario interface-list
+    # dependency) are realistic middle rules that never match the API path
+    # (different state / subnet / interface). The final ev-fw-drop only fires for
+    # input traffic that matched none of the accepts above — never the API.
+    - name: Establish the ordered, multi-rule firewall filter (exact state)
       community.routeros.api_modify:
         hostname: "{{ routeros_api_hostname }}"
         username: "{{ routeros_api_username }}"
@@ -92,11 +118,80 @@
         validate_certs: "{{ routeros_api_validate_certs }}"
         port: "{{ routeros_api_port }}"
         path: ip firewall filter
+        # Rule order is the property under test — keep this list authored in the
+        # exact sequence the device must hold it.
         data:
+          # 1. Keep already-established flows (incl. THIS API/SSH session) alive.
+          - chain: input
+            action: accept
+            connection-state: established,related
+            comment: ev-fw-estrel
+          # 2. Drop obviously bogus packets early (never matches the API path).
+          - chain: input
+            action: drop
+            connection-state: invalid
+            comment: ev-fw-invalid
+          # 3. Admit NEW management traffic: SSH (22) and the binary API (8728).
+          #    This is what keeps the API reachable for later connections.
+          - chain: input
+            action: accept
+            protocol: tcp
+            dst-port: 22,8728
+            comment: ev-fw-mgmt
+          # 4. Allow diagnostic ICMP (ping) to the router.
           - chain: input
             action: accept
             protocol: icmp
-            comment: export-vars-test
+            comment: ev-fw-icmp
+          # 5. Trust a LAN source arriving on a real CHR port (ether4). Realistic
+          #    source-scoped accept; disjoint from the apinet/API path.
+          - chain: input
+            action: accept
+            src-address: 192.168.0.0/16
+            in-interface: ether4
+            comment: ev-fw-lan
+          # 6. Default-deny the rest of input. Safe: every management/API flow is
+          #    accepted by rules 1 and 3 above before reaching here.
+          - chain: input
+            action: drop
+            comment: ev-fw-drop
+        # Own the exact ordered set, exactly as the configure role does for this
+        # path. Idempotent for a fixed list (no-op on the idempotence pass).
+        handle_absent_entries: remove
+        handle_entries_content: remove_as_much_as_possible
+        ensure_order: true
+      delegate_to: localhost
+      connection: local
+
+    # /ip/firewall/nat is ALSO an order-sensitive path. Add a small, realistic,
+    # deterministic NAT set so the capture exercises a second ordered path. NAT
+    # rules touch the srcnat/dstnat chains only — they never affect the input
+    # chain that governs the API socket, so the API is unaffected here. We append
+    # idempotently (handle_absent_entries=ignore) rather than purge so this stays
+    # robust if another shared-CHR scenario seeded nat first.
+    - name: Establish realistic NAT rules (second order-sensitive path)
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls }}"
+        validate_certs: "{{ routeros_api_validate_certs }}"
+        port: "{{ routeros_api_port }}"
+        path: ip firewall nat
+        data:
+          # Masquerade LAN egress out a real CHR port (ether4).
+          - chain: srcnat
+            action: masquerade
+            out-interface: ether4
+            comment: ev-nat-masq
+          # Port-forward HTTP to an internal host (classic dstnat).
+          - chain: dstnat
+            action: dst-nat
+            protocol: tcp
+            dst-port: 80
+            to-addresses: 192.168.99.50
+            to-ports: 8080
+            comment: ev-nat-http
         handle_absent_entries: ignore
       delegate_to: localhost
       connection: local
