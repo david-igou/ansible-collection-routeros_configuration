@@ -4,6 +4,12 @@
   gather_facts: false
   vars:
     routeros_export_vars_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/captured"
+    # Extra exclusions, merged onto the default exclude list (not replacing it):
+    # both /ip/tftp and /system/script must be dropped while /file (a default
+    # exclusion) stays dropped too — proving the merge.
+    routeros_export_vars_exclude_paths_extra:
+      - /ip/tftp
+      - /system/script
     # Small path set for a fast, focused test (the default is all 508 paths).
     routeros_export_vars_paths:
       - /ip/address
@@ -19,6 +25,10 @@
       # In rcfg_path_order but excluded as runtime state (default
       # routeros_export_vars_exclude_paths): must never be queried or emitted.
       - /file
+      # Configure-modifiable, but excluded via the EXTRA list (merged onto the
+      # default): both must be dropped, proving exclude_paths_extra merges.
+      - /ip/tftp
+      - /system/script
       # Unimplemented on a CHR (no wireless package) but IS configure-modifiable
       # (in rcfg_path_order): api_info errors with "no such command", which
       # export_vars must tolerate — skip the path rather than abort.

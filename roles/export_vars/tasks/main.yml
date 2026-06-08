@@ -16,11 +16,13 @@
 - name: Restrict the export to configure-modifiable, non-state paths
   ansible.builtin.set_fact:
     # Effective capture list: requested paths (or the full canonical order)
-    # intersected with rcfg_path_order, minus the runtime/state exclusions.
+    # intersected with rcfg_path_order, minus the runtime/state exclusions
+    # (the curated default list merged with the per-run extra list).
     _export_vars_paths: >-
       {{ routeros_export_vars_paths | default(rcfg_path_order)
          | select('in', rcfg_path_order)
-         | reject('in', routeros_export_vars_exclude_paths)
+         | reject('in', routeros_export_vars_exclude_paths
+                        + routeros_export_vars_exclude_paths_extra)
          | list }}
     # Requested paths the configure role cannot modify at all.
     _export_vars_unmodifiable: >-
@@ -30,7 +32,8 @@
     _export_vars_excluded: >-
       {{ routeros_export_vars_paths | default(rcfg_path_order)
          | select('in', rcfg_path_order)
-         | select('in', routeros_export_vars_exclude_paths)
+         | select('in', routeros_export_vars_exclude_paths
+                        + routeros_export_vars_exclude_paths_extra)
          | list }}
 
 - name: Report requested paths the configure role cannot modify (skipped)

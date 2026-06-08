@@ -44,6 +44,11 @@ routeros_export_vars_exclude_paths:
   - /system/resource/irq/rps    # hardware RPS
   - /system/resource/usb        # USB hardware enumeration
 
+# Extra paths to exclude, MERGED onto routeros_export_vars_exclude_paths (rather
+# than replacing it). Use this to drop a few more paths without re-listing the
+# defaults, e.g. routeros_export_vars_exclude_paths_extra: [/system/script, /ip/tftp].
+routeros_export_vars_exclude_paths_extra: []
+
 # Slash paths whose entry ORDER is significant — firewall chains, routing
 # filters, and simple queues are evaluated top-down, first match wins. These are
 # captured with order: true AND purge: true so the configure role enforces the

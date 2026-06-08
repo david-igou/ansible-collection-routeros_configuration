@@ -60,6 +60,14 @@ are really device state, not configuration — `/file`, `/system/script/environm
 `/ip/pool/used`, `/system/resource/*`, `/partitions`, `/queue/interface`, `/ip/cloud`,
 and `/certificate` (metadata only, no key material). `routeros_export_vars_exclude_paths`
 drops these so the baseline stays declarative; set it to `[]` to capture everything.
+To drop a few *more* paths without re-listing the defaults, use
+`routeros_export_vars_exclude_paths_extra` (merged onto the default list):
+
+```yaml
+routeros_export_vars_exclude_paths_extra:
+  - /system/script   # manage scripts elsewhere
+  - /ip/tftp
+```
 
 **Order-sensitive paths capture order.** Firewall chains, routing filters, and
 simple queues are evaluated top-down. `routeros_export_vars_ordered_paths` are

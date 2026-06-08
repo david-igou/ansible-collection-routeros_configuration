@@ -48,6 +48,10 @@
           # /file is configure-modifiable but excluded as runtime state
           # (routeros_export_vars_exclude_paths) — never queried or emitted.
           - "'/file' not in captured.routeros_config"
+          # /ip/tftp and /system/script are excluded via the merged EXTRA list
+          # (routeros_export_vars_exclude_paths_extra) — both must be absent.
+          - "'/ip/tftp' not in captured.routeros_config"
+          - "'/system/script' not in captured.routeros_config"
           # Order-sensitive /ip/firewall/filter is captured WITH order + purge.
           - "'/ip/firewall/filter' in captured.routeros_config"
           - "captured.routeros_config['/ip/firewall/filter'].order is true"
@@ -63,5 +67,6 @@
         success_msg: >-
           captured /ip/address + identity + /ip/service; no "!" markers, no empty
           entries; /ip/firewall/filter ordered+purged; /system/clock date/time
-          stripped; /file excluded; /interface/wireless + /routing/bfd/interface skipped
+          stripped; /file (default) + /ip/tftp + /system/script (extra) excluded;
+          /interface/wireless + /routing/bfd/interface skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"

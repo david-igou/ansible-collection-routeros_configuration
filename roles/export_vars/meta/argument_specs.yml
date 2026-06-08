@@ -74,6 +74,14 @@ argument_specs:
             enumeration, or auto-generated defaults rather than intent (e.g.
             C(/file), C(/system/script/environment), C(/ip/pool/used)). Defaults
             to a curated set; set to C([]) to capture everything.
+      routeros_export_vars_exclude_paths_extra:
+        type: list
+        elements: str
+        default: []
+        description:
+          - Additional slash paths to exclude, merged onto
+            O(routeros_export_vars_exclude_paths) rather than replacing it. Use
+            this to drop a few more paths without re-listing the defaults.
       routeros_export_vars_ordered_paths:
         type: list
         elements: str

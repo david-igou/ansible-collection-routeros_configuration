@@ -17,6 +17,8 @@ minor_changes:
     ``/system/resource/*``, ``/partitions``, ``/queue/interface``, ``/ip/cloud``,
     ``/certificate``) are now excluded by default via the new
     ``routeros_export_vars_exclude_paths`` variable (set to ``[]`` to capture all).
+    A companion ``routeros_export_vars_exclude_paths_extra`` is merged onto that
+    list, so additional paths can be dropped without re-listing the defaults.
   - export_vars role - order-sensitive paths (firewall chains, routing filters,
     simple queues) are now captured with ``order`` and ``purge`` both true so
     the configure role enforces the exact ordered state. The set is the new
