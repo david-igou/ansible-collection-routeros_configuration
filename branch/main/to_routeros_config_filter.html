@@ -154,7 +154,7 @@
 <h1>david_igou.routeros_configuration.to_routeros_config filter – Build a routeros_config dict from api_info results.<a class="headerlink" href="#david-igou-routeros-configuration-to-routeros-config-filter-build-a-routeros-config-dict-from-api-info-results" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This filter plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/david_igou/routeros_configuration/">david_igou.routeros_configuration collection</a> (version 0.0.3-alpha).</p>
+<p>This filter plugin is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/david_igou/routeros_configuration/">david_igou.routeros_configuration collection</a> (version 0.0.4-alpha).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it, use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">david_igou.routeros_configuration</span></code>.</p>
@@ -209,13 +209,21 @@ example: <code class="docutils literal notranslate"><span class="pre">input</spa
 </thead>
 <tbody>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-ordered_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-ordered-paths"><strong>ordered_paths</strong></p>
-<a class="ansibleOptionLink" href="#parameter-ordered_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-ordered_content"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-ordered-content"><strong>ordered_content</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ordered_content" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Slash paths whose entry order is significant. These are emitted with <code class="docutils literal notranslate"><span class="pre">order=true</span></code> and <code class="docutils literal notranslate"><span class="pre">purge=true</span></code> so the configure role enforces order.</p>
+<td><div class="ansible-option-cell"><p>The <code class="docutils literal notranslate"><span class="pre">content</span></code> value (handle_entries_content) emitted for ordered paths. Defaults to <code class="docutils literal notranslate"><span class="pre">remove_as_much_as_possible</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">&quot;remove_as_much_as_possible&quot;</span></code></p>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-ordered_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-ordered-paths"><strong>ordered_paths</strong></p>
+<a class="ansibleOptionLink" href="#parameter-ordered_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Slash paths whose entry order is significant. These are emitted with <code class="docutils literal notranslate"><span class="pre">order=true</span></code>, <code class="docutils literal notranslate"><span class="pre">purge=true</span></code> and <code class="docutils literal notranslate"><span class="pre">content</span></code> so the configure role enforces order (api_modify rejects purge with the default content=ignore on these paths).</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-redact"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-redact"><strong>redact</strong></p>
 <a class="ansibleOptionLink" href="#parameter-redact" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -227,14 +235,14 @@ example: <code class="docutils literal notranslate"><span class="pre">input</spa
 </ul>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-sensitive_fields"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-sensitive-fields"><strong>sensitive_fields</strong></p>
 <a class="ansibleOptionLink" href="#parameter-sensitive_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Field names treated as sensitive when <code class="ansible-option-value docutils literal notranslate"><a class="reference internal" href="#ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-redact"><span class="std std-ref"><span class="pre">redact=true</span></span></a></code>.</p>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-volatile_fields"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-volatile-fields"><strong>volatile_fields</strong></p>
 <a class="ansibleOptionLink" href="#parameter-volatile_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>

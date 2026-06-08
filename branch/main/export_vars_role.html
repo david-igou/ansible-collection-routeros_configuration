@@ -154,7 +154,7 @@
 <h1>david_igou.routeros_configuration.export_vars role – Capture a running device’s config into a routeros_config vars file.<a class="headerlink" href="#david-igou-routeros-configuration-export-vars-role-capture-a-running-device-s-config-into-a-routeros-config-vars-file" title="Link to this heading"></a></h1>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>This role is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/david_igou/routeros_configuration/">david_igou.routeros_configuration collection</a> (version 0.0.3-alpha).</p>
+<p>This role is part of the <a class="reference external" href="https://galaxy.ansible.com/ui/repo/published/david_igou/routeros_configuration/">david_igou.routeros_configuration collection</a> (version 0.0.4-alpha).</p>
 <p>It is not included in <code class="docutils literal notranslate"><span class="pre">ansible-core</span></code>.
 To check whether it is installed, run <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">list</span></code>.</p>
 <p>To install it use: <code class="code docutils literal notranslate"><span class="pre">ansible-galaxy</span> <span class="pre">collection</span> <span class="pre">install</span> <span class="pre">david_igou.routeros_configuration</span></code>.</p>
@@ -281,20 +281,32 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div></td>
 </tr>
 <tr class="row-even"><td><div class="ansible-option-cell">
-<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_ordered_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-ordered-paths"><strong>routeros_export_vars_ordered_paths</strong></p>
-<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_ordered_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_ordered_content"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-ordered-content"><strong>routeros_export_vars_ordered_content</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_ordered_content" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Slash paths whose entry order is significant (firewall chains, routing filters, simple queues). Captured with <code class="docutils literal notranslate"><span class="pre">order=true</span></code> and <code class="docutils literal notranslate"><span class="pre">purge=true</span></code> so the <code class="docutils literal notranslate"><span class="pre">configure</span></code> role enforces the exact ordered state. Defaults to the known order-sensitive RouterOS paths.</p>
+<td><div class="ansible-option-cell"><p>The <code class="docutils literal notranslate"><span class="pre">content</span></code> (handle_entries_content) emitted for ordered paths. With <code class="docutils literal notranslate"><span class="pre">purge</span></code>, <code class="docutils literal notranslate"><span class="pre">api_modify</span></code> rejects the default <code class="docutils literal notranslate"><span class="pre">ignore</span></code> on these paths, so it must be pinned. <code class="ansible-value docutils literal notranslate"><span class="pre">remove_as_much_as_possible</span></code> (default) resets removable fields and leaves unrecognized fields alone; <code class="ansible-value docutils literal notranslate"><span class="pre">remove</span></code> is strict.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;remove_as_much_as_possible&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;remove&quot;</span></code></p></li>
+</ul>
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_ordered_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-ordered-paths"><strong>routeros_export_vars_ordered_paths</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_ordered_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Slash paths whose entry order is significant (firewall chains, routing filters, simple queues). Captured with <code class="docutils literal notranslate"><span class="pre">order=true</span></code>, <code class="docutils literal notranslate"><span class="pre">purge=true</span></code> and <code class="docutils literal notranslate"><span class="pre">content</span></code> so the <code class="docutils literal notranslate"><span class="pre">configure</span></code> role enforces the exact ordered state. Defaults to the known order-sensitive RouterOS paths.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-paths"><strong>routeros_export_vars_paths</strong></p>
 <a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
 <td><div class="ansible-option-cell"><p>Slash paths to capture. When unset, defaults to the configure role’s full <code class="docutils literal notranslate"><span class="pre">rcfg_path_order</span></code> (every configurable path). Paths with no entries are omitted from the output.</p>
 </div></td>
 </tr>
-<tr class="row-even"><td><div class="ansible-option-cell">
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_redact"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-redact"><strong>routeros_export_vars_redact</strong></p>
 <a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_redact" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">boolean</span></p>
 </div></td>
@@ -306,7 +318,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </ul>
 </div></td>
 </tr>
-<tr class="row-odd"><td><div class="ansible-option-cell">
+<tr class="row-even"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_volatile_fields"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-volatile-fields"><strong>routeros_export_vars_volatile_fields</strong></p>
 <a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_volatile_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
