@@ -43,10 +43,26 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 | `routeros_export_vars_dir` | `./routeros-vars` | controller output directory |
 | `routeros_export_vars_paths` | full `rcfg_path_order` (508) | slash paths to capture |
 | `routeros_export_vars_redact` | `false` | replace secret values with `REDACTED` |
+| `routeros_export_vars_handle_disabled` | `omit` | how unset fields are captured: `omit` / `exclamation` / `null-value` |
+
+**Only configure-modifiable paths are captured.** The role loads the `configure`
+role's canonical `rcfg_path_order` — every path `api_modify` can write
+(read-only/status paths are excluded) — and exports only paths in that set, so
+the result re-applies cleanly. Any path you request via `routeros_export_vars_paths`
+that the `configure` role cannot modify is dropped before querying and reported
+in a debug message.
+
+**Unset fields default to `omit`.** `routeros_export_vars_handle_disabled` is
+passed to `api_info`: `omit` (default) captures only fields that are actually
+set — the cleanest baseline to review and curate. Use `exclamation` to keep
+unset fields as `!field` markers (the `configure` role reads these as
+reset-to-default) when you want the capture to also force defaults on apply.
+Empty entries (all-default singletons, `.id`-only) are dropped and empty paths
+omitted regardless.
 
 When `routeros_export_vars_paths` is unset, the role captures every configurable
-path (omitting empty ones) by loading the `configure` role's canonical
-`rcfg_path_order`. Querying all 508 paths takes a while — pass a subset for speed.
+path (omitting empty ones) from `rcfg_path_order`. Querying all 508 paths takes a
+while — pass a subset for speed.
 No device implements every path, so paths this device doesn't expose (wireless,
 CAPsMAN, container, etc.) are skipped rather than fatal — `api_info` errors
 matching "not supported", "no such command", or the RouterOS "contact MikroTik

@@ -28,5 +28,25 @@
           # The unimplemented /interface/wireless path was tolerated (the export
           # completed) and omitted from the captured config rather than aborting.
           - "'/interface/wireless' not in captured.routeros_config"
-        success_msg: "captured /ip/address (192.168.99.1/24, no .id) + identity; unsupported /interface/wireless skipped"
+          # /ip/service is captured (gives the no-"!"-keys check below teeth).
+          - "'/ip/service' in captured.routeros_config"
+          # handle_disabled=omit (default): no entry carries a "!"-prefixed
+          # unset-field marker anywhere in the capture.
+          - >-
+            captured.routeros_config | dict2items
+            | map(attribute='value.data') | flatten
+            | map('list') | flatten | select('match', '^!') | list | length == 0
+          # No empty entries survived: all-default singletons and .id-only
+          # entries are dropped, and paths left empty are omitted.
+          - >-
+            captured.routeros_config | dict2items
+            | map(attribute='value.data') | flatten
+            | map('length') | select('eq', 0) | list | length == 0
+          # /routing/bfd/interface is not configure-modifiable, so it is dropped
+          # before querying and never appears in the capture.
+          - "'/routing/bfd/interface' not in captured.routeros_config"
+        success_msg: >-
+          captured /ip/address (192.168.99.1/24, no .id) + identity + /ip/service;
+          no "!" markers, no empty entries; unsupported /interface/wireless and
+          unmodifiable /routing/bfd/interface both skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"

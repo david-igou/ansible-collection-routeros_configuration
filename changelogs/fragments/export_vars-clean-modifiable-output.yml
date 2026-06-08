@@ -1,0 +1,18 @@
+---
+minor_changes:
+  - export_vars role - unset device fields are now omitted from the capture by
+    default (new ``routeros_export_vars_handle_disabled`` variable, default
+    ``omit``). The previous ``api_info`` default emitted every unset field as a
+    ``!field`` marker, which dominated a full export. Set it to ``exclamation``
+    to keep the ``!field`` markers (the configure role reads them as
+    reset-to-default) or ``null-value`` for ``field=null``.
+  - export_vars role - the export is now restricted to paths the configure role
+    can modify. The role intersects the requested paths (or the full canonical
+    order) with the configure role's ``rcfg_path_order``; a requested path that
+    the configure role cannot modify is dropped before querying the device and
+    reported in a debug message, so a captured file always re-applies cleanly.
+bugfixes:
+  - export_vars role - entries left with no settable fields once ``.id`` is
+    removed (all-default singletons, ``.id``-only entries) are now dropped, and
+    paths left with no entries are omitted, instead of emitting empty ``data``
+    blocks holding a single empty mapping.

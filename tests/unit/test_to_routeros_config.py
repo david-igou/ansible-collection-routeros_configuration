@@ -62,6 +62,35 @@ def test_custom_sensitive_fields() -> None:
     assert out["/interface/wireguard"]["data"][0]["private-key"] == "SECRETKEY=="
 
 
+def test_drops_empty_entries_keeps_real_ones() -> None:
+    """Entries that normalise to nothing are dropped; real entries remain."""
+    out = to_routeros_config(
+        [
+            {
+                "item": "/ip/address",
+                "result": [
+                    {".id": "*1", "address": "192.168.88.1/24", "interface": "ether1"},
+                    {},  # all-unset entry (api_info handle_disabled: omit)
+                ],
+            },
+        ]
+    )
+    assert len(out["/ip/address"]["data"]) == 1
+    assert out["/ip/address"]["data"][0]["address"] == "192.168.88.1/24"
+
+
+def test_omits_paths_whose_entries_are_all_empty() -> None:
+    """A path left with no real entries is omitted (e.g. all-default singleton)."""
+    out = to_routeros_config(
+        [
+            {"item": "/system/watchdog", "result": [{}]},  # all defaults -> {}
+            {"item": "/ip/pool", "result": [{".id": "*9"}]},  # only .id -> {}
+        ]
+    )
+    assert "/system/watchdog" not in out
+    assert "/ip/pool" not in out
+
+
 def test_rejects_non_list() -> None:
     """A non-list input raises AnsibleFilterError."""
     with pytest.raises(AnsibleFilterError):

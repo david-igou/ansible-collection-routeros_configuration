@@ -8,10 +8,17 @@
     routeros_export_vars_paths:
       - /ip/address
       - /system/identity
-      # Unimplemented on a CHR (no wireless package): api_info errors with
-      # "no such command". export_vars must tolerate it — skip the path rather
-      # than abort — and still capture the supported paths above.
+      # Always-present path that historically carried many unset-field markers —
+      # exercises handle_disabled=omit (the default): the capture must contain no
+      # "!"-prefixed keys.
+      - /ip/service
+      # Unimplemented on a CHR (no wireless package) but IS configure-modifiable
+      # (in rcfg_path_order): api_info errors with "no such command", which
+      # export_vars must tolerate — skip the path rather than abort.
       - /interface/wireless
+      # NOT modifiable by the configure role (absent from rcfg_path_order):
+      # export_vars must drop it before querying the device and never emit it.
+      - /routing/bfd/interface
   tasks:
     # Ensure a recognizable entry exists (idempotent, via the API) so the capture
     # has a known value to assert on.

@@ -17,6 +17,16 @@ routeros_export_vars_dir: ./routeros-vars
 # so ansible-vault encrypt it.
 routeros_export_vars_redact: false
 
+# How api_info represents fields that are unset on the device. Passed straight
+# to community.routeros.api_info's handle_disabled:
+#   omit        - leave unset fields out (default). Captures only what is actually
+#                 configured — the cleanest baseline to review and re-apply.
+#   exclamation - keep them as "!field: null" markers. The configure role reads
+#                 "!field" as reset-to-default, so use this when the capture
+#                 should also force unset fields back to default on apply.
+#   null-value  - emit "field: null".
+routeros_export_vars_handle_disabled: omit
+
 # routeros_export_vars_paths is intentionally NOT defaulted here: when it is
 # undefined, tasks/main.yml loads the configure role's canonical rcfg_path_order
 # (every configurable path). Set it to a subset (slash paths) to capture only

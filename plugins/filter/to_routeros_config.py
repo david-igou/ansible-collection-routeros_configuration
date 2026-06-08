@@ -19,8 +19,10 @@ DOCUMENTATION = """
     description:
       - Turns the registered results of a looped C(community.routeros.api_info)
         into the C(routeros_config) structure the C(configure) role consumes.
-      - Paths with no entries are omitted. Each entry has its C(.id) removed.
-        Optionally redacts sensitive field values.
+      - Each entry has its C(.id) removed. Entries left with no settable fields
+        (and paths left with no entries) are omitted, so all-default singletons
+        and empty paths do not clutter the capture. Optionally redacts sensitive
+        field values.
     options:
       _input:
         description:
@@ -104,11 +106,20 @@ def to_routeros_config(results, redact=False, sensitive_fields=None):
         cleaned = []
         for entry in entries:
             new_entry = {k: v for k, v in entry.items() if k != ".id"}
+            # Drop entries that carry no settable fields once .id is removed:
+            # an all-default singleton captured with handle_disabled=omit, or an
+            # entry that held only .id. There is nothing for the configure role
+            # to reconcile, so it is noise in the captured baseline.
+            if not new_entry:
+                continue
             if redact:
                 for field in sensitive_fields:
                     if field in new_entry:
                         new_entry[field] = "REDACTED"
             cleaned.append(new_entry)
+        # Omit the path entirely if no entry survived.
+        if not cleaned:
+            continue
         config[item["item"]] = {"data": cleaned}
     return config
 

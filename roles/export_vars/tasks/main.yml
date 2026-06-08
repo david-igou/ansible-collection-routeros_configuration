@@ -5,10 +5,33 @@
 # an equivalent routeros_config vars file to the controller. Idempotent — only
 # the controller copy reports changed, and only when the captured config differs.
 
-- name: Load the canonical path order from the configure role
+- name: Load the canonical configure path order (the configure-modifiable set)
+  # rcfg_path_order is every path the configure role can write via api_modify
+  # (read-only/status paths are excluded). export_vars only captures paths from
+  # this set so the result re-applies cleanly through configure — always loaded,
+  # not just for a full export, so it can also filter an explicit path list.
   ansible.builtin.include_vars:
     file: "{{ role_path }}/../configure/vars/main.yml"
-  when: routeros_export_vars_paths is not defined
+
+- name: Restrict the export to paths the configure role can modify
+  ansible.builtin.set_fact:
+    # Effective capture list: the requested paths (or the full canonical order)
+    # intersected with rcfg_path_order, preserving source order.
+    _export_vars_paths: >-
+      {{ routeros_export_vars_paths | default(rcfg_path_order)
+         | select('in', rcfg_path_order) | list }}
+    # Requested paths the configure role cannot modify — dropped from the export.
+    _export_vars_unmodifiable: >-
+      {{ routeros_export_vars_paths | default([])
+         | reject('in', rcfg_path_order) | list }}
+
+- name: Report requested paths the configure role cannot modify (skipped)
+  ansible.builtin.debug:
+    msg: >-
+      export_vars skipped {{ _export_vars_unmodifiable | length }} requested
+      path(s) the configure role cannot modify:
+      {{ _export_vars_unmodifiable | join(', ') }}
+  when: _export_vars_unmodifiable | length > 0
 
 - name: Capture the device configuration
   delegate_to: localhost
@@ -34,7 +57,8 @@
         hide_defaults: true
         include_dynamic: false
         include_read_only: false
-      loop: "{{ routeros_export_vars_paths | default(rcfg_path_order) }}"
+        handle_disabled: "{{ routeros_export_vars_handle_disabled }}"
+      loop: "{{ _export_vars_paths }}"
       loop_control:
         label: "{{ item }}"
       register: _captured
