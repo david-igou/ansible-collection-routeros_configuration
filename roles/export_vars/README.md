@@ -49,9 +49,11 @@ path (omitting empty ones) by loading the `configure` role's canonical
 `rcfg_path_order`. Querying all 508 paths takes a while — pass a subset for speed.
 No device implements every path, so paths this device doesn't expose (wireless,
 CAPsMAN, container, etc.) are skipped rather than fatal — `api_info` errors
-matching "not supported"/"no such command" are tolerated and the path is omitted;
-any other failure (auth, connection, TLS) still aborts. Skipped paths are listed
-in a debug message.
+matching "not supported", "no such command", or the RouterOS "contact MikroTik
+support and send a supout file" sentinel (broken read implementations under e.g.
+`/routing/pimsm/*`) are tolerated and the path is omitted; any other failure
+(auth, connection, TLS) still aborts. Skipped paths are listed in a debug
+message.
 
 ## Secrets
 
