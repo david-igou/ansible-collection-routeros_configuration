@@ -253,6 +253,41 @@ To check whether it is installed, run <code class="code docutils literal notrans
 </div></td>
 </tr>
 <tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_exclude_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-exclude-paths"><strong>routeros_export_vars_exclude_paths</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_exclude_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Slash paths to exclude from the export even when they are configure-modifiable — paths that capture runtime state, hardware enumeration, or auto-generated defaults rather than intent (e.g. <code class="docutils literal notranslate"><span class="pre">/file</span></code>, <code class="docutils literal notranslate"><span class="pre">/system/script/environment</span></code>, <code class="docutils literal notranslate"><span class="pre">/ip/pool/used</span></code>). Defaults to a curated set; set to <code class="docutils literal notranslate"><span class="pre">[]</span></code> to capture everything.</p>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_exclude_paths_extra"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-exclude-paths-extra"><strong>routeros_export_vars_exclude_paths_extra</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_exclude_paths_extra" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Additional slash paths to exclude, merged onto <code class="ansible-option docutils literal notranslate"><strong><a class="reference internal" href="#ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-exclude-paths"><span class="std std-ref"><span class="pre">routeros_export_vars_exclude_paths</span></span></a></strong></code> rather than replacing it. Use this to drop a few more paths without re-listing the defaults.</p>
+<p class="ansible-option-line"><strong class="ansible-option-default-bold">Default:</strong> <code class="ansible-option-default docutils literal notranslate"><span class="pre">[]</span></code></p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_handle_disabled"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-handle-disabled"><strong>routeros_export_vars_handle_disabled</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_handle_disabled" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>How <code class="docutils literal notranslate"><span class="pre">community.routeros.api_info</span></code> represents fields that are unset on the device. <code class="ansible-value docutils literal notranslate"><span class="pre">omit</span></code> (default) leaves them out, capturing only what is configured. <code class="ansible-value docutils literal notranslate"><span class="pre">exclamation</span></code> keeps them as <code class="docutils literal notranslate"><span class="pre">!field</span></code> markers (the <code class="docutils literal notranslate"><span class="pre">configure</span></code> role reads these as reset-to-default). <code class="ansible-value docutils literal notranslate"><span class="pre">null-value</span></code> emits <code class="docutils literal notranslate"><span class="pre">field=null</span></code>.</p>
+<p class="ansible-option-line"><strong class="ansible-option-choices">Choices:</strong></p>
+<ul class="simple">
+<li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">&quot;omit&quot;</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;exclamation&quot;</span></code></p></li>
+<li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">&quot;null-value&quot;</span></code></p></li>
+</ul>
+</div></td>
+</tr>
+<tr class="row-even"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_ordered_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-ordered-paths"><strong>routeros_export_vars_ordered_paths</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_ordered_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Slash paths whose entry order is significant (firewall chains, routing filters, simple queues). Captured with <code class="docutils literal notranslate"><span class="pre">order=true</span></code> and <code class="docutils literal notranslate"><span class="pre">purge=true</span></code> so the <code class="docutils literal notranslate"><span class="pre">configure</span></code> role enforces the exact ordered state. Defaults to the known order-sensitive RouterOS paths.</p>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
 <div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_paths"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-paths"><strong>routeros_export_vars_paths</strong></p>
 <a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_paths" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">list</span> / <span class="ansible-option-elements">elements=string</span></p>
 </div></td>
@@ -269,6 +304,13 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <li><p><code class="ansible-option-default-bold docutils literal notranslate"><strong><span class="pre">false</span></strong></code> <span class="ansible-option-choices-default-mark">← (default)</span></p></li>
 <li><p><code class="ansible-option-choices-entry docutils literal notranslate"><span class="pre">true</span></code></p></li>
 </ul>
+</div></td>
+</tr>
+<tr class="row-odd"><td><div class="ansible-option-cell">
+<div class="ansibleOptionAnchor" id="parameter-main--routeros_export_vars_volatile_fields"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-export-vars-role-parameter-main-routeros-export-vars-volatile-fields"><strong>routeros_export_vars_volatile_fields</strong></p>
+<a class="ansibleOptionLink" href="#parameter-main--routeros_export_vars_volatile_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
+</div></td>
+<td><div class="ansible-option-cell"><p>Per-path runtime fields stripped from the capture (volatile state, not config). Keys are slash paths, values are lists of field names. Defaults to dropping <code class="docutils literal notranslate"><span class="pre">date</span></code>/<code class="docutils literal notranslate"><span class="pre">time</span></code> from <code class="docutils literal notranslate"><span class="pre">/system/clock</span></code>.</p>
 </div></td>
 </tr>
 </tbody>
