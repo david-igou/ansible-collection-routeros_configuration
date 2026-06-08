@@ -60,6 +60,34 @@
           - "captured.routeros_config['/ip/firewall/filter'].order is true"
           - "captured.routeros_config['/ip/firewall/filter'].purge is true"
           - "captured.routeros_config['/ip/firewall/filter'].content == 'remove_as_much_as_possible'"
+          # ORDER PRESERVATION (the real-world property): converge established a
+          # deliberate 6-rule sequence on the input chain. The captured data list
+          # must preserve that EXACT relative order — not merely carry order:true.
+          # Pull the comment off each captured entry, keep only our ev-fw-* rules
+          # (the converge owns this path via purge, so all six are ours), and
+          # assert the sequence is byte-for-byte the authored order.
+          - >-
+            captured.routeros_config['/ip/firewall/filter'].data
+            | selectattr('comment', 'defined')
+            | map(attribute='comment')
+            | select('match', '^ev-fw-') | list
+            == ['ev-fw-estrel', 'ev-fw-invalid', 'ev-fw-mgmt',
+                'ev-fw-icmp', 'ev-fw-lan', 'ev-fw-drop']
+          # Order-sensitive /ip/firewall/nat is captured the same way: order +
+          # purge + content, AND its two rules in the authored relative order
+          # (masquerade before the dst-nat port-forward). Other rules MAY precede
+          # ours (nat is appended idempotently, not purged), so filter to ev-nat-*
+          # and assert their relative sequence rather than exact list identity.
+          - "'/ip/firewall/nat' in captured.routeros_config"
+          - "captured.routeros_config['/ip/firewall/nat'].order is true"
+          - "captured.routeros_config['/ip/firewall/nat'].purge is true"
+          - "captured.routeros_config['/ip/firewall/nat'].content == 'remove_as_much_as_possible'"
+          - >-
+            captured.routeros_config['/ip/firewall/nat'].data
+            | selectattr('comment', 'defined')
+            | map(attribute='comment')
+            | select('match', '^ev-nat-') | list
+            == ['ev-nat-masq', 'ev-nat-http']
           # Volatile date/time stripped from /system/clock; time-zone-name kept.
           - "'/system/clock' in captured.routeros_config"
           - >-
@@ -70,22 +98,24 @@
             | selectattr('time-zone-name', 'defined') | list | length == 1
         success_msg: >-
           captured /ip/address + identity + /ip/service; no "!" markers, no empty
-          entries; /ip/firewall/filter ordered+purged; /system/clock date/time
-          stripped; /file (default) + /ip/tftp + /system/script (extra) excluded;
+          entries; /ip/firewall/filter + /ip/firewall/nat ordered+purged with
+          their rule SEQUENCE preserved exactly; /system/clock date/time stripped;
+          /file (default) + /ip/tftp + /system/script (extra) excluded;
           /interface/wireless + /routing/bfd/interface skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"
 
-    # ROUND-TRIP COVERAGE. The bug that shipped in 0.0.4-alpha: a captured ordered
-    # path carried order+purge but no content, so the configure role passed
-    # handle_absent_entries=remove + handle_entries_content=ignore to api_modify,
-    # which rejects that combination on firewall/routing/queue paths — every
-    # ordered path was DOA against configure. The capture-only assertions above
-    # could not catch it. Replay the captured ordered block through api_modify
-    # EXACTLY as the _reconcile role does — including configure's
-    # content|default('ignore') — in check mode (no device mutation). With the
+    # ROUND-TRIP COVERAGE (the regression guard). The bug that shipped in
+    # 0.0.4-alpha: a captured ordered path carried order+purge but no content, so
+    # the configure role passed handle_absent_entries=remove +
+    # handle_entries_content=ignore to api_modify, which rejects that combination
+    # on firewall/routing/queue paths — every ordered path was DOA against
+    # configure. The capture-only assertions above could not catch it. Replay
+    # EACH captured ordered block (filter AND nat) through api_modify EXACTLY as
+    # the _reconcile role does — including configure's content|default('ignore')
+    # and purge->remove mapping — in check mode (no device mutation). With the
     # fix this is accepted; without content it reproduces the production failure
     # ("handle_absent_entries=remove cannot be combined with ...=ignore").
-    - name: "Round-trip — captured ordered block reconciles via api_modify (check mode)"
+    - name: "Round-trip — each captured ordered block reconciles via api_modify (check mode)"
       community.routeros.api_modify:
         hostname: "{{ routeros_api_hostname }}"
         username: "{{ routeros_api_username }}"
@@ -93,13 +123,18 @@
         tls: "{{ routeros_api_tls | bool }}"
         validate_certs: "{{ routeros_api_validate_certs | bool }}"
         port: "{{ routeros_api_port | default(omit, true) }}"
-        path: ip firewall filter
+        path: "{{ _ordered_path | replace('/', ' ') | trim }}"
         data: "{{ _fw.data }}"
         handle_absent_entries: "{{ 'remove' if (_fw.purge | default(false) | bool) else 'ignore' }}"
         handle_entries_content: "{{ _fw.content | default('ignore') }}"
         ensure_order: "{{ _fw.order | default(false) | bool }}"
       vars:
-        _fw: "{{ captured.routeros_config['/ip/firewall/filter'] }}"
+        _fw: "{{ captured.routeros_config[_ordered_path] }}"
+      loop:
+        - /ip/firewall/filter
+        - /ip/firewall/nat
+      loop_control:
+        loop_var: _ordered_path
       check_mode: true
       delegate_to: localhost
       connection: local
