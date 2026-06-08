@@ -5,10 +5,52 @@
 # an equivalent routeros_config vars file to the controller. Idempotent — only
 # the controller copy reports changed, and only when the captured config differs.
 
-- name: Load the canonical path order from the configure role
+- name: Load the canonical configure path order (the configure-modifiable set)
+  # rcfg_path_order is every path the configure role can write via api_modify
+  # (read-only/status paths are excluded). export_vars only captures paths from
+  # this set so the result re-applies cleanly through configure — always loaded,
+  # not just for a full export, so it can also filter an explicit path list.
   ansible.builtin.include_vars:
     file: "{{ role_path }}/../configure/vars/main.yml"
-  when: routeros_export_vars_paths is not defined
+
+- name: Restrict the export to configure-modifiable, non-state paths
+  ansible.builtin.set_fact:
+    # Effective capture list: requested paths (or the full canonical order)
+    # intersected with rcfg_path_order, minus the runtime/state exclusions
+    # (the curated default list merged with the per-run extra list).
+    _export_vars_paths: >-
+      {{ routeros_export_vars_paths | default(rcfg_path_order)
+         | select('in', rcfg_path_order)
+         | reject('in', routeros_export_vars_exclude_paths
+                        + routeros_export_vars_exclude_paths_extra)
+         | list }}
+    # Requested paths the configure role cannot modify at all.
+    _export_vars_unmodifiable: >-
+      {{ routeros_export_vars_paths | default([])
+         | reject('in', rcfg_path_order) | list }}
+    # Paths skipped because they capture runtime/hardware state, not config.
+    _export_vars_excluded: >-
+      {{ routeros_export_vars_paths | default(rcfg_path_order)
+         | select('in', rcfg_path_order)
+         | select('in', routeros_export_vars_exclude_paths
+                        + routeros_export_vars_exclude_paths_extra)
+         | list }}
+
+- name: Report requested paths the configure role cannot modify (skipped)
+  ansible.builtin.debug:
+    msg: >-
+      export_vars skipped {{ _export_vars_unmodifiable | length }} requested
+      path(s) the configure role cannot modify:
+      {{ _export_vars_unmodifiable | join(', ') }}
+  when: _export_vars_unmodifiable | length > 0
+
+- name: Report paths excluded as runtime/hardware state (not declarative config)
+  ansible.builtin.debug:
+    msg: >-
+      export_vars excluded {{ _export_vars_excluded | length }} state/runtime
+      path(s) (routeros_export_vars_exclude_paths):
+      {{ _export_vars_excluded | join(', ') }}
+  when: _export_vars_excluded | length > 0
 
 - name: Capture the device configuration
   delegate_to: localhost
@@ -34,7 +76,8 @@
         hide_defaults: true
         include_dynamic: false
         include_read_only: false
-      loop: "{{ routeros_export_vars_paths | default(rcfg_path_order) }}"
+        handle_disabled: "{{ routeros_export_vars_handle_disabled }}"
+      loop: "{{ _export_vars_paths }}"
       loop_control:
         label: "{{ item }}"
       register: _captured
@@ -75,7 +118,10 @@
         content: >-
           {{ {'routeros_config':
              (_captured.results
-              | david_igou.routeros_configuration.to_routeros_config(redact=routeros_export_vars_redact | bool))}
+              | david_igou.routeros_configuration.to_routeros_config(
+                  redact=routeros_export_vars_redact | bool,
+                  volatile_fields=routeros_export_vars_volatile_fields,
+                  ordered_paths=routeros_export_vars_ordered_paths))}
              | to_nice_yaml(indent=2) }}
         dest: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
         mode: "0600"

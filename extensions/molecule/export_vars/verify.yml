@@ -28,5 +28,45 @@
           # The unimplemented /interface/wireless path was tolerated (the export
           # completed) and omitted from the captured config rather than aborting.
           - "'/interface/wireless' not in captured.routeros_config"
-        success_msg: "captured /ip/address (192.168.99.1/24, no .id) + identity; unsupported /interface/wireless skipped"
+          # /ip/service is captured (gives the no-"!"-keys check below teeth).
+          - "'/ip/service' in captured.routeros_config"
+          # handle_disabled=omit (default): no entry carries a "!"-prefixed
+          # unset-field marker anywhere in the capture.
+          - >-
+            captured.routeros_config | dict2items
+            | map(attribute='value.data') | flatten
+            | map('list') | flatten | select('match', '^!') | list | length == 0
+          # No empty entries survived: all-default singletons and .id-only
+          # entries are dropped, and paths left empty are omitted.
+          - >-
+            captured.routeros_config | dict2items
+            | map(attribute='value.data') | flatten
+            | map('length') | select('eq', 0) | list | length == 0
+          # /routing/bfd/interface is not configure-modifiable, so it is dropped
+          # before querying and never appears in the capture.
+          - "'/routing/bfd/interface' not in captured.routeros_config"
+          # /file is configure-modifiable but excluded as runtime state
+          # (routeros_export_vars_exclude_paths) — never queried or emitted.
+          - "'/file' not in captured.routeros_config"
+          # /ip/tftp and /system/script are excluded via the merged EXTRA list
+          # (routeros_export_vars_exclude_paths_extra) — both must be absent.
+          - "'/ip/tftp' not in captured.routeros_config"
+          - "'/system/script' not in captured.routeros_config"
+          # Order-sensitive /ip/firewall/filter is captured WITH order + purge.
+          - "'/ip/firewall/filter' in captured.routeros_config"
+          - "captured.routeros_config['/ip/firewall/filter'].order is true"
+          - "captured.routeros_config['/ip/firewall/filter'].purge is true"
+          # Volatile date/time stripped from /system/clock; time-zone-name kept.
+          - "'/system/clock' in captured.routeros_config"
+          - >-
+            captured.routeros_config['/system/clock'].data
+            | map('list') | flatten | select('in', ['date', 'time']) | list | length == 0
+          - >-
+            captured.routeros_config['/system/clock'].data
+            | selectattr('time-zone-name', 'defined') | list | length == 1
+        success_msg: >-
+          captured /ip/address + identity + /ip/service; no "!" markers, no empty
+          entries; /ip/firewall/filter ordered+purged; /system/clock date/time
+          stripped; /file (default) + /ip/tftp + /system/script (extra) excluded;
+          /interface/wireless + /routing/bfd/interface skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"

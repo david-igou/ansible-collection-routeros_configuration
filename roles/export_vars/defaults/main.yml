@@ -17,6 +17,63 @@ routeros_export_vars_dir: ./routeros-vars
 # so ansible-vault encrypt it.
 routeros_export_vars_redact: false
 
+# How api_info represents fields that are unset on the device. Passed straight
+# to community.routeros.api_info's handle_disabled:
+#   omit        - leave unset fields out (default). Captures only what is actually
+#                 configured — the cleanest baseline to review and re-apply.
+#   exclamation - keep them as "!field: null" markers. The configure role reads
+#                 "!field" as reset-to-default, so use this when the capture
+#                 should also force unset fields back to default on apply.
+#   null-value  - emit "field: null".
+routeros_export_vars_handle_disabled: omit
+
+# Paths that api_modify "understands" but which capture runtime state, hardware
+# enumeration, or auto-generated defaults rather than configuration intent. They
+# are excluded from the export so the baseline stays declarative. Override (set
+# to []) to capture everything.
+routeros_export_vars_exclude_paths:
+  - /file                       # filesystem listing (backups, scripts) — not config
+  - /certificate                # metadata only, no key material — cannot round-trip
+  - /ip/cloud                   # cloud DDNS status
+  - /ip/pool/used               # runtime pool allocations
+  - /partitions                 # disk partition layout (hardware)
+  - /queue/interface            # auto-generated per interface (default queue)
+  - /system/script/environment  # runtime script-engine globals
+  - /system/script/job          # currently-running script jobs
+  - /system/resource/irq        # hardware IRQ affinity
+  - /system/resource/irq/rps    # hardware RPS
+  - /system/resource/usb        # USB hardware enumeration
+
+# Extra paths to exclude, MERGED onto routeros_export_vars_exclude_paths (rather
+# than replacing it). Use this to drop a few more paths without re-listing the
+# defaults, e.g. routeros_export_vars_exclude_paths_extra: [/system/script, /ip/tftp].
+routeros_export_vars_exclude_paths_extra: []
+
+# Slash paths whose entry ORDER is significant — firewall chains, routing
+# filters, and simple queues are evaluated top-down, first match wins. These are
+# captured with order: true AND purge: true so the configure role enforces the
+# exact ordered state (api_modify's ensure_order requires purge; re-applying then
+# removes any on-device entry not in the baseline). Override to add/remove paths.
+routeros_export_vars_ordered_paths:
+  - /ip/firewall/filter
+  - /ip/firewall/nat
+  - /ip/firewall/mangle
+  - /ip/firewall/raw
+  - /ipv6/firewall/filter
+  - /ipv6/firewall/nat
+  - /ipv6/firewall/mangle
+  - /ipv6/firewall/raw
+  - /routing/filter/rule
+  - /queue/simple
+
+# Per-path runtime fields stripped from the capture — volatile values that are
+# device state, not configuration (re-applying them would push stale data).
+# Keys are slash paths; values are field names to drop.
+routeros_export_vars_volatile_fields:
+  /system/clock:
+    - date
+    - time
+
 # routeros_export_vars_paths is intentionally NOT defaulted here: when it is
 # undefined, tasks/main.yml loads the configure role's canonical rcfg_path_order
 # (every configurable path). Set it to a subset (slash paths) to capture only
