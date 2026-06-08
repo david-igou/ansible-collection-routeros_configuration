@@ -4,6 +4,22 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.2-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Hardens the ``export_vars`` role so a full export (every
+canonical path) completes on real devices, which never implement the entire
+path set. Paths the device does not support are now skipped instead of
+aborting the run.
+
+Bugfixes
+--------
+
+- export_vars role - a full export (``routeros_export_vars_paths`` left unset, so every canonical path is read) no longer aborts when the device does not implement a path. ``api_info`` failures matching "not supported" or "no such command" are tolerated and that path is omitted from the captured config; all other failures (auth, connection, TLS) still abort the play. Previously a single unimplemented path (wireless, CAPsMAN, container, LoRa, etc.) failed the whole run and no vars file was written. Skipped paths are reported via a debug task.
+
 v0.0.1-alpha
 ============
 
