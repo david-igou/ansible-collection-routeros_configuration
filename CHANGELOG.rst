@@ -4,6 +4,33 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.4-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Overhauls the ``export_vars`` role so a capture is a clean,
+faithful, re-appliable declarative baseline rather than a mostly-noise dump:
+unset fields are omitted, empty entries dropped, only configure-modifiable
+paths are captured, order-sensitive paths (firewall chains, routing filters,
+simple queues) are captured with order and purge, runtime/state paths are
+excluded, and volatile fields are stripped.
+
+Minor Changes
+-------------
+
+- export_vars role - order-sensitive paths (firewall chains, routing filters, simple queues) are now captured with ``order`` and ``purge`` both true so the configure role enforces the exact ordered state. The set is the new ``routeros_export_vars_ordered_paths`` variable.
+- export_vars role - paths that ``api_modify`` understands but which capture runtime state, hardware enumeration, or auto-generated defaults rather than intent (``/file``, ``/system/script/environment``, ``/ip/pool/used``, ``/system/resource/*``, ``/partitions``, ``/queue/interface``, ``/ip/cloud``, ``/certificate``) are now excluded by default via the new ``routeros_export_vars_exclude_paths`` variable (set to ``[]`` to capture all). A companion ``routeros_export_vars_exclude_paths_extra`` is merged onto that list, so additional paths can be dropped without re-listing the defaults.
+- export_vars role - the export is now restricted to paths the configure role can modify. The role intersects the requested paths (or the full canonical order) with the configure role's ``rcfg_path_order``; a requested path that the configure role cannot modify is dropped before querying the device and reported in a debug message, so a captured file always re-applies cleanly.
+- export_vars role - unset device fields are now omitted from the capture by default (new ``routeros_export_vars_handle_disabled`` variable, default ``omit``). The previous ``api_info`` default emitted every unset field as a ``!field`` marker, which dominated a full export. Set it to ``exclamation`` to keep the ``!field`` markers (the configure role reads them as reset-to-default) or ``null-value`` for ``field=null``.
+- export_vars role - volatile runtime fields are stripped from the capture via the new ``routeros_export_vars_volatile_fields`` variable (by default ``/system/clock``'s ``date`` and ``time``, which would otherwise re-apply a stale timestamp).
+
+Bugfixes
+--------
+
+- export_vars role - entries left with no settable fields once ``.id`` is removed (all-default singletons, ``.id``-only entries) are now dropped, and paths left with no entries are omitted, instead of emitting empty ``data`` blocks holding a single empty mapping.
+
 v0.0.3-alpha
 ============
 
