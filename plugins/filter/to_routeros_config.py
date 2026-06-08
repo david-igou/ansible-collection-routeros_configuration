@@ -47,7 +47,7 @@ DOCUMENTATION = """
       ordered_paths:
         description:
           - Slash paths whose entry order is significant. These are emitted with
-            C(order: true) and C(purge: true) so the configure role enforces order.
+            C(order=true) and C(purge=true) so the configure role enforces order.
         type: list
         elements: str
 """
