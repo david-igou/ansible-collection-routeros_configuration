@@ -87,9 +87,20 @@ argument_specs:
         elements: str
         description:
           - Slash paths whose entry order is significant (firewall chains,
-            routing filters, simple queues). Captured with C(order=true) and
-            C(purge=true) so the C(configure) role enforces the exact ordered
-            state. Defaults to the known order-sensitive RouterOS paths.
+            routing filters, simple queues). Captured with C(order=true),
+            C(purge=true) and C(content) so the C(configure) role enforces the
+            exact ordered state. Defaults to the known order-sensitive RouterOS
+            paths.
+      routeros_export_vars_ordered_content:
+        type: str
+        default: remove_as_much_as_possible
+        choices: [remove_as_much_as_possible, remove]
+        description:
+          - The C(content) (handle_entries_content) emitted for ordered paths.
+            With C(purge), C(api_modify) rejects the default C(ignore) on these
+            paths, so it must be pinned. V(remove_as_much_as_possible) (default)
+            resets removable fields and leaves unrecognized fields alone;
+            V(remove) is strict.
       routeros_export_vars_volatile_fields:
         type: dict
         description:

@@ -136,14 +136,39 @@ def test_ordered_paths_get_order_and_purge() -> None:
     assert out["/ip/firewall/filter"]["data"] == [{"chain": "input", "action": "accept"}]
 
 
-def test_unordered_paths_have_no_order_or_purge() -> None:
-    """Paths not in ordered_paths carry neither order nor purge."""
+def test_ordered_paths_get_content_for_valid_round_trip() -> None:
+    """Ordered paths carry content so configure's purge+order is api_modify-valid.
+
+    api_modify rejects handle_absent_entries=remove (from purge) combined with
+    handle_entries_content=ignore (configure's default) on these paths, so the
+    capture MUST pin content or every ordered path is DOA against configure.
+    """
+    out = to_routeros_config(
+        [{"item": "/ip/firewall/filter", "result": [{".id": "*1", "chain": "input"}]}],
+        ordered_paths=["/ip/firewall/filter"],
+    )
+    assert out["/ip/firewall/filter"]["content"] == "remove_as_much_as_possible"
+
+
+def test_ordered_content_is_configurable() -> None:
+    """The emitted content value can be overridden."""
+    out = to_routeros_config(
+        [{"item": "/ip/firewall/filter", "result": [{"chain": "input"}]}],
+        ordered_paths=["/ip/firewall/filter"],
+        ordered_content="remove",
+    )
+    assert out["/ip/firewall/filter"]["content"] == "remove"
+
+
+def test_unordered_paths_have_no_order_purge_or_content() -> None:
+    """Paths not in ordered_paths carry none of order/purge/content."""
     out = to_routeros_config(
         [{"item": "/ip/address", "result": [{"address": "192.168.88.1/24"}]}],
         ordered_paths=["/ip/firewall/filter"],
     )
     assert "order" not in out["/ip/address"]
     assert "purge" not in out["/ip/address"]
+    assert "content" not in out["/ip/address"]
 
 
 def test_rejects_non_list() -> None:

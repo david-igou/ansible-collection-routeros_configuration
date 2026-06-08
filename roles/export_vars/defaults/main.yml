@@ -66,6 +66,13 @@ routeros_export_vars_ordered_paths:
   - /routing/filter/rule
   - /queue/simple
 
+# The content (handle_entries_content) emitted for ordered paths. With purge,
+# api_modify rejects the default "ignore" on these paths, so it must be pinned.
+#   remove_as_much_as_possible - default; reset removable fields not in the
+#                                capture, leave unrecognized fields alone.
+#   remove                     - strict; reset every field not in the capture.
+routeros_export_vars_ordered_content: remove_as_much_as_possible
+
 # Per-path runtime fields stripped from the capture — volatile values that are
 # device state, not configuration (re-applying them would push stale data).
 # Keys are slash paths; values are field names to drop.

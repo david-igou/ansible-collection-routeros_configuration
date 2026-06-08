@@ -1,0 +1,10 @@
+---
+bugfixes:
+  - export_vars role - order-sensitive paths are now captured with ``content``
+    (new ``routeros_export_vars_ordered_content`` variable, default
+    ``remove_as_much_as_possible``) alongside ``order`` and ``purge``. Without
+    it the configure role passed ``handle_absent_entries=remove`` with the
+    default ``handle_entries_content=ignore``, which ``api_modify`` rejects on
+    firewall/routing-filter/queue paths, so every captured ordered path aborted
+    on re-apply. The export_vars molecule scenario now feeds the captured config
+    back through the configure role in check mode to cover this round-trip.
