@@ -4,6 +4,23 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.5-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Fixes the ``export_vars`` capture of order-sensitive paths
+(firewall chains, routing filters, simple queues) so they re-apply cleanly
+through the ``configure`` role — they now carry ``content`` alongside ``order``
+and ``purge``, instead of aborting on a remove/ignore combination ``api_modify``
+rejects.
+
+Bugfixes
+--------
+
+- export_vars role - order-sensitive paths are now captured with ``content`` (new ``routeros_export_vars_ordered_content`` variable, default ``remove_as_much_as_possible``) alongside ``order`` and ``purge``. Without it the configure role passed ``handle_absent_entries=remove`` with the default ``handle_entries_content=ignore``, which ``api_modify`` rejects on firewall/routing-filter/queue paths, so every captured ordered path aborted on re-apply. The export_vars molecule scenario now feeds the captured config back through the configure role in check mode to cover this round-trip.
+
 v0.0.4-alpha
 ============
 
