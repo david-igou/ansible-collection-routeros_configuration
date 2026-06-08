@@ -4,6 +4,22 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.3-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Extends the ``export_vars`` tolerance set so a full export also
+survives the RouterOS "contact MikroTik support and send a supout file"
+sentinel — emitted by paths whose schema accepts the read but whose device-
+side read implementation is broken (e.g. ``/routing/pimsm/*`` on 7.x).
+
+Bugfixes
+--------
+
+- export_vars role - a full export (``routeros_export_vars_paths`` left unset, so every canonical path is read) no longer aborts on the RouterOS "contact MikroTik support and send a supout file" sentinel, returned for paths whose schema accepts the read but whose device-side read implementation is broken (historically seen under ``/routing/pimsm/*`` and occasional ``/interface/*`` edges on RouterOS 7.x). ``api_info`` failures whose message contains "contact MikroTik support" are now tolerated alongside the existing "not supported" / "no such command" patterns; the path is omitted from the captured config. Any other failure (auth, connection, TLS) still aborts.
+
 v0.0.2-alpha
 ============
 

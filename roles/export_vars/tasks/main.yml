@@ -42,8 +42,12 @@
       # No device implements the whole canonical path set — wireless, CAPsMAN,
       # container, LoRa, etc. are absent on most models and RouterOS builds. When
       # a path is not present api_info errors with "not supported" (api_info's
-      # own version gate) or "no such command" (the device rejects it). Tolerate
-      # exactly those so a full export over the entire canonical order completes;
+      # own version gate) or "no such command" (the device rejects it). A third
+      # class also exists: paths the schema accepts but the device's read
+      # implementation is broken, which returns the RouterOS "contact MikroTik
+      # support and send a supout file" sentinel (historically seen under
+      # /routing/pimsm/*, occasional /interface/* edges, etc.). Tolerate all
+      # three so a full export over the entire canonical order completes;
       # such a path is simply omitted from the captured config (the
       # to_routeros_config filter skips results with no entries). Any other
       # failure — auth, connection, TLS — is real and still aborts the play.
@@ -51,6 +55,7 @@
         _captured.failed | default(false)
         and 'not supported' not in (_captured.msg | default(''))
         and 'no such command' not in (_captured.msg | default(''))
+        and 'contact MikroTik support' not in (_captured.msg | default(''))
 
     - name: Report paths the device does not implement (skipped, not captured)
       ansible.builtin.debug:
