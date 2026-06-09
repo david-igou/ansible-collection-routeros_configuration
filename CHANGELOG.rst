@@ -4,6 +4,19 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.7-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Fixes the ``export_vars`` capture of ``/ip/ipsec/policy`` so a full baseline re-applies cleanly through ``configure``: the policy ``group`` field (whose ``remove_value`` is the literal ``default`` that every install ships) is now stripped from the capture, instead of being misread by ``api_modify`` as "disable group" and planning a duplicate add.
+
+Bugfixes
+--------
+
+- export_vars role - a full capture of ``/ip/ipsec/policy`` could not be re-applied through ``configure``: it planned a duplicate ``add`` of the built-in default IPv6 template policy (and check-mode dry-runs reported a spurious ``changed``). The policy's ``group`` field has ``remove_value`` ``default`` — the name of the policy group every RouterOS install ships — so ``community.routeros.api_modify`` reads a captured ``group`` of ``default`` as "disable the group field", fails to match the device row, and falls back to adding a second entry. ``group`` is now stripped from ``/ip/ipsec/policy`` captures by default (via ``routeros_export_vars_volatile_fields``) so the capture re-applies as ``changed: false``.
+
 v0.0.6-alpha
 ============
 
