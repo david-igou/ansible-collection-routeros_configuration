@@ -96,11 +96,20 @@
           - >-
             captured.routeros_config['/system/clock'].data
             | selectattr('time-zone-name', 'defined') | list | length == 1
+          # /ip/ipsec/policy captured with "group" stripped (volatile_fields):
+          # group.remove_value is "default", so a captured "group: default" is
+          # misread by api_modify as "disable group" and plans a duplicate add.
+          # The strip is what makes the round-trip task below changed=false.
+          - "'/ip/ipsec/policy' in captured.routeros_config"
+          - >-
+            captured.routeros_config['/ip/ipsec/policy'].data
+            | map('list') | flatten | select('eq', 'group') | list | length == 0
         success_msg: >-
           captured /ip/address + identity + /ip/service; no "!" markers, no empty
           entries; /ip/firewall/filter + /ip/firewall/nat ordered+purged with
           their rule SEQUENCE preserved exactly; /system/clock date/time stripped;
-          /file (default) + /ip/tftp + /system/script (extra) excluded;
+          /ip/ipsec/policy "group" stripped; /file (default) + /ip/tftp +
+          /system/script (extra) excluded;
           /interface/wireless + /routing/bfd/interface skipped
         fail_msg: "unexpected capture: {{ captured.routeros_config | default('<missing>') }}"
 
@@ -138,3 +147,27 @@
       check_mode: true
       delegate_to: localhost
       connection: local
+
+    # ROUND-TRIP REGRESSION GUARD for the /ip/ipsec/policy "group" bug. Replay the
+    # captured policy block through api_modify EXACTLY as the configure role would
+    # (handle_absent_entries=ignore, handle_entries_content=ignore) in check mode.
+    # With "group" stripped from the capture this is changed=false; WITHOUT the
+    # strip api_modify misreads "group: default" as "disable group", fails to match
+    # the device row, and plans a duplicate add (changed=true) — failing here.
+    - name: "Round-trip — captured /ip/ipsec/policy re-applies clean (no duplicate add)"
+      community.routeros.api_modify:
+        hostname: "{{ routeros_api_hostname }}"
+        username: "{{ routeros_api_username }}"
+        password: "{{ routeros_api_password }}"
+        tls: "{{ routeros_api_tls | bool }}"
+        validate_certs: "{{ routeros_api_validate_certs | bool }}"
+        port: "{{ routeros_api_port | default(omit, true) }}"
+        path: ip ipsec policy
+        data: "{{ captured.routeros_config['/ip/ipsec/policy'].data }}"
+        handle_absent_entries: ignore
+        handle_entries_content: ignore
+      check_mode: true
+      delegate_to: localhost
+      connection: local
+      register: _ipsec_roundtrip
+      failed_when: _ipsec_roundtrip.changed

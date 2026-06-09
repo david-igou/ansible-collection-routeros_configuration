@@ -25,6 +25,12 @@
       - /ip/firewall/nat
       # Volatile date/time must be stripped, leaving time-zone-name.
       - /system/clock
+      # Round-trip trap: the built-in default IPv6 template policy. Its "group"
+      # field has remove_value "default", so a captured "group: default" is
+      # misread by api_modify as "disable group" → duplicate add. volatile_fields
+      # must strip "group" so the capture re-applies as changed=false (asserted
+      # in verify.yml). RouterOS ships this row on every install.
+      - /ip/ipsec/policy
       # In rcfg_path_order but excluded as runtime state (default
       # routeros_export_vars_exclude_paths): must never be queried or emitted.
       - /file

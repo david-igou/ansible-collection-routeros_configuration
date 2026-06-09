@@ -41,8 +41,10 @@ DOCUMENTATION = """
         elements: str
       volatile_fields:
         description:
-          - Mapping of slash path to a list of runtime field names to strip from
-            that path's entries (e.g. C(/system/clock) C(date)/C(time)).
+          - Mapping of slash path to a list of field names to strip from that
+            path's entries — either volatile runtime values (e.g. C(/system/clock)
+            C(date)/C(time)) or values that break api_modify's round-trip matching
+            (e.g. C(/ip/ipsec/policy) C(group)).
         type: dict
       ordered_paths:
         description:
@@ -143,7 +145,8 @@ def to_routeros_config(
         entries = item.get("result") or []
         if not entries:
             continue
-        # .id is never re-appliable; volatile fields are runtime state, not config.
+        # .id is never re-appliable; volatile_fields drops per-path values that are
+        # runtime state or that break api_modify's round-trip matching.
         drop = {".id"} | set(volatile_fields.get(path, []))
         cleaned = []
         for entry in entries:
