@@ -5,7 +5,7 @@
 
 namespace: "david_igou"
 name: "routeros_configuration"
-version: 0.0.5-alpha
+version: 0.0.6-alpha
 readme: README.md
 authors:
   - David Igou <igou.david@gmail.com>
