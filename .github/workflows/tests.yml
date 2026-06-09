@@ -9,9 +9,13 @@ on: # yamllint disable-line rule:truthy
   pull_request:
     branches: [main]
   workflow_dispatch:
-  # TO-DO: Below is an example cron scheduler. Uncomment and tweak it as per your requirement
-  # schedule:
-    # - cron: '0 0 * * *'
+  # Monthly full-suite run against a real CHR. PR runs prove a change didn't
+  # break the collection; this run catches the world changing around it —
+  # community.routeros / ansible.netcommon resolve to their LATEST releases at
+  # run time (requirements.yml floats >=), so upstream breakage surfaces here
+  # instead of mid-PR.
+  schedule:
+    - cron: '0 6 1 * *'
 
 jobs:
   changelog:
@@ -32,29 +36,25 @@ jobs:
         git+https://github.com/ansible-collections/ansible.utils.git
   molecule-qemu:
     runs-on: ubuntu-latest
-    env:
-      MOLECULE_GLOB: extensions/molecule/*/molecule.yml
     strategy:
       fail-fast: false
       matrix:
-        # Two jobs instead of one-per-scenario. `shared` boots ONE CHR (the
+        # Three jobs instead of one-per-scenario, each delegating to the
+        # Makefile so the scenario list, ordering invariants, and dependency
+        # resolution live in ONE place (SHARED_SCENARIOS / the `install`
+        # prerequisite — see the Makefile). `shared` boots ONE CHR (the
         # `default` scenario owns create/prepare/destroy via molecule's
-        # shared_state) and runs the configure scenarios against it in a single
-        # sequential pass — see extensions/molecule/config.yml. `default` MUST be
-        # listed first (it owns create/prepare); scenarios are run in the listed
-        # order, unlike `--all` which sorts by directory. `chr` (network_cli
-        # feasibility, opts out of shared_state) keeps its own VM.
+        # shared_state) and runs every shared scenario against it in a single
+        # sequential pass; `chr` (network_cli feasibility) and `lifecycle`
+        # (destructive end-to-end: restore round-trip, /import, real reset
+        # wipe) opt out of shared_state and each boot their own VM.
         include:
           - name: shared
-            cmd: >-
-              molecule test -s default -s ping -s fetch -s configure_lists -s configure_singletons
-              -s configure_ordered -s configure_modify_only
-              -s configure_dependency_chain -s configure_full
-              -s certificate -s upgrade -s export_vars
-              -s command -s user_password -s reset
-              -s backup -s restore -s reboot
+            cmd: make molecule-shared
           - name: chr
-            cmd: molecule test -s chr
+            cmd: make molecule SCENARIO=chr
+          - name: lifecycle
+            cmd: make molecule SCENARIO=lifecycle
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -91,23 +91,15 @@ jobs:
             fi
           done
 
-      - name: Install dependencies
+      - name: Install Python test dependencies
+        # Python tooling only (molecule, ansible-pylibssh, librouteros — see
+        # test-requirements.txt). Every ansible-galaxy install (runtime deps,
+        # the pinned test provisioner, and the collection under test) happens
+        # in the Makefile's `install` prerequisite, so CI and a local
+        # `make molecule` resolve dependencies identically.
         run: |
           python -m pip install --upgrade pip
-          # librouteros backs community.routeros's API modules (api_modify/
-          # api_info) used by the subsystem role scenarios.
-          pip install ansible-core molecule ansible-pylibssh librouteros
-          # Runtime deps (community.routeros, ansible.netcommon).
-          ansible-galaxy collection install -r requirements.yml --force
-          # Install the collection itself so FQCN references resolve and
-          # galaxy.yml dependencies are pulled.
-          ansible-galaxy collection install . --force
-          # Test-only provisioner (david_igou.molecule_provisioners). Must be
-          # installed UP FRONT: under shared_state molecule hoists the default
-          # scenario's create (which import_playbook's the provisioner) to run
-          # before the per-scenario `dependency` step that would otherwise
-          # install it.
-          ansible-galaxy collection install -r extensions/molecule/requirements-test.yml --force
+          pip install ansible-core -r test-requirements.txt
 
       - name: Run molecule (${{ matrix.name }})
         run: ${{ matrix.cmd }}
@@ -125,8 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Fail if ANY required job failed or was cancelled. 'skipped' is allowed
-      # (changelog is skipped on workflow_dispatch). Every job in `needs` above
-      # must appear here, or its failure would not gate the merge.
+      # (changelog is skipped on workflow_dispatch and the monthly schedule).
+      # Every job in `needs` above must appear here, or its failure would not
+      # gate the merge.
       - run: >-
           python -c "results = {
           '${{ needs.changelog.result }}',

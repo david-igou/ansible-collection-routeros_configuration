@@ -1,4 +1,6 @@
-# TO-DO: add python packages that are required for testing this collection
+# Python packages required for testing this collection. CI's molecule jobs
+# install exactly this file (plus ansible-core); collection dependencies are
+# resolved by the Makefile `install` target the molecule targets depend on.
 pytest-ansible
 pytest-xdist
 molecule

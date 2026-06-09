@@ -14,10 +14,20 @@ Invoke from the **collection root**:
 # two dedicated-CHR scenarios (chr, lifecycle):
 make molecule
 
+# Just the shared pass (what CI's `shared` matrix job runs; the scenario list
+# and its ordering invariants live in the Makefile's SHARED_SCENARIOS):
+make molecule-shared
+
 # A single scenario:
 make molecule SCENARIO=configure_singletons      # shared tier (auto-prepends `default`)
 make molecule SCENARIO=lifecycle                 # dedicated tier (boots its own CHR)
 ```
+
+CI (`.github/workflows/tests.yml`) calls these same make targets — the
+Makefile is the single source of truth for scenario selection, ordering, and
+dependency resolution (`make install` pulls the runtime collections, the
+pinned test provisioner, and the collection under test; only the Python
+tooling in `test-requirements.txt` is installed outside make).
 
 ## Two tiers
 
