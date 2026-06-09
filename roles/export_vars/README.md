@@ -46,7 +46,7 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 | `routeros_export_vars_handle_disabled` | `omit` | how unset fields are captured: `omit` / `exclamation` / `null-value` |
 | `routeros_export_vars_exclude_paths` | curated list | runtime/state/hardware paths to skip |
 | `routeros_export_vars_ordered_paths` | firewall/routing/queue chains | paths captured with `order` + `purge` |
-| `routeros_export_vars_volatile_fields` | `{/system/clock: [date, time]}` | per-path runtime fields to strip |
+| `routeros_export_vars_volatile_fields` | `{/system/clock: [date, time], /ip/ipsec/policy: [group]}` | per-path fields to strip (volatile, or round-trip-breaking) |
 
 **Only configure-modifiable paths are captured.** The role loads the `configure`
 role's canonical `rcfg_path_order` — every path `api_modify` can write
@@ -81,8 +81,14 @@ entry not in the captured baseline** for those paths — intended for exact-stat
 management.
 
 **Volatile fields are stripped.** `routeros_export_vars_volatile_fields` removes
-runtime values that are state, not config (by default `/system/clock`'s `date`
-and `time`, which would otherwise push a stale timestamp on re-apply).
+per-path fields that should not round-trip: runtime state (by default
+`/system/clock`'s `date` and `time`, which would otherwise push a stale
+timestamp on re-apply), and values that break `api_modify`'s entry matching. The
+default also drops `group` from `/ip/ipsec/policy`: that field's `remove_value`
+is `default` — the name of the policy group every install ships — so a captured
+`group` of `default` is misread by `api_modify` as "disable group", which fails
+to match the device row and plans a duplicate `add`. Stripping it lets the
+capture re-apply as `changed: false`.
 
 **Unset fields default to `omit`.** `routeros_export_vars_handle_disabled` is
 passed to `api_info`: `omit` (default) captures only fields that are actually

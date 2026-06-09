@@ -104,9 +104,14 @@ argument_specs:
       routeros_export_vars_volatile_fields:
         type: dict
         description:
-          - Per-path runtime fields stripped from the capture (volatile state,
-            not config). Keys are slash paths, values are lists of field names.
-            Defaults to dropping C(date)/C(time) from C(/system/clock).
+          - Per-path fields stripped from the capture. Keys are slash paths,
+            values are lists of field names. Drop a field here when it is either
+            volatile device state (not config) or a value that breaks
+            C(api_modify)'s round-trip matching. Defaults to dropping
+            C(date)/C(time) from C(/system/clock) (volatile) and C(group) from
+            C(/ip/ipsec/policy) (its C(group) C(remove_value) is C(default), so a
+            captured C(group) of C(default) is misread as a disable, causing a
+            duplicate add).
       routeros_api_hostname:
         type: str
         default: "{{ inventory_hostname }}"

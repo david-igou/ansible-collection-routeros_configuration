@@ -67,13 +67,20 @@ routeros_export_vars_ordered_paths:
 #   remove                     - strict; reset every field not in the capture.
 routeros_export_vars_ordered_content: remove_as_much_as_possible
 
-# Per-path runtime fields stripped from the capture — volatile values that are
-# device state, not configuration (re-applying them would push stale data).
-# Keys are slash paths; values are field names to drop.
+# Per-path fields stripped from the capture. Keys are slash paths; values are
+# field names to drop. Two reasons a field belongs here:
+#   1. Volatile device state, not config (re-applying would push stale data).
+#   2. A value that breaks api_modify's round-trip matching. /ip/ipsec/policy's
+#      "group" field has remove_value "default" — the literal name of the policy
+#      group every install ships — so api_modify reads a captured "group: default"
+#      as "disable group", fails to match the device row, and plans a duplicate
+#      add. Dropping "group" lets the capture re-apply as changed=false.
 routeros_export_vars_volatile_fields:
   /system/clock:
     - date
     - time
+  /ip/ipsec/policy:
+    - group
 
 # routeros_export_vars_paths is intentionally NOT defaulted here: when it is
 # undefined, tasks/main.yml loads the configure role's canonical rcfg_path_order
