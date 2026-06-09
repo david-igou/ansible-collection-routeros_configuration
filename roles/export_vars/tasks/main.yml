@@ -115,7 +115,14 @@
 
     - name: Write the routeros_config vars file
       ansible.builtin.copy:
-        content: >-
+        # to_indented_yaml, not to_nice_yaml: PyYAML's default emitter writes
+        # indentless block sequences, which fail ansible-lint's
+        # yaml[indentation] rule on every list-bearing path — captures must be
+        # lint-clean when committed to an inventory repository. The "---"
+        # document start is the vars-file convention (and what the role README
+        # documents).
+        content: |-
+          ---
           {{ {'routeros_config':
              (_captured.results
               | david_igou.routeros_configuration.to_routeros_config(
@@ -123,6 +130,6 @@
                   volatile_fields=routeros_export_vars_volatile_fields,
                   ordered_paths=routeros_export_vars_ordered_paths,
                   ordered_content=routeros_export_vars_ordered_content))}
-             | to_nice_yaml(indent=2) }}
+             | david_igou.routeros_configuration.to_indented_yaml }}
         dest: "{{ routeros_export_vars_dir }}/{{ inventory_hostname }}.yml"
         mode: "0600"
