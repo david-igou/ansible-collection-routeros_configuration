@@ -246,7 +246,7 @@ example: <code class="docutils literal notranslate"><span class="pre">input</spa
 <div class="ansibleOptionAnchor" id="parameter-volatile_fields"></div><p class="ansible-option-title" id="ansible-collections-david-igou-routeros-configuration-to-routeros-config-filter-parameter-volatile-fields"><strong>volatile_fields</strong></p>
 <a class="ansibleOptionLink" href="#parameter-volatile_fields" title="Permalink to this option"></a><p class="ansible-option-type-line"><span class="ansible-option-type">dictionary</span></p>
 </div></td>
-<td><div class="ansible-option-cell"><p>Mapping of slash path to a list of runtime field names to strip from that path’s entries (e.g. <code class="docutils literal notranslate"><span class="pre">/system/clock</span></code> <code class="docutils literal notranslate"><span class="pre">date</span></code>/<code class="docutils literal notranslate"><span class="pre">time</span></code>).</p>
+<td><div class="ansible-option-cell"><p>Mapping of slash path to a list of field names to strip from that path’s entries — either volatile runtime values (e.g. <code class="docutils literal notranslate"><span class="pre">/system/clock</span></code> <code class="docutils literal notranslate"><span class="pre">date</span></code>/<code class="docutils literal notranslate"><span class="pre">time</span></code>) or values that break api_modify’s round-trip matching (e.g. <code class="docutils literal notranslate"><span class="pre">/ip/ipsec/policy</span></code> <code class="docutils literal notranslate"><span class="pre">group</span></code>).</p>
 </div></td>
 </tr>
 </tbody>
