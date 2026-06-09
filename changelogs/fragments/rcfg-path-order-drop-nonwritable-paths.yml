@@ -1,0 +1,23 @@
+bugfixes:
+  - >-
+    configure role - ``rcfg_path_order`` (in ``roles/configure/vars/main.yml``)
+    listed 42 RouterOS paths that ``community.routeros.api_modify`` cannot write
+    — read-only / ``api_info``-only containers and status paths such as
+    ``/interface``, ``/ip/ipsec/key``, ``/caps-man/actual-interface-configuration``,
+    and the ``/dude/ros/*``, ``/iot/*``, ``/lora/*`` and ``/routing/isis/*`` status
+    trees. Because ``export_vars`` filters its captures through ``rcfg_path_order``,
+    any full export that captured one of these aborted on apply with
+    ``value of path must be one of: ...``. All 42 non-writable paths are removed so
+    every captured baseline re-applies cleanly through ``configure``.
+trivial:
+  - >-
+    Added ``tests/unit/test_rcfg_path_order.py`` asserting every ``rcfg_path_order``
+    entry is writable by ``community.routeros.api_modify`` (and that the list has no
+    duplicates), guarding against re-introducing read-only paths.
+  - >-
+    export_vars role - dropped six now-redundant entries from
+    ``routeros_export_vars_exclude_paths`` (``/ip/pool/used``, ``/partitions``,
+    ``/system/script/environment``, ``/system/script/job``, ``/system/resource/irq``,
+    ``/system/resource/usb``). They are no longer in ``rcfg_path_order``, so
+    ``export_vars`` can never capture them; the exclude list now holds only paths
+    ``api_modify`` understands but which carry runtime/hardware state.
