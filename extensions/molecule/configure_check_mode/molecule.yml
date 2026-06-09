@@ -1,9 +1,12 @@
 ---
-# Check-mode proof. A check_mode task always reports `changed`, so the idempotence
-# step is dropped (it would re-run the check-mode apply and never settle).
+# Check-mode proof for the CONFIGURE ROLE — not for bare api_modify, whose
+# check-mode contract is community.routeros's to test. The converge drives the
+# role itself with check_mode applied and proves it writes NOTHING by comparing
+# device state before/after (an include_role result can't be registered, so the
+# device read-back is the assertable signal); the real role apply then lands the
+# change. Because the before/after comparison holds on a re-run too (state is
+# simply already converged), the converge is idempotent — so this scenario keeps
+# the full shared test_sequence, and the idempotence step exercises the role's
+# check-mode path a second time against existing state.
 scenario:
   name: configure_check_mode
-  test_sequence:
-    - dependency
-    - converge
-    - verify

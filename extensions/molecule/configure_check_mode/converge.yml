@@ -1,53 +1,61 @@
 ---
-- name: Converge — check-mode apply must not touch the device, then a real apply does
+# Drives the configure ROLE under check mode (apply: check_mode), not bare
+# api_modify: a future non-check-safe task inside configure/_reconcile (e.g. an
+# `api` cmd op, which never honors check mode) must fail HERE, in the
+# collection's own test, rather than leak writes during a `--check` drift run.
+- name: Converge — configure role in check mode writes nothing, then a real apply lands it
   hosts: molecule
   gather_facts: false
   module_defaults:
-    community.routeros.api_modify: &conn
+    community.routeros.api_info:
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
       port: "{{ routeros_api_port | default(omit, true) }}"
-    community.routeros.api_info: *conn
-  tasks:
-    - name: Apply a brand-new pool IN CHECK MODE (predicts a change, writes nothing)
-      community.routeros.api_modify:
-        path: ip pool
+  vars:
+    # One routeros_config drives both applies, so the check-mode pass and the
+    # real pass prove properties of the SAME role invocation.
+    _checkmode_config:
+      /ip/pool:
         data:
           - name: checkmode-pool
             ranges: "192.168.222.10-192.168.222.50"
-        handle_absent_entries: ignore
-      delegate_to: localhost
-      connection: local
-      check_mode: true
-      register: cm
-
-    - name: Assert check mode predicted a change
-      ansible.builtin.assert:
-        that:
-          - cm is changed
-        fail_msg: "check mode did not predict a change: {{ cm }}"
-
-    - name: Read /ip/pool — checkmode-pool must NOT exist (check mode wrote nothing)
+  tasks:
+    - name: Read /ip/pool BEFORE the check-mode role apply
       community.routeros.api_info:
         path: ip pool
       delegate_to: localhost
       connection: local
-      register: pools_after_check
-    - name: Assert check mode did not mutate the device
-      ansible.builtin.assert:
-        that:
-          - pools_after_check.result | selectattr('name', 'equalto', 'checkmode-pool') | list | length == 0
-        fail_msg: "check mode LEAKED a write: {{ pools_after_check.result }}"
+      register: pools_before
 
-    - name: Apply the same pool FOR REAL
-      community.routeros.api_modify:
+    - name: Apply via the configure role IN CHECK MODE (must not touch the device)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.configure
+        apply:
+          check_mode: true
+      vars:
+        routeros_config: "{{ _checkmode_config }}"
+
+    - name: Read /ip/pool AFTER the check-mode role apply
+      community.routeros.api_info:
         path: ip pool
-        data:
-          - name: checkmode-pool
-            ranges: "192.168.222.10-192.168.222.50"
-        handle_absent_entries: ignore
       delegate_to: localhost
       connection: local
+      register: pools_after
+
+    - name: Assert the check-mode role apply left the device untouched
+      ansible.builtin.assert:
+        that:
+          - pools_after.result == pools_before.result
+        success_msg: "configure under check mode wrote nothing (device state identical)"
+        fail_msg: >-
+          configure under check mode LEAKED a write:
+          before={{ pools_before.result }} after={{ pools_after.result }}
+
+    - name: Apply the same routeros_config FOR REAL via the configure role
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.configure
+      vars:
+        routeros_config: "{{ _checkmode_config }}"

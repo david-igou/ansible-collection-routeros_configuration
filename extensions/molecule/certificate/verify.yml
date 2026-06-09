@@ -57,3 +57,46 @@
           host.ca={{ _host['ca'] | default('?') }} host.akid={{ _host['akid'] | default('?') }}
           ca.skid={{ _ca['skid'] | default('?') }}
           files={{ certfiles.msg | map(attribute='name') | list }}
+
+    # IDEMPOTENCE OF THE ROLE'S OWN SKIP GATES (create+sign only — the
+    # export→import file dance is imperative, which is why the scenario-level
+    # idempotence step stays dropped). The gates are hand-written role code:
+    # `add` is skipped when the name already exists, `sign` when the
+    # fingerprint is set. Re-running create+sign must therefore leave the
+    # certificate table identical — a broken sign gate re-signs and changes the
+    # fingerprint; a broken add gate errors or duplicate-suffixes the name.
+    # (export/import/acme default to [] so only create+sign runs here.)
+    - name: Re-run the role with create+sign only (skip gates must no-op)
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration.certificate
+      vars:
+        routeros_certificates:
+          - name: mol-ca
+            common_name: Molecule Test CA
+            key_usage:
+              - key-cert-sign
+              - crl-sign
+          - name: mol-host
+            common_name: host.molecule.test
+            ca: mol-ca
+
+    - name: Re-read certificates after the create+sign re-run
+      community.routeros.api:
+        path: certificate
+      delegate_to: localhost
+      connection: local
+      register: certs_rerun
+
+    - name: Assert the re-run was a no-op (same entries, same fingerprints)
+      ansible.builtin.assert:
+        that:
+          - certs_rerun.msg | map(attribute='name') | sort == certs.msg | map(attribute='name') | sort
+          - (certs_rerun.msg | selectattr('name', 'equalto', 'mol-ca') | first)['fingerprint'] == _ca['fingerprint']
+          - (certs_rerun.msg | selectattr('name', 'equalto', 'mol-host') | first)['fingerprint'] == _host['fingerprint']
+        success_msg: >-
+          create+sign re-run was a no-op: the role's skip gates held
+          (certificate names and fingerprints unchanged)
+        fail_msg: >-
+          re-run mutated certificate state:
+          before={{ certs.msg | map(attribute='name') | list }}
+          after={{ certs_rerun.msg | map(attribute='name') | list }}
