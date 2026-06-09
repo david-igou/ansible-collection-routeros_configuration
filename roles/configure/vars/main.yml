@@ -29,17 +29,14 @@ rcfg_path_order:
   - /interface/ethernet
   - /interface/ethernet/poe
   - /interface/lte/settings
-  - /interface/lte
   - /interface/lte/apn
   # wireless: security-profiles/channels before the radios, then sub-lists
   - /interface/wireless/security-profiles
   - /interface/wireless/channels
-  - /interface/wireless/manual-tx-power-table
   - /interface/wireless
   - /interface/wireless/connect-list
   - /interface/wireless/access-list
   - /interface/wireless/interworking-profiles
-  - /interface/wireless/nstreme
   - /interface/wireless/nstreme-dual
   - /interface/wireless/align
   - /interface/wireless/sniffer
@@ -88,7 +85,6 @@ rcfg_path_order:
   - /caps-man/manager
   - /caps-man/manager/interface
   - /caps-man/interface
-  - /caps-man/actual-interface-configuration
   # link aggregation / virtual ports on physical interfaces
   - /interface/bonding
   - /interface/macvlan
@@ -110,7 +106,6 @@ rcfg_path_order:
   - /interface/bridge/calea
   - /interface/bridge/port-controller
   - /interface/bridge/port-controller/device
-  - /interface/bridge/port-controller/port
   - /interface/bridge/port-extender
   # VLANs and other logical interfaces atop the above
   - /interface/vlan
@@ -202,7 +197,6 @@ rcfg_path_order:
   - /ip/route
   - /ip/route/rule
   - /routing/rule
-  - /routing/route/rule
   # hotspot chain (pool/dns/profile already applied)
   - /ip/hotspot/profile
   - /ip/hotspot/user/profile
@@ -216,7 +210,6 @@ rcfg_path_order:
   - /ip/ipsec/settings
   - /ip/ipsec/proposal
   - /ip/ipsec/profile
-  - /ip/ipsec/key
   - /ip/ipsec/key/psk
   - /ip/ipsec/key/rsa
   - /ip/ipsec/key/qkd
@@ -283,12 +276,8 @@ rcfg_path_order:
   - /routing/ripng
   - /routing/isis/instance
   - /routing/isis/interface-template
-  - /routing/isis/interface
-  - /routing/isis/neighbor
-  - /routing/isis/lsp
   - /routing/pimsm/instance
   - /routing/pimsm/interface-template
-  - /routing/pimsm/igmp-interface-template
   - /routing/pimsm/static-rp
   - /routing/pimsm/bsr/candidate
   - /routing/pimsm/bsr/rp-candidate
@@ -344,7 +333,6 @@ rcfg_path_order:
   - /user/ssh-keys
   # leaf / independent paths (no cross-path dependency; parent-first)
   # interface
-  - /interface
   - /interface/ethernet/switch
   - /interface/ethernet/switch/acl
   - /interface/ethernet/switch/dscp-qos-map
@@ -373,14 +361,12 @@ rcfg_path_order:
   - /interface/ethernet/switch/acl/policer
   - /interface/ethernet/switch/l3hw-settings/advanced
   - /interface/ethernet/switch/qos/map
-  - /interface/ethernet/switch/qos/port
   - /interface/ethernet/switch/qos/priority-flow-control
   - /interface/ethernet/switch/qos/profile
   - /interface/ethernet/switch/qos/settings
   - /interface/ethernet/switch/qos/tx-manager
   - /interface/ethernet/switch/qos/map/ip
   - /interface/ethernet/switch/qos/map/vlan
-  - /interface/ethernet/switch/qos/tx-manager/queue
   # ip
   - /ip/accounting
   - /ip/packing
@@ -394,7 +380,6 @@ rcfg_path_order:
   - /ip/kid-control/device
   - /ip/media/settings
   - /ip/nat-pmp/interfaces
-  - /ip/pool/used
   - /ip/proxy/access
   - /ip/proxy/cache
   - /ip/proxy/direct
@@ -424,7 +409,6 @@ rcfg_path_order:
   - /tool/graphing/resource
   - /tool/mac-server/mac-winbox
   - /tool/mac-server/ping
-  - /tool/mac-server/sessions
   - /tool/romon/port
   - /tool/traffic-generator/packet-template
   - /tool/traffic-generator/port
@@ -443,7 +427,6 @@ rcfg_path_order:
   - /system/scheduler
   - /system/script
   - /system/swos
-  - /system/upgrade
   - /system/ups
   - /system/watchdog
   - /system/clock/manual
@@ -454,17 +437,12 @@ rcfg_path_order:
   - /system/ntp/client
   - /system/ntp/key
   - /system/ntp/server
-  - /system/package/local-update
   - /system/package/update
-  - /system/resource/irq
-  - /system/resource/usb
   - /system/routerboard/mode-button
   - /system/routerboard/reset-button
   - /system/routerboard/settings
   - /system/routerboard/usb
   - /system/routerboard/wps-button
-  - /system/script/environment
-  - /system/script/job
   - /system/upgrade/mirror
   - /system/upgrade/upgrade-package-source
   - /system/ntp/client/servers
@@ -489,11 +467,9 @@ rcfg_path_order:
   # disk
   - /disk
   - /disk/settings
-  - /disk/btrfs/filesystem
   - /disk/btrfs/subvolume
   - /disk/btrfs/transfer
   # port
-  - /port
   - /port/firmware
   - /port/remote-access
   # file
@@ -506,8 +482,6 @@ rcfg_path_order:
   - /special-login
   # task
   - /task
-  # partitions
-  - /partitions
   # rsync-daemon
   - /rsync-daemon
   # tr069-client
@@ -521,34 +495,22 @@ rcfg_path_order:
   - /zerotier/interface
   - /zerotier/controller/member
   # app
-  - /app
   - /app/settings
   # lcd
   - /lcd
   - /lcd/interface
   - /lcd/pin
-  - /lcd/screen
   - /lcd/interface/pages
   # lora
-  - /lora
-  - /lora/channels
   - /lora/joineui
   - /lora/netid
-  - /lora/radios
   - /lora/servers
   - /lora/traffic/options
   # iot
-  - /iot/bluetooth
-  - /iot/lora
   - /iot/modbus
-  - /iot/bluetooth/advertisers
-  - /iot/bluetooth/peripheral-devices
-  - /iot/bluetooth/scanners
   - /iot/bluetooth/whitelist
-  - /iot/lora/channels
   - /iot/lora/joineui
   - /iot/lora/netid
-  - /iot/lora/radios
   - /iot/lora/servers
   - /iot/modbus/security-rules
   - /iot/mqtt/brokers
@@ -565,11 +527,6 @@ rcfg_path_order:
   - /dude/service
   - /dude/ros/address
   - /dude/ros/arp
-  - /dude/ros/health
-  - /dude/ros/interface
   - /dude/ros/lease
-  - /dude/ros/neighbor
   - /dude/ros/queue
-  - /dude/ros/resource
   - /dude/ros/route
-  - /dude/ros/routerboard

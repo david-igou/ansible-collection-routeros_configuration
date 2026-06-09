@@ -35,14 +35,8 @@ routeros_export_vars_exclude_paths:
   - /file                       # filesystem listing (backups, scripts) — not config
   - /certificate                # metadata only, no key material — cannot round-trip
   - /ip/cloud                   # cloud DDNS status
-  - /ip/pool/used               # runtime pool allocations
-  - /partitions                 # disk partition layout (hardware)
   - /queue/interface            # auto-generated per interface (default queue)
-  - /system/script/environment  # runtime script-engine globals
-  - /system/script/job          # currently-running script jobs
-  - /system/resource/irq        # hardware IRQ affinity
   - /system/resource/irq/rps    # hardware RPS
-  - /system/resource/usb        # USB hardware enumeration
 
 # Extra paths to exclude, MERGED onto routeros_export_vars_exclude_paths (rather
 # than replacing it). Use this to drop a few more paths without re-listing the
