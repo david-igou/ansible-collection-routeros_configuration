@@ -4,6 +4,19 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.6-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. Fixes the ``configure`` role's ``rcfg_path_order`` so full ``export_vars`` captures re-apply cleanly: 42 read-only / ``api_info``-only paths that ``community.routeros.api_modify`` cannot write (starting with the ``/interface`` container that aborted every full baseline) are removed from the canonical apply order, and a unit test now guards the list against re-introducing non-writable paths.
+
+Bugfixes
+--------
+
+- configure role - ``rcfg_path_order`` (in ``roles/configure/vars/main.yml``) listed 42 RouterOS paths that ``community.routeros.api_modify`` cannot write — read-only / ``api_info``-only containers and status paths such as ``/interface``, ``/ip/ipsec/key``, ``/caps-man/actual-interface-configuration``, and the ``/dude/ros/*``, ``/iot/*``, ``/lora/*`` and ``/routing/isis/*`` status trees. Because ``export_vars`` filters its captures through ``rcfg_path_order``, any full export that captured one of these aborted on apply with ``value of path must be one of: ...``. All 42 non-writable paths are removed so every captured baseline re-applies cleanly through ``configure``.
+
 v0.0.5-alpha
 ============
 
