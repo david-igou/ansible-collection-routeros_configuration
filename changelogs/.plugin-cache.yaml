@@ -63,6 +63,10 @@ plugins:
   cliconf: {}
   connection: {}
   filter:
+    to_indented_yaml:
+      description: Serialize data to YAML with indented block sequences.
+      name: to_indented_yaml
+      version_added: 1.0.0
     to_routeros_config:
       description: Build a routeros_config dict from api_info results.
       name: to_routeros_config
@@ -76,4 +80,4 @@ plugins:
   strategy: {}
   test: {}
   vars: {}
-version: 0.0.7-alpha
+version: 0.0.8-alpha

@@ -1,9 +1,0 @@
----
-trivial:
-  - >-
-    Docs: the root README's Testing section now describes the full
-    ``make molecule`` suite (shared pass + dedicated ``chr``/``lifecycle`` VMs,
-    ``make molecule-shared``, CI parity, monthly schedule), and the ``chr``
-    scenario README's stale "future work" notes are replaced — the shared-state
-    scenarios already apply and assert real RouterOS config over the forwarded
-    binary API.
