@@ -4,6 +4,24 @@ David\_igou Routeros\_configuration Collection Release Notes
 
 .. contents:: Topics
 
+v0.0.8-alpha
+============
+
+Release Summary
+---------------
+
+Patch release. ``export_vars`` captures are now lint-clean out of the box — serialized with the new ``to_indented_yaml`` filter (block sequences indented, ``---`` document start), they pass ansible-lint's ``production`` profile and plain yamllint without exceptions, so captures can be committed straight into a linted inventory repository. Under the hood, CI now runs the molecule suite through the Makefile (single source of truth) with every scenario — including the destructive ``lifecycle`` end-to-end — gating each pull request, plus a monthly scheduled run against a real CHR to catch upstream dependency drift.
+
+Minor Changes
+-------------
+
+- new ``to_indented_yaml`` filter - serialize a data structure to YAML with block sequences indented beneath their parent key (ansible-lint / yamllint clean), unlike ``to_nice_yaml``'s flush style. Useful for writing any generated vars file destined for a linted repository.
+
+Bugfixes
+--------
+
+- export_vars role - captured vars files failed ansible-lint's ``yaml[indentation]`` rule on every list-bearing path (passing only at the ``min`` profile), so captures could not be committed to a linted inventory repository without lint exceptions. ``to_nice_yaml`` (PyYAML underneath) emits flush/indentless block sequences — the list dash aligned with its parent key — while ansible-lint's yamllint config expects indented sequences. Captures are now serialized with the new ``david_igou.routeros_configuration.to_indented_yaml`` filter, which matches ``to_nice_yaml`` layout except that block sequences are indented, and the file gains the conventional ``---`` document start the role README already showed. Captured files now pass ansible-lint's default (``production``) profile and plain yamllint out of the box.
+
 v0.0.7-alpha
 ============
 
