@@ -191,16 +191,21 @@ matched.
 ## Testing
 
 [Molecule](https://ansible.readthedocs.io/projects/molecule/) scenarios live in
-`extensions/molecule/`. They share a single QEMU **CHR** (Cloud Hosted Router)
-instance across scenarios, exercising the roles against a real RouterOS over the
-API (and `network_cli` for `backup`).
+`extensions/molecule/`. Most share a single QEMU **CHR** (Cloud Hosted Router)
+instance, exercising the roles against a real RouterOS over the API (and
+`network_cli` for `backup`); two dedicated-CHR scenarios cover `network_cli`
+feasibility (`chr`) and the destructive end-to-end (`lifecycle`).
 
 ```bash
-make molecule                  # the shared CHR pass across all scenarios
+make molecule                  # full suite: the shared pass + the chr/lifecycle VMs
+make molecule-shared           # just the shared pass (what CI's `shared` job runs)
 make molecule SCENARIO=poe     # a single scenario against the shared CHR
 ```
 
-See [`extensions/molecule/README.md`](extensions/molecule/README.md) for the
+CI runs these same make targets on every pull request and on a monthly
+schedule (which also catches drift in the floating `community.routeros` /
+`ansible.netcommon` dependencies). See
+[`extensions/molecule/README.md`](extensions/molecule/README.md) for the
 scenario catalogue and provisioner wiring. Hardware-specific operations that a
 CHR cannot exercise (PoE power actions, RouterBOARD firmware, ACME, a real
 reset/shutdown) are gated and validated on real hardware rather than in CI.

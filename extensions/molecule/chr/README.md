@@ -70,8 +70,9 @@ editing the `image:` URL in `inventory/hosts.yml`.
 - Auth uses a password bootstrapped post-boot (`molecule`). Production RouterOS
   uses SSH keys; injecting a key (cloud-init `meta-data: public-keys`, or
   `/user/ssh-keys/import` in prepare) is a follow-up.
-- `converge.yml` is a no-op; applying/asserting real RouterOS config is future
-  work for the collection's roles.
-- network_cli (CLI) is used here to mirror the production inventory. The
-  `community.routeros.api_*` modules (API on 8728) are the path for declarative
-  config and would need the API port reachable (e.g. a forwarded port).
+- `converge.yml` is a no-op **by design** — this scenario only proves the qemu
+  provider boots a CHR that RouterOS answers on over `network_cli`. The
+  collection's roles are exercised against a real CHR by the shared-state
+  scenarios (see [`../README.md`](../README.md)), which forward the binary API
+  port (`127.0.0.1:8728`) and drive the `community.routeros.api_*` modules from
+  the controller.
