@@ -68,14 +68,14 @@ the full suite.
 | `configure_modify_only` | `/ip/service` built-in rows that can only be modified (disables `telnet`). |
 | `configure_dependency_chain` | Cross-path **ordering** (`bridge→port`, `pool→dhcp-server→lease`, `list→member`) authored shuffled, applied + idempotent. |
 | `configure_full` | Comprehensive — 75+ CHR-configurable paths in one shuffled call; converge proves ordering, idempotence proves clean reconciliation. See `configure_full/EXCLUSIONS.md`. |
-| `configure_check_mode` | `--check` predicts a change but writes **nothing** (read-back proves the device is untouched); the real apply then lands it. |
+| `configure_check_mode` | The **configure role** under check mode completes cleanly and writes **nothing** (before/after read-back identical); the real role apply then lands it. The idempotence step re-exercises the role's check-mode path against existing state. |
 
 ### operational roles
 
 | Scenario | Proves |
 | --- | --- |
 | `backup` | `/export` (with a service secret present, user passwords absent) + binary `/system backup save`; idempotent text export. |
-| `certificate` | Create + sign a CA and a host cert; **trust chain** (`mol-host.ca == mol-ca`, `akid == ca.skid`); export-kept / import-consumed files. |
+| `certificate` | Create + sign a CA and a host cert; **trust chain** (`mol-host.ca == mol-ca`, `akid == ca.skid`); export-kept / import-consumed files; a create+sign **re-run is a no-op** (the role's skip gates hold — names and fingerprints unchanged). |
 | `command` | The escape hatch: `cmd` (set note) plus an `add`+`remove` address-list round-trip. |
 | `export_vars` | Captures device config into a replayable `routeros_config` vars file (no `.id` leakage); asserts `/ip/address` + `/system/identity` capture. |
 | `fetch` | `/tool fetch` onto the device, then the `routeros_fetch_remove` delete branch. |

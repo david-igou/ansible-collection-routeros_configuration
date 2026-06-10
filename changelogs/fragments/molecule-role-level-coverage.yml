@@ -1,0 +1,10 @@
+---
+trivial:
+  - >-
+    Molecule: the ``configure_check_mode`` scenario now drives the ``configure``
+    role itself under check mode (before/after device read-back proves nothing
+    is written) instead of testing ``api_modify``'s own check-mode contract,
+    and regains the idempotence step; the ``certificate`` scenario verifies a
+    create+sign re-run is a no-op (the role's skip gates hold); the ``reboot``
+    uptime assertion window widens to 300s to avoid slow-runner flake; dead
+    template leftovers under ``extensions/molecule/utils`` are removed.

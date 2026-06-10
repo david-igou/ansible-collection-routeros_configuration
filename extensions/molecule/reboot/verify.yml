@@ -26,6 +26,9 @@
     - name: Assert uptime is small (recently rebooted)
       ansible.builtin.assert:
         that:
-          - _uptime_s | int < 180
+          # The window covers the role's own reconnect wait plus this verify's
+          # API reads — 300s keeps the assertion's intent (uptime reset from
+          # hours to seconds) without flaking on a slow TCG-fallback runner.
+          - _uptime_s | int < 300
         success_msg: "device rebooted — uptime {{ (res.msg | first).uptime }} ({{ _uptime_s }}s)"
         fail_msg: "uptime too high, did it reboot? {{ (res.msg | first).uptime }}"
