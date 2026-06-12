@@ -1,3 +1,6 @@
+# Copyright (c) 2026, David Igou
+# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt)
+# SPDX-License-Identifier: GPL-3.0-or-later
 """Regression tests for the configure role's ``rcfg_path_order``.
 
 ``rcfg_path_order`` (``roles/configure/vars/main.yml``) is the canonical apply

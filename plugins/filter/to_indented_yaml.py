@@ -8,6 +8,8 @@ from __future__ import absolute_import, annotations, division, print_function
 
 __metaclass__ = type  # pylint: disable=C0103
 
+import datetime
+
 import yaml
 
 from ansible.errors import AnsibleFilterError
@@ -16,7 +18,7 @@ from ansible.errors import AnsibleFilterError
 DOCUMENTATION = """
     name: to_indented_yaml
     author: David Igou (@david-igou)
-    version_added: "1.0.0"
+    version_added: "0.0.8-alpha"
     short_description: Serialize data to YAML with indented block sequences.
     description:
       - Like C(to_nice_yaml), but block sequences are indented beneath their
@@ -88,6 +90,13 @@ def _to_plain(value):
         return int(value)
     if isinstance(value, float):
         return float(value)
+    # datetime before date: datetime is a date subclass.
+    if isinstance(value, datetime.datetime):
+        return datetime.datetime(*value.timetuple()[:6], value.microsecond, value.tzinfo)
+    if isinstance(value, datetime.date):
+        return datetime.date(value.year, value.month, value.day)
+    if isinstance(value, bytes):
+        return bytes(value)
     return value
 
 
@@ -108,11 +117,14 @@ def to_indented_yaml(data, indent=2):
             indent=indent,
             allow_unicode=True,
             default_flow_style=False,
+            # PyYAML's current default, but sorted keys are part of this
+            # filter's documented contract — pin it.
+            sort_keys=True,
         )
     except yaml.YAMLError as exc:
         raise AnsibleFilterError(
             "to_indented_yaml failed to serialize input: %s" % exc
-        )
+        ) from exc
 
 
 class FilterModule:

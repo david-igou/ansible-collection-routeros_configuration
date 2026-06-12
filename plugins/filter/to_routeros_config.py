@@ -14,7 +14,7 @@ from ansible.errors import AnsibleFilterError
 DOCUMENTATION = """
     name: to_routeros_config
     author: David Igou (@david-igou)
-    version_added: "1.0.0"
+    version_added: "0.0.1-alpha"
     short_description: Build a routeros_config dict from api_info results.
     description:
       - Turns the registered results of a looped C(community.routeros.api_info)
@@ -32,11 +32,19 @@ DOCUMENTATION = """
         elements: dict
         required: true
       redact:
-        description: Replace the value of any sensitive field with C(REDACTED).
+        description:
+          - Replace the value of any sensitive field with C(REDACTED).
+          - By default a field is sensitive when its name ends in C(key),
+            C(secret), C(password) or C(passphrase), or is a known secret the
+            suffixes miss (e.g. the WEP C(static-key-0..3)). Known public
+            fields such as a WireGuard peer's C(public-key) are exempted.
         type: bool
         default: false
       sensitive_fields:
-        description: Field names treated as sensitive when O(redact=true).
+        description:
+          - Field names treated as sensitive when O(redact=true). When set,
+            ONLY these exact names are redacted — the default suffix matching
+            is replaced, not extended.
         type: list
         elements: str
       volatile_fields:
@@ -60,6 +68,13 @@ DOCUMENTATION = """
             paths. Defaults to C(remove_as_much_as_possible).
         type: str
         default: remove_as_much_as_possible
+    notes:
+      - Redaction is opt-in. A redacted capture is for review only — the
+        literal C(REDACTED) values do not round-trip; prefer encrypting an
+        unredacted capture with Ansible Vault.
+    seealso:
+      - module: community.routeros.api_info
+      - module: community.routeros.api_modify
 """
 
 EXAMPLES = """
@@ -83,17 +98,43 @@ RETURN = """
     type: dict
 """
 
-# Readable secret fields (verified against community.routeros field metadata).
-# /user password is write-only and never appears in api_info output.
-DEFAULT_SENSITIVE_FIELDS = [
-    "private-key",
-    "preshared-key",
-    "secret",
-    "password",
-    "authentication-password",
-    "encryption-password",
-    "passphrase",
-]
+# community.routeros exposes dozens of readable secret-bearing fields
+# (pre-shared-key, l2tp-secret, radius secret, eap-password, ...) and the set
+# grows with every release — match by suffix instead of maintaining an
+# exact-name list. tests/unit/test_to_routeros_config.py pins this heuristic
+# against the installed community.routeros field metadata.
+DEFAULT_SENSITIVE_SUFFIXES = ("key", "secret", "password", "passphrase")
+
+# Secrets the suffixes miss: WEP static keys, /system/ntp/key's key-val, and
+# RoMON's secrets list.
+DEFAULT_SENSITIVE_FIELDS = frozenset(
+    {
+        "key-val",
+        "secrets",
+        "static-key-0",
+        "static-key-1",
+        "static-key-2",
+        "static-key-3",
+    }
+)
+
+# Suffix-matched fields that are NOT secrets: a WireGuard peer's public-key is
+# required config, allow-sharedkey is a boolean, lacp-user-key an LACP integer.
+DEFAULT_PUBLIC_FIELDS = frozenset({"public-key", "allow-sharedkey", "lacp-user-key"})
+
+
+def _is_sensitive(field, sensitive_fields):
+    """Return True when a field's value must be redacted.
+
+    A user-supplied sensitive_fields list keeps exact-match semantics; the
+    default is suffix matching plus the exact-name extras, with public-field
+    exemptions.
+    """
+    if sensitive_fields is not None:
+        return field in sensitive_fields
+    if field in DEFAULT_PUBLIC_FIELDS:
+        return False
+    return field in DEFAULT_SENSITIVE_FIELDS or field.endswith(DEFAULT_SENSITIVE_SUFFIXES)
 
 
 def to_routeros_config(
@@ -109,7 +150,9 @@ def to_routeros_config(
     Args:
         results: list of api_info loop result dicts (each with 'item' + 'result').
         redact: when True, blank out sensitive field values.
-        sensitive_fields: field names to redact (defaults to DEFAULT_SENSITIVE_FIELDS).
+        sensitive_fields: exact field names to redact (default: any field whose
+            name ends in key/secret/password/passphrase, minus known public
+            fields — see _is_sensitive).
         volatile_fields: {slash_path: [field, ...]} of runtime values to strip
             (e.g. /system/clock date/time), so they do not enter the baseline.
         ordered_paths: slash paths whose entry order is significant (firewall
@@ -130,18 +173,22 @@ def to_routeros_config(
             "to_routeros_config expects a list of api_info results, got %s"
             % type(results).__name__
         )
-    if sensitive_fields is None:
-        sensitive_fields = DEFAULT_SENSITIVE_FIELDS
     volatile_fields = volatile_fields or {}
     ordered = set(ordered_paths or [])
 
     config = {}
-    for item in results:
+    for index, item in enumerate(results):
         if not isinstance(item, dict) or "item" not in item:
             raise AnsibleFilterError(
-                "each result must be a dict with an 'item' key (the path)"
+                "result %d must be a dict with an 'item' key (the path), got %s"
+                % (index, type(item).__name__)
             )
         path = item["item"]
+        if path in config:
+            raise AnsibleFilterError(
+                "result %d repeats path %r — a duplicate capture would silently"
+                " overwrite the earlier one" % (index, path)
+            )
         entries = item.get("result") or []
         if not entries:
             continue
@@ -150,6 +197,11 @@ def to_routeros_config(
         drop = {".id"} | set(volatile_fields.get(path, []))
         cleaned = []
         for entry in entries:
+            if not isinstance(entry, dict):
+                raise AnsibleFilterError(
+                    "path %r: each entry must be a dict, got %s"
+                    % (path, type(entry).__name__)
+                )
             new_entry = {k: v for k, v in entry.items() if k not in drop}
             # Drop entries that carry no settable fields once stripped: an
             # all-default singleton captured with handle_disabled=omit, an entry
@@ -158,8 +210,8 @@ def to_routeros_config(
             if not new_entry:
                 continue
             if redact:
-                for field in sensitive_fields:
-                    if field in new_entry:
+                for field in new_entry:
+                    if _is_sensitive(field, sensitive_fields):
                         new_entry[field] = "REDACTED"
             cleaned.append(new_entry)
         # Omit the path entirely if no entry survived.
