@@ -31,6 +31,10 @@ argument_specs:
         roles:
           - role: david_igou.routeros_configuration.upgrade
             vars:
+              # The role always enforces routeros_update_channel (default
+              # stable) first — set it to match the device, or a long-term
+              # device would be flipped to stable by this firmware-only run.
+              routeros_update_channel: long-term
               routeros_routerboard_upgrade: true
     options:
       routeros_update_channel:

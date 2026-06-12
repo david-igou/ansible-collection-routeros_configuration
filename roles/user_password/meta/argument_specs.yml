@@ -7,8 +7,9 @@ argument_specs:
     examples: |
       # Passwords are secrets — always supply them via Ansible Vault.
       #
-      # Rotate one user's password. Not idempotent (passwords are write-only), so
-      # the task reports changed on every run.
+      # Rotate one user's password. Not idempotent (passwords are write-only):
+      # the password is re-sent on every run, reported as ok — the API cmd
+      # action cannot detect change.
       - hosts: routers
         gather_facts: false
         roles:

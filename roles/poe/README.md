@@ -26,7 +26,9 @@ Role Variables
 
 Set the action and its targets below; the connection is supplied through the
 shared `routeros_api_*` variables (define them once in `group_vars`).
-`routeros_api_password` has no default — supply it via Ansible Vault.
+`routeros_api_password` has no default — supply it via Ansible Vault. The role runs from the controller (`delegate_to: localhost`) — no SSH
+or Python is needed on the device; see the
+[getting-started guide](https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/docsite/guide.html) for a minimal inventory.
 
 | Variable | Required | Default | Choices | Comments |
 |---------------------------------|----------|------------------------|------------------------------------------|------------------------------------------------------------|
@@ -52,6 +54,13 @@ Actions (`routeros_poe_action`):
 
 Write actions (`power_cycle`/`power_off`/`power_on`) require a non-empty
 `routeros_poe_interfaces`; a named interface with no PoE-out entry fails clearly.
+
+`routeros_poe_monitor` holds one element per monitored port — each the API
+`monitor` output for that port (a single-entry list of fields such as
+`poe-out-status`, plus `poe-out-voltage` / `poe-out-current` /
+`poe-out-power` while a device is drawing power). E.g. the status of the
+first port: `routeros_poe_monitor[0][0]['poe-out-status']`.
+
 `power_off`/`power_on` set the `poe-out` field via `api_find_and_modify`, while
 `monitor`/`power_cycle` resolve the entry `.id` and run the keyed-menu command.
 The actions are one-shot, so the role is not idempotent (read-only `monitor`

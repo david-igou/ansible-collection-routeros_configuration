@@ -27,6 +27,32 @@ by one `routeros_config` dict.
             action: drop
             comment: drop-rest
 
+## Requirements & usage
+
+- `librouteros` on the controller (`pip install librouteros`).
+- The device's `api` (8728) or `api-ssl` (8729) service enabled.
+- The shared `routeros_api_*` connection variables in `group_vars`;
+  `routeros_api_password` has no default — supply it via Ansible Vault. The
+  role runs from the controller (`delegate_to: localhost`) — no SSH or Python
+  is needed on the device; see the
+  [getting-started guide](https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/docsite/guide.html)
+  for a minimal inventory.
+
+```yaml
+- hosts: routers
+  gather_facts: false
+  roles:
+    - role: david_igou.routeros_configuration.configure
+      vars:
+        routeros_config:
+          /system/identity:
+            data:
+              - name: edge-router
+```
+
+In practice, keep `routeros_config` in `group_vars`/`host_vars` (or capture it
+from a live device with `export_vars`) rather than inline in the play.
+
 ## Per-path options
 
 | Key | Type | Default | Meaning |

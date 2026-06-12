@@ -74,9 +74,12 @@ argument_specs:
         description:
           - Slash paths to exclude from the export even when they are
             configure-modifiable — paths that capture runtime state, hardware
-            enumeration, or auto-generated defaults rather than intent (e.g.
-            C(/file), C(/ip/cloud), C(/queue/interface)). Defaults to a curated
-            set; set to C([]) to capture everything.
+            enumeration, or auto-generated defaults rather than intent.
+          - 'Default: C(/file) (filesystem listing), C(/certificate) (metadata
+            only, no key material — cannot round-trip), C(/ip/cloud),
+            C(/queue/interface) (auto-generated per interface), and
+            C(/system/resource/irq/rps) (hardware state). Set to C([]) to
+            capture everything.'
       routeros_export_vars_exclude_paths_extra:
         type: list
         elements: str
@@ -92,8 +95,10 @@ argument_specs:
           - Slash paths whose entry order is significant (firewall chains,
             routing filters, simple queues). Captured with C(order=true),
             C(purge=true) and C(content) so the C(configure) role enforces the
-            exact ordered state. Defaults to the known order-sensitive RouterOS
-            paths.
+            exact ordered state.
+          - 'Default: the IPv4/IPv6 firewall chains (filter, nat, mangle, raw),
+            C(/routing/filter/rule) and C(/queue/simple) — the known
+            order-sensitive RouterOS paths.'
       routeros_export_vars_ordered_content:
         type: str
         default: remove_as_much_as_possible

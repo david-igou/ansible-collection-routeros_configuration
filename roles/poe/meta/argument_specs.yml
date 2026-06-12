@@ -36,7 +36,9 @@ argument_specs:
             ansible.builtin.include_role:
               name: david_igou.routeros_configuration.poe
             vars:
+              # Authenticate to the SWITCH, not the powered device.
               routeros_api_hostname: "{{ poe_switch }}"
+              routeros_api_password: "{{ hostvars[poe_switch].routeros_api_password }}"
               routeros_poe_action: power_off
               routeros_poe_interfaces:
                 - "{{ poe_port }}"

@@ -17,7 +17,9 @@ Role Variables
 
 Set the upgrade behaviour below; the connection is supplied through the shared
 `routeros_api_*` variables (define them once in `group_vars`).
-`routeros_api_password` has no default — supply it via Ansible Vault.
+`routeros_api_password` has no default — supply it via Ansible Vault. The role runs from the controller (`delegate_to: localhost`) — no SSH
+or Python is needed on the device; see the
+[getting-started guide](https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/docsite/guide.html) for a minimal inventory.
 
 | Variable | Required | Default | Choices | Comments |
 |---------------------------------|----------|------------------------|------------------------------------------|------------------------------------------------------------|

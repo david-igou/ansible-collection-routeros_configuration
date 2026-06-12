@@ -19,12 +19,14 @@ Role Variables
 
 Set the desired restore inputs below; the connection is supplied through the
 shared `routeros_api_*` variables (define them once in `group_vars`).
-`routeros_api_password` has no default — supply it via Ansible Vault.
+`routeros_api_password` has no default — supply it via Ansible Vault. The role runs from the controller (`delegate_to: localhost`) — no SSH
+or Python is needed on the device; see the
+[getting-started guide](https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/docsite/guide.html) for a minimal inventory.
 
 | Variable | Required | Default | Choices | Comments |
 |------------------------------------|----------|------------------------|---------|------------------------------------------------------------|
 | `routeros_restore_backup_name` | no | `""` | | On-device binary backup name (without `.backup`). Empty = skip the backup-load path. |
-| `routeros_restore_backup_password` | no | `""` | | Backup decryption password (required by RouterOS even for unencrypted backups; hidden from logs). |
+| `routeros_restore_backup_password` | no | `""` | | Backup decryption password. RouterOS rejects an empty password on API backup-load, so this is effectively required — save backups encrypted (hidden from logs when set). |
 | `routeros_restore_import_file` | no | `""` | | On-device `.rsc` file to import. Empty = skip the import path. |
 | `routeros_restore_reboot_timeout` | no | `300` | | Seconds to wait for the API after a backup-load reboot. |
 | `routeros_api_hostname` | no | `{{ inventory_hostname }}` | | API host/IP of the device. |
