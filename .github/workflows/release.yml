@@ -3,10 +3,16 @@ name: Release david_igou.routeros_configuration
 
 on: # yamllint disable-line rule:truthy
   release:
-    types: [published]
+    types:
+      - published
+
+# The release job needs only repo contents plus the Galaxy API key secret.
+permissions:
+  contents: read
+
 jobs:
   release_automation_hub:
-    uses: ansible/ansible-content-actions/.github/workflows/release_galaxy.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/release_galaxy.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
     with:
       environment: release
     secrets:

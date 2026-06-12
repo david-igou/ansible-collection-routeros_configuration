@@ -1,0 +1,28 @@
+---
+# Shared connection to the RouterOS binary API. Override per host/group.
+# In production prefer TLS (api-ssl, port 8729) with validate_certs: true.
+# This comment block is duplicated in every API role's defaults — keep them
+# byte-identical (canonical copy: roles/_reconcile/defaults/main.yml).
+routeros_api_hostname: "{{ inventory_hostname }}"
+routeros_api_username: admin
+# Intentionally left undefined (no default): supply it via vault/group_vars.
+# A missing password then fails loudly instead of silently attempting an
+# empty-password login.
+# routeros_api_password: "{{ vault_routeros_api_password }}"
+routeros_api_tls: true
+routeros_api_validate_certs: true
+# Leave empty to let the module pick the port from `tls` (8728/8729).
+routeros_api_port: ""
+
+# Seconds to wait for the API TCP port to open. Callers pass their role's
+# *_reboot_timeout here.
+_wait_api_timeout: 120
+# Seconds to hold off before the first port probe — the port takes a moment to
+# DROP after a reboot-class command, and probing too early would see the old,
+# still-running instance and declare success prematurely.
+_wait_api_delay: 15
+# The port accepts TCP before RouterOS's login subsystem is ready, so a real
+# API call is retried until it answers. retries x delay = the login-phase
+# budget (40 x 5s = ~200s) on top of _wait_api_timeout.
+_wait_api_login_retries: 40
+_wait_api_login_delay: 5

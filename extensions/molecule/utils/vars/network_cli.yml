@@ -1,0 +1,20 @@
+---
+# Shared network_cli connection vars for plays that reach the CHR over SSH
+# (loaded via vars_files by the backup and lifecycle scenarios).
+#
+# Fixed SSH host-forward for the shared CHR (utils/inventory/hosts.yml).
+# Sibling shared-state scenarios cannot see the provisioner's dynamic SSH
+# port, so reach the device over this fixed one.
+ansible_host: "127.0.0.1"
+ansible_port: 2223
+ansible_connection: ansible.netcommon.network_cli
+ansible_network_os: community.routeros.routeros
+ansible_network_cli_ssh_type: libssh
+# +cet1024w stops RouterOS' interactive cursor probe.
+ansible_user: "admin+cet1024w"
+# Via hostvars[inventory_hostname] so it still resolves when a task delegates
+# to localhost (a connection var is templated against the delegate host,
+# which is not in the molecule group and so lacks chr_admin_password).
+ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
+ansible_ssh_common_args: >-
+  -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null

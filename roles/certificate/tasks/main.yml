@@ -62,9 +62,12 @@
       loop: "{{ routeros_certificates }}"
       loop_control:
         label: "{{ item.name }}"
+      # map(default=) rides through both a missing entry (creation rejected —
+      # `first` on an empty selection would raise "No first item") and an
+      # unsigned certificate that has no fingerprint attribute at all.
       when: >-
-        not ((_cert_state.msg | selectattr('name', 'equalto', item.name)
-              | first)['fingerprint'] | default(''))
+        not (_cert_state.msg | selectattr('name', 'equalto', item.name)
+             | map(attribute='fingerprint', default='') | first | default(''))
 
     - name: Export certificates to files
       community.routeros.api:  # noqa: args[module]

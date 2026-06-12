@@ -2,15 +2,19 @@
 - name: Verify — the device rebooted (uptime reset)
   hosts: molecule
   gather_facts: false
+  module_defaults:
+    # One block covers every community.routeros api* module via the
+    # collection's `api` action group.
+    group/community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     - name: Read system resource
       community.routeros.api:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port | default(omit, true) }}"
         path: system resource
       delegate_to: localhost
       connection: local

@@ -13,7 +13,11 @@ concurrency:
 
 on: # yamllint disable-line rule:truthy
   pull_request_target:
-    types: [opened, synchronize, reopened, closed]
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - closed
 
 env:
   GHP_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
@@ -45,7 +49,8 @@ jobs:
       contents: write
       pages: write
       id-token: write
-    needs: [build-docs]
+    needs:
+      - build-docs
     name: Publish Ansible Docs
     uses: ansible-community/github-docs-build/.github/workflows/_shared-docs-build-publish-gh-pages.yml@f724ea35f2f4f14a18c45ad363ffa5f76eabeec9 # main
     with:

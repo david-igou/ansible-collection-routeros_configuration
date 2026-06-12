@@ -58,7 +58,6 @@ Declared in `galaxy.yml` and auto-resolved by Galaxy on install:
 |---|---|---|
 | `community.routeros` | the RouterOS API / network_cli modules every role uses | >= 3.0.0 |
 | `ansible.netcommon` | the `network_cli` connection (the `backup` role) | >= 8.0.0 |
-| `ansible.utils` | pulled transitively; declared for clarity | * |
 
 ## Installation
 
@@ -74,7 +73,7 @@ Or pin a version in `requirements.yml`:
 ---
 collections:
   - name: david_igou.routeros_configuration
-    version: 0.0.1-alpha
+    version: 0.0.8-alpha
 ```
 
 Upgrade to the latest:
@@ -181,12 +180,23 @@ set `routeros_export_vars_redact: true`.
 | [`reboot`](roles/reboot/) | Reboot or shut down a RouterOS device. |
 | [`reset`](roles/reset/) | Reset RouterOS configuration (gated; destructive). |
 | [`_reconcile`](roles/_reconcile/) | Internal engine — reconciles a single path via `community.routeros.api_modify`. Not called directly. |
+| [`_wait_api`](roles/_wait_api/) | Internal helper — waits for a device to come back after a reboot-class operation. Not called directly. |
 
 Any path supported by `community.routeros.api_modify` is usable through
 `configure` — there is no per-path role. See
 [`roles/configure/README.md`](roles/configure/README.md) for the `routeros_config`
 schema, the ordering model, and how keyed vs keyless (firewall) updates are
 matched.
+
+## Filter plugins
+
+| Filter | Purpose |
+|---|---|
+| `to_routeros_config` | Shape registered `community.routeros.api_info` loop results into the `routeros_config` structure the `configure` role consumes (used by `export_vars`; supports redaction, volatile-field stripping, ordered paths). |
+| `to_indented_yaml` | Serialize data to YAML with indented block sequences — like `to_nice_yaml`, but the output passes ansible-lint's default profile (used by `export_vars` for its captures). |
+
+Both render full documentation via
+`ansible-doc -t filter david_igou.routeros_configuration.<name>`.
 
 ## Testing
 
@@ -205,7 +215,8 @@ make molecule SCENARIO=poe     # a single scenario against the shared CHR
 CI runs these same make targets on every pull request and on a monthly
 schedule (which also catches drift in the floating `community.routeros` /
 `ansible.netcommon` dependencies). See
-[`extensions/molecule/README.md`](extensions/molecule/README.md) for the
+[`extensions/molecule/README.md`](https://github.com/david-igou/ansible-collection-routeros_configuration/blob/main/extensions/molecule/README.md)
+(absolute link — `extensions/` does not ship in the Galaxy artifact) for the
 scenario catalogue and provisioner wiring. Hardware-specific operations that a
 CHR cannot exercise (PoE power actions, RouterBOARD firmware, ACME, a real
 reset/shutdown) are gated and validated on real hardware rather than in CI.

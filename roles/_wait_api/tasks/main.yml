@@ -1,0 +1,33 @@
+---
+# tasks file for david_igou.routeros_configuration._wait_api
+# Wait for a RouterOS device to come back after a reboot-class operation
+# (reboot, reset, backup load, package install): first for the API TCP port,
+# then for the API to actually answer a login. The reboot, reset, restore and
+# upgrade roles include this instead of carrying their own copies.
+- name: Wait for the RouterOS API to come back
+  delegate_to: localhost
+  connection: local
+  module_defaults:
+    community.routeros.api:  # noqa: args[module]
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls | bool }}"
+      validate_certs: "{{ routeros_api_validate_certs | bool }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  block:
+    - name: Wait for the API port to return
+      ansible.builtin.wait_for:
+        host: "{{ routeros_api_hostname }}"
+        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
+        timeout: "{{ _wait_api_timeout }}"
+        delay: "{{ _wait_api_delay }}"
+
+    - name: Wait for the API to actually answer (port opens before login is ready)
+      community.routeros.api:  # noqa: args[module]
+        path: system identity
+      register: _wait_api_ready
+      until: _wait_api_ready is succeeded
+      retries: "{{ _wait_api_login_retries }}"
+      delay: "{{ _wait_api_login_delay }}"
+      changed_when: false

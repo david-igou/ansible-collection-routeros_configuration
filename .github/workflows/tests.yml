@@ -2,12 +2,17 @@
 name: "CI"
 
 concurrency:
-  group: ${{ github.head_ref || github.run_id }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
+
+# Nothing here writes to the repo; reusable workflows inherit this cap.
+permissions:
+  contents: read
 
 on: # yamllint disable-line rule:truthy
   pull_request:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
   # Monthly full-suite run against a real CHR. PR runs prove a change didn't
   # break the collection; this run catches the world changing around it —
@@ -19,23 +24,34 @@ on: # yamllint disable-line rule:truthy
 
 jobs:
   changelog:
-    uses: ansible/ansible-content-actions/.github/workflows/changelog.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/changelog.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
     if: github.event_name == 'pull_request'
   build-import:
-    uses: ansible/ansible-content-actions/.github/workflows/build_import.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/build_import.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
   ansible-lint:
-    uses: ansible/ansible-content-actions/.github/workflows/ansible_lint.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/ansible_lint.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
   sanity:
-    uses: ansible/ansible-content-actions/.github/workflows/sanity.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/sanity.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
   unit-galaxy:
-    uses: ansible/ansible-content-actions/.github/workflows/unit.yaml@main
+    uses: ansible/ansible-content-actions/.github/workflows/unit.yaml@2f18fdf5765dfdcd31781acb9c9b3206bc3f34ea # main
   unit-source:
-    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@main
+    uses: ansible-network/github_actions/.github/workflows/unit_source.yml@b92245bb38f21aef0dd1abdc1ed431e9951e71fb # main
     with:
       collection_pre_install: >-
         git+https://github.com/ansible-collections/ansible.utils.git
+  scenario-guard:
+    # A molecule scenario not listed in the Makefile's SHARED_SCENARIOS /
+    # SELF_OWNING would silently never run (CI never uses --all).
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Assert every molecule scenario is wired into the Makefile
+        run: make check-scenarios
+
   molecule-qemu:
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -113,6 +129,7 @@ jobs:
       - unit-galaxy
       - unit-source
       - ansible-lint
+      - scenario-guard
       - molecule-qemu
     runs-on: ubuntu-latest
     steps:
@@ -128,5 +145,6 @@ jobs:
           '${{ needs.unit-galaxy.result }}',
           '${{ needs.ansible-lint.result }}',
           '${{ needs.unit-source.result }}',
+          '${{ needs.scenario-guard.result }}',
           '${{ needs.molecule-qemu.result }}'};
           assert not ({'failure', 'cancelled'} & results), results"

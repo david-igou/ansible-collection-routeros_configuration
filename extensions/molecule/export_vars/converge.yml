@@ -2,6 +2,16 @@
 - name: Converge — capture device config into a routeros_config vars file
   hosts: molecule
   gather_facts: false
+  module_defaults:
+    # One block covers every community.routeros api* module via the
+    # collection's `api` action group.
+    group/community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   vars:
     routeros_export_vars_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/captured"
     # Extra exclusions, merged onto the default exclude list (not replacing it):
@@ -10,7 +20,7 @@
     routeros_export_vars_exclude_paths_extra:
       - /ip/tftp
       - /system/script
-    # Small path set for a fast, focused test (the default is all 508 paths).
+    # Small path set for a fast, focused test (the default is the full rcfg_path_order).
     routeros_export_vars_paths:
       - /ip/address
       - /system/identity
@@ -50,12 +60,6 @@
     # has a known value to assert on.
     - name: Ensure a known /ip/address entry exists
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: ip address
         data:
           - address: 192.168.99.1/24
@@ -66,12 +70,6 @@
 
     - name: Ensure a known /system/identity exists
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: system identity
         data:
           - name: export-vars-id
@@ -80,12 +78,6 @@
 
     - name: Ensure a known timezone (so /system/clock keeps config after volatile strip)
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: system clock
         data:
           - time-zone-name: America/New_York
@@ -117,12 +109,6 @@
     # input traffic that matched none of the accepts above — never the API.
     - name: Establish the ordered, multi-rule firewall filter (exact state)
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: ip firewall filter
         # Rule order is the property under test — keep this list authored in the
         # exact sequence the device must hold it.
@@ -177,12 +163,6 @@
     # robust if another shared-CHR scenario seeded nat first.
     - name: Establish realistic NAT rules (second order-sensitive path)
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: ip firewall nat
         data:
           # Masquerade LAN egress out a real CHR port (ether4).

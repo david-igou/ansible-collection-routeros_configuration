@@ -25,27 +25,16 @@
       no_log: "{{ (routeros_restore_backup_password | length) > 0 }}"
       when: routeros_restore_backup_name | length > 0
 
-    - name: Wait for the API to return after the backup-load reboot
-      ansible.builtin.wait_for:
-        host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
-        timeout: "{{ routeros_restore_reboot_timeout }}"
-        delay: 15
-      when: routeros_restore_backup_name | length > 0
-
-    - name: Wait for the API to actually answer (port opens before login is ready)
-      community.routeros.api:  # noqa: args[module]
-        path: system identity
-      register: _restore_api_ready
-      until: _restore_api_ready is succeeded
-      retries: 40
-      delay: 5
-      changed_when: false
+    - name: Wait for the API to come back after the backup-load reboot
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration._wait_api
+      vars:
+        _wait_api_timeout: "{{ routeros_restore_reboot_timeout }}"
       when: routeros_restore_backup_name | length > 0
 
     - name: Import a configuration script
       community.routeros.api:  # noqa: args[module]
         path: ""
-        cmd: "import file-name={{ routeros_restore_import_file }}"
+        cmd: "import file-name={{ routeros_restore_import_file | community.routeros.quote_argument_value }}"
       changed_when: true
       when: routeros_restore_import_file | length > 0

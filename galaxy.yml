@@ -20,16 +20,15 @@ tags:
   - infrastructure
   - routeros
   - mikrotik
-  - linux
 
 # Runtime dependencies. community.routeros (over ansible.netcommon network_cli)
-# is the management interface for RouterOS; ansible.utils is pulled transitively
-# but declared for clarity. Test-only deps (the molecule provisioners) are NOT
-# here — see extensions/molecule/requirements-test.yml.
+# is the management interface for RouterOS. ansible.utils arrives transitively
+# via ansible.netcommon and is deliberately NOT declared — nothing here imports
+# it directly. Test-only deps (the molecule provisioners) are NOT here — see
+# extensions/molecule/requirements-test.yml.
 dependencies:
   "community.routeros": ">=3.0.0"
   "ansible.netcommon": ">=8.0.0"
-  "ansible.utils": "*"
 
 repository: https://github.com/david-igou/ansible-collection-routeros_configuration
 documentation: https://david-igou.github.io/ansible-collection-routeros_configuration/branch/main/
@@ -42,12 +41,15 @@ issues: https://github.com/david-igou/ansible-collection-routeros_configuration/
 # and '.git' are always filtered. Mutually exclusive with 'manifest'
 build_ignore:
   - .ansible
+  - .ansible-lint
+  - .claude
   - .devcontainer
   - .github
   - .gitignore
   - .isort.cfg
   - .pre-commit-config.yaml
   - .prettierignore
+  - .pytest_cache
   - .vscode
   - AGENTS.md
   - Makefile

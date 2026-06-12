@@ -46,7 +46,7 @@ export MOLECULE_GLOB := extensions/molecule/*/molecule.yml
 # molecule's subprocess and overrides per-scenario inventory. Strip it.
 unexport ANSIBLE_INVENTORY
 
-.PHONY: help install molecule molecule-shared test collection-build collection-install clean
+.PHONY: help install molecule molecule-shared test check-scenarios collection-build collection-install clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | \
@@ -86,6 +86,20 @@ else
 endif
 
 test: molecule ## Run the molecule test suite
+
+# CI runs only what SHARED_SCENARIOS / SELF_OWNING list (never --all), so a new
+# extensions/molecule/<scenario>/ that is not added above would silently never
+# be tested. This guard fails CI instead. utils/ has no molecule.yml and is
+# skipped by the -f check.
+check-scenarios: ## Fail if a molecule scenario is missing from SHARED_SCENARIOS/SELF_OWNING
+	@missing=""; for d in extensions/molecule/*/; do \
+	  s=$$(basename $$d); [ -f "$$d/molecule.yml" ] || continue; \
+	  echo " $(SHARED_SCENARIOS) $(SELF_OWNING) " | grep -q " $$s " || missing="$$missing $$s"; \
+	done; \
+	if [ -n "$$missing" ]; then \
+	  echo "scenarios not wired into the Makefile:$$missing"; exit 1; \
+	fi; \
+	echo "all scenarios wired into SHARED_SCENARIOS/SELF_OWNING"
 
 collection-build: ## Build the collection tarball
 	ansible-galaxy collection build --force

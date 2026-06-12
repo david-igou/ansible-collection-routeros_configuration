@@ -58,7 +58,10 @@ argument_specs:
       routeros_export_vars_handle_disabled:
         type: str
         default: omit
-        choices: [omit, exclamation, null-value]
+        choices:
+          - omit
+          - exclamation
+          - null-value
         description:
           - How C(community.routeros.api_info) represents fields that are unset on
             the device. V(omit) (default) leaves them out, capturing only what is
@@ -72,8 +75,8 @@ argument_specs:
           - Slash paths to exclude from the export even when they are
             configure-modifiable — paths that capture runtime state, hardware
             enumeration, or auto-generated defaults rather than intent (e.g.
-            C(/file), C(/system/script/environment), C(/ip/pool/used)). Defaults
-            to a curated set; set to C([]) to capture everything.
+            C(/file), C(/ip/cloud), C(/queue/interface)). Defaults to a curated
+            set; set to C([]) to capture everything.
       routeros_export_vars_exclude_paths_extra:
         type: list
         elements: str
@@ -94,7 +97,9 @@ argument_specs:
       routeros_export_vars_ordered_content:
         type: str
         default: remove_as_much_as_possible
-        choices: [remove_as_much_as_possible, remove]
+        choices:
+          - remove_as_much_as_possible
+          - remove
         description:
           - The C(content) (handle_entries_content) emitted for ordered paths.
             With C(purge), C(api_modify) rejects the default C(ignore) on these

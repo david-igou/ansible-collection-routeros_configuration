@@ -3,7 +3,9 @@
   hosts: molecule
   gather_facts: false
   module_defaults:
-    community.routeros.api_info:
+    # One block covers every community.routeros api* module via the
+    # collection's `api` action group.
+    group/community.routeros.api:
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"

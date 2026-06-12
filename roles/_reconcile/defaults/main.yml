@@ -1,6 +1,8 @@
 ---
 # Shared connection to the RouterOS binary API. Override per host/group.
 # In production prefer TLS (api-ssl, port 8729) with validate_certs: true.
+# This comment block is duplicated in every API role's defaults — keep them
+# byte-identical (canonical copy: roles/_reconcile/defaults/main.yml).
 routeros_api_hostname: "{{ inventory_hostname }}"
 routeros_api_username: admin
 # Intentionally left undefined (no default): supply it via vault/group_vars.

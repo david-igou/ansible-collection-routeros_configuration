@@ -66,11 +66,11 @@ plugins:
     to_indented_yaml:
       description: Serialize data to YAML with indented block sequences.
       name: to_indented_yaml
-      version_added: 1.0.0
+      version_added: 0.0.8-alpha
     to_routeros_config:
       description: Build a routeros_config dict from api_info results.
       name: to_routeros_config
-      version_added: 1.0.0
+      version_added: 0.0.1-alpha
   httpapi: {}
   inventory: {}
   lookup: {}

@@ -29,5 +29,7 @@ sections:
     - Known Issues
   - - doc_changes
     - Documentation Changes
-title: "David_igou Routeros_configuration Collection"
+# Human title for the rendered changelog ("Release Notes" is appended); the
+# machine-generated namespace_name default renders with escaped underscores.
+title: "RouterOS Configuration Collection"
 trivial_section_name: trivial

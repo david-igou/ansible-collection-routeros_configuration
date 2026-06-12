@@ -3,36 +3,28 @@
   hosts: molecule
   gather_facts: false
   # network_cli at play level (the chr/verify.yml pattern) so the backup role's
-  # /export runs over SSH. +cet1024w stops RouterOS' interactive cursor probe.
+  # /export runs over SSH.
+  vars_files:
+    # Shared network_cli connection vars (host-forwarded SSH on 127.0.0.1:2223).
+    - ../utils/vars/network_cli.yml
   vars:
-    # Fixed SSH host-forward for the shared CHR (utils/inventory/hosts.yml).
-    # Sibling shared-state scenarios cannot see the provisioner's dynamic SSH
-    # port, so reach the device over this fixed one.
-    ansible_host: "127.0.0.1"
-    ansible_port: 2223
-    ansible_connection: ansible.netcommon.network_cli
-    ansible_network_os: community.routeros.routeros
-    ansible_network_cli_ssh_type: libssh
-    ansible_user: "admin+cet1024w"
-    # Via hostvars[inventory_hostname] so it still resolves when a task delegates
-    # to localhost (a connection var is templated against the delegate host,
-    # which is not in the molecule group and so lacks chr_admin_password).
-    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
-    ansible_ssh_common_args: >-
-      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"
+  module_defaults:
+    # One block covers every community.routeros api* module via the
+    # collection's `api` action group.
+    group/community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
   tasks:
     # A WireGuard interface auto-generates a private-key (a readable service
     # secret), so the export can prove "with secrets". api_modify (over the API)
     # is idempotent, so the idempotence run sees no change.
     - name: Ensure a wireguard interface exists (readable service secret)
       community.routeros.api_modify:
-        hostname: "{{ routeros_api_hostname }}"
-        username: "{{ routeros_api_username }}"
-        password: "{{ routeros_api_password }}"
-        tls: "{{ routeros_api_tls }}"
-        validate_certs: "{{ routeros_api_validate_certs }}"
-        port: "{{ routeros_api_port }}"
         path: interface wireguard
         data:
           - name: bk-wg

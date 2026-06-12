@@ -22,24 +22,11 @@
         - routeros_reboot | bool
         - not (routeros_shutdown | bool)
 
-    - name: Wait for the API to return after the reboot
-      ansible.builtin.wait_for:
-        host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
-        timeout: "{{ routeros_reboot_timeout }}"
-        delay: 15
-      when:
-        - routeros_reboot | bool
-        - not (routeros_shutdown | bool)
-
-    - name: Wait for the API to actually answer (port opens before login is ready)
-      community.routeros.api:  # noqa: args[module]
-        path: system identity
-      register: _reboot_api_ready
-      until: _reboot_api_ready is succeeded
-      retries: 40
-      delay: 5
-      changed_when: false
+    - name: Wait for the API to come back after the reboot
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration._wait_api
+      vars:
+        _wait_api_timeout: "{{ routeros_reboot_timeout }}"
       when:
         - routeros_reboot | bool
         - not (routeros_shutdown | bool)
