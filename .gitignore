@@ -172,3 +172,7 @@ cython_debug/
 # Internal planning artifacts (superpowers brainstorming specs/plans); also
 # build_ignored in galaxy.yml so any locally-regenerated copies never ship.
 docs/superpowers/
+
+# Claude Code session state (lock files, scheduled-task state) — local only,
+# and build_ignored in galaxy.yml so it never ships in the artifact.
+.claude/
