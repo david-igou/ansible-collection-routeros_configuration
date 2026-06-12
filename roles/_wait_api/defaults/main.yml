@@ -14,9 +14,15 @@ routeros_api_validate_certs: true
 # Leave empty to let the module pick the port from `tls` (8728/8729).
 routeros_api_port: ""
 
-# Reboot the device and wait for the API to return.
-routeros_reboot: true
-# Shut down the device instead (gated; no reconnect wait — the device powers off).
-routeros_shutdown: false
-# Seconds to wait for the API to return after the reboot.
-routeros_reboot_timeout: 300
+# Seconds to wait for the API TCP port to open. Callers pass their role's
+# *_reboot_timeout here.
+_wait_api_timeout: 120
+# Seconds to hold off before the first port probe — the port takes a moment to
+# DROP after a reboot-class command, and probing too early would see the old,
+# still-running instance and declare success prematurely.
+_wait_api_delay: 15
+# The port accepts TCP before RouterOS's login subsystem is ready, so a real
+# API call is retried until it answers. retries x delay = the login-phase
+# budget (40 x 5s = ~200s) on top of _wait_api_timeout.
+_wait_api_login_retries: 40
+_wait_api_login_delay: 5

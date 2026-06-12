@@ -29,10 +29,12 @@
 - name: Assemble the export without the volatile timestamp header line
   # /export's first line is "# <date> by RouterOS <ver>", which changes every
   # run; dropping it makes the written file content-stable (idempotent). Other
-  # header lines (software id / model / serial) are stable and kept.
+  # header lines (software id / model / serial) are stable and kept. The match
+  # is anchored to that comment-line shape so exported config that merely
+  # mentions "by RouterOS" (a script source, a comment) is never dropped.
   ansible.builtin.set_fact:
     _routeros_backup_content: >-
-      {{ (_routeros_export.stdout_lines[0] | reject('search', 'by RouterOS') | join('\n')) ~ '\n' }}
+      {{ (_routeros_export.stdout_lines[0] | reject('match', '^# .* by RouterOS ') | join('\n')) ~ '\n' }}
 
 - name: Write the export to the controller
   ansible.builtin.copy:

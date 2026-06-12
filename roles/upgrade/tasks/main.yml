@@ -46,36 +46,27 @@
       register: _upd_status
       changed_when: false
 
+    - name: Determine whether an installable update is available
+      ansible.builtin.set_fact:
+        _upd_install_pending: >-
+          {{ routeros_upgrade_install | bool
+             and ((_upd_status.msg | first).status | default('')) is search('New version') }}
+
     - name: Install the available update (REBOOTS the device)
       community.routeros.api:  # noqa: args[module]
         path: system package update
         cmd: install
       changed_when: true
-      when:
-        - routeros_upgrade_install | bool
-        - ((_upd_status.msg | first).status | default('')) is search('New version')
+      when: _upd_install_pending | bool
 
-    - name: Wait for the API to return after the reboot
-      ansible.builtin.wait_for:
-        host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
-        timeout: "{{ routeros_upgrade_reboot_timeout }}"
-        delay: 20
-      when:
-        - routeros_upgrade_install | bool
-        - ((_upd_status.msg | first).status | default('')) is search('New version')
-
-    - name: Wait for the API to actually answer after the install reboot
-      community.routeros.api:  # noqa: args[module]
-        path: system identity
-      register: _upd_api_ready
-      until: _upd_api_ready is succeeded
-      retries: 40
-      delay: 5
-      changed_when: false
-      when:
-        - routeros_upgrade_install | bool
-        - ((_upd_status.msg | first).status | default('')) is search('New version')
+    - name: Wait for the API to come back after the install reboot
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration._wait_api
+      vars:
+        _wait_api_timeout: "{{ routeros_upgrade_reboot_timeout }}"
+        # Package installation runs during the reboot window.
+        _wait_api_delay: 20
+      when: _upd_install_pending | bool
 
     # RouterBOARD firmware. Gated and not exercised on a CHR (which has no
     # RouterBOARD). Only flashes + reboots when the installed firmware differs
@@ -113,24 +104,13 @@
         - routeros_routerboard_upgrade | bool
         - _rb_needs_upgrade | default(false) | bool
 
-    - name: Wait for the API to return after the firmware reboot
-      ansible.builtin.wait_for:
-        host: "{{ routeros_api_hostname }}"
-        port: "{{ routeros_api_port | default((8729 if routeros_api_tls | bool else 8728), true) }}"
-        timeout: "{{ routeros_upgrade_reboot_timeout }}"
-        delay: 20
-      when:
-        - routeros_routerboard_upgrade | bool
-        - _rb_needs_upgrade | default(false) | bool
-
-    - name: Wait for the API to actually answer after the firmware reboot
-      community.routeros.api:  # noqa: args[module]
-        path: system identity
-      register: _rb_api_ready
-      until: _rb_api_ready is succeeded
-      retries: 40
-      delay: 5
-      changed_when: false
+    - name: Wait for the API to come back after the firmware reboot
+      ansible.builtin.include_role:
+        name: david_igou.routeros_configuration._wait_api
+      vars:
+        _wait_api_timeout: "{{ routeros_upgrade_reboot_timeout }}"
+        # The firmware flash is applied during the reboot window.
+        _wait_api_delay: 20
       when:
         - routeros_routerboard_upgrade | bool
         - _rb_needs_upgrade | default(false) | bool

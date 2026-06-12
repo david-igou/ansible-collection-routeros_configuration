@@ -1,0 +1,60 @@
+---
+argument_specs:
+  main:
+    short_description: Wait for a RouterOS device to come back after a reboot.
+    description:
+      - Internal helper role. The reboot, reset, restore and upgrade roles
+        include it after issuing a reboot-class command instead of carrying
+        their own copies of the wait logic.
+      - Waits for the API TCP port to open, then retries a real API call until
+        the login subsystem answers (the port accepts TCP before logins work).
+    options:
+      _wait_api_timeout:
+        type: int
+        default: 120
+        description:
+          - Seconds to wait for the API TCP port to open. Callers pass their
+            role's C(*_reboot_timeout) here.
+      _wait_api_delay:
+        type: int
+        default: 15
+        description:
+          - Seconds to hold off before the first port probe, giving the device
+            time to actually drop the port after the reboot command.
+      _wait_api_login_retries:
+        type: int
+        default: 40
+        description:
+          - How many times to retry the post-port login probe.
+      _wait_api_login_delay:
+        type: int
+        default: 5
+        description:
+          - Seconds between login probes. Together with
+            O(_wait_api_login_retries) this bounds the login-phase budget.
+      routeros_api_hostname:
+        type: str
+        default: "{{ inventory_hostname }}"
+        description: API hostname/IP of the device.
+      routeros_api_username:
+        type: str
+        default: admin
+        description: API username.
+      routeros_api_password:
+        type: str
+        description:
+          - API password. Secret — supply via vault/group_vars. Intentionally
+            has no default so a missing value fails loudly rather than
+            attempting an empty-password login. The module marks it no_log.
+      routeros_api_tls:
+        type: bool
+        default: true
+        description: Use TLS (api-ssl). Prefer true in production.
+      routeros_api_validate_certs:
+        type: bool
+        default: true
+        description: Validate the device TLS certificate.
+      routeros_api_port:
+        type: raw
+        default: ""
+        description: TCP port; empty lets the module choose from tls.
