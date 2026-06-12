@@ -11,44 +11,8 @@
   vars:
     ansible_connection: local
   tasks:
-    - name: Wait for forwarded SSH port (TCP only — CHR has no POSIX shell)
-      ansible.builtin.wait_for:
-        host: "{{ ansible_host | default('127.0.0.1') }}"
-        port: "{{ ansible_port | default(2222) }}"
-        timeout: 180
-        delay: 5
-        sleep: 3
-
-    - name: Bootstrap a known admin password over the empty-password login
-      ansible.builtin.command:
-        argv:
-          - sshpass
-          - -p
-          - ""
-          - ssh
-          - -p
-          - "{{ ansible_port | default(2222) }}"
-          - -o
-          - StrictHostKeyChecking=no
-          - -o
-          - UserKnownHostsFile=/dev/null
-          - -o
-          - PreferredAuthentications=password
-          - -o
-          - PubkeyAuthentication=no
-          - -o
-          - ConnectTimeout=15
-          - "admin@{{ ansible_host | default('127.0.0.1') }}"
-          - "/user set [find name=admin] password={{ chr_admin_password }}"
-      delegate_to: localhost
-      register: chr_pw
-      # The forwarded SSH port accepts TCP before RouterOS's login subsystem is
-      # ready, so the empty-password login can race and fail. Retry until it
-      # lands (fresh VM => password is still empty until this succeeds once).
-      until: chr_pw.rc == 0
-      retries: 18
-      delay: 5
-      changed_when: chr_pw.rc == 0
+    - name: Wait for SSH and bootstrap the admin password (shared tasks)
+      ansible.builtin.include_tasks: tasks/bootstrap_admin.yml
 
     - name: Enable the api service and a dhcp-client on the apinet NIC (ether2)
       ansible.builtin.command:
@@ -77,7 +41,12 @@
       delegate_to: localhost
       register: chr_api
       changed_when: chr_api.rc == 0
-      failed_when: false
+      # Only the dhcp-client add may legitimately fail on a re-run ("already
+      # have such entry"). Anything else (auth, SSH transport) must abort HERE,
+      # not surface later as an opaque API-port wait_for timeout.
+      failed_when:
+        - chr_api.rc != 0
+        - "'already have' not in (chr_api.stdout ~ chr_api.stderr)"
 
     - name: Wait for the forwarded API port (8728) to accept connections
       ansible.builtin.wait_for:

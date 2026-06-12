@@ -4,25 +4,19 @@
   gather_facts: false
   # network_cli at play level for /export, /file, /import over SSH (port 2223);
   # API tasks below delegate_to localhost (overriding this) for 127.0.0.1:8728.
-  vars:
-    ansible_host: "127.0.0.1"
-    ansible_port: 2223
-    ansible_connection: ansible.netcommon.network_cli
-    ansible_network_os: community.routeros.routeros
-    ansible_network_cli_ssh_type: libssh
-    ansible_user: "admin+cet1024w"
-    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
-    ansible_ssh_common_args: >-
-      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+  vars_files:
+    # Shared network_cli connection vars (host-forwarded SSH on 127.0.0.1:2223).
+    - ../utils/vars/network_cli.yml
   module_defaults:
-    community.routeros.api: &conn
+    # One block covers every community.routeros api* module via the
+    # collection's `api` action group.
+    group/community.routeros.api:
       hostname: "{{ routeros_api_hostname }}"
       username: "{{ routeros_api_username }}"
       password: "{{ routeros_api_password }}"
       tls: "{{ routeros_api_tls }}"
       validate_certs: "{{ routeros_api_validate_certs }}"
       port: "{{ routeros_api_port | default(omit, true) }}"
-    community.routeros.api_modify: *conn
   tasks:
     # --- Phase 1: configure a distinctive baseline via the configure role ---
     - name: Configure a distinctive baseline

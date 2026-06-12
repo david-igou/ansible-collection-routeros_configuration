@@ -1,0 +1,48 @@
+---
+# Shared CHR bootstrap (utils/playbooks/prepare.yml and chr/prepare.yml):
+# TCP-wait on the forwarded SSH port, then set a known admin password over the
+# fresh CHR's empty-password login. CHR has no POSIX shell, so everything runs
+# from the controller (wait_for + sshpass), never as a remote Python module.
+- name: Wait for forwarded SSH port (TCP only — CHR has no POSIX shell)
+  ansible.builtin.wait_for:
+    host: "{{ ansible_host | default('127.0.0.1') }}"
+    port: "{{ ansible_port | default(2222) }}"
+    timeout: 180
+    delay: 5
+    sleep: 3
+
+# CHR boots with an empty admin password, which network_cli refuses (it
+# coerces "" to null and only attempts pubkey) and the API can't use either.
+- name: Bootstrap a known admin password over the empty-password login
+  ansible.builtin.command:
+    argv:
+      - sshpass
+      - -p
+      - ""
+      - ssh
+      - -p
+      - "{{ ansible_port | default(2222) }}"
+      - -o
+      - StrictHostKeyChecking=no
+      - -o
+      - UserKnownHostsFile=/dev/null
+      - -o
+      - PreferredAuthentications=password
+      - -o
+      - PubkeyAuthentication=no
+      - -o
+      - ConnectTimeout=15
+      - "admin@{{ ansible_host | default('127.0.0.1') }}"
+      - "/user set [find name=admin] password={{ chr_admin_password }}"
+  delegate_to: localhost
+  register: chr_pw
+  # The forwarded SSH port accepts TCP before RouterOS's login subsystem is
+  # ready, so the empty-password login can race and fail. Retry until it
+  # lands (fresh VM => password is still empty until this succeeds once).
+  # Molecule only runs prepare after a fresh create, so the empty-password
+  # login is always expected to succeed eventually — a hard failure here is
+  # a real problem, not a re-run artifact.
+  until: chr_pw.rc == 0
+  retries: 18
+  delay: 5
+  changed_when: chr_pw.rc == 0

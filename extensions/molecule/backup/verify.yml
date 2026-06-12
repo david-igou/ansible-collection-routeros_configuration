@@ -2,19 +2,10 @@
 - name: Verify — backup artifacts exist and capture secrets (but not user passwords)
   hosts: molecule
   gather_facts: false
+  vars_files:
+    # Shared network_cli connection vars (host-forwarded SSH on 127.0.0.1:2223).
+    - ../utils/vars/network_cli.yml
   vars:
-    # Fixed SSH host-forward for the shared CHR (see converge.yml / hosts.yml).
-    ansible_host: "127.0.0.1"
-    ansible_port: 2223
-    ansible_connection: ansible.netcommon.network_cli
-    ansible_network_os: community.routeros.routeros
-    ansible_network_cli_ssh_type: libssh
-    ansible_user: "admin+cet1024w"
-    # hostvars[inventory_hostname] so it resolves under localhost delegation
-    # (the slurp below delegates to localhost).
-    ansible_password: "{{ hostvars[inventory_hostname]['chr_admin_password'] }}"
-    ansible_ssh_common_args: >-
-      -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
     routeros_backup_dir: "{{ lookup('ansible.builtin.env', 'MOLECULE_EPHEMERAL_DIRECTORY') }}/backups"
   tasks:
     - name: Read the exported .rsc from the controller

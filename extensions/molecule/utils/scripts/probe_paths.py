@@ -17,9 +17,10 @@ part of the test suite. Run after `molecule create -s default && molecule
 prepare -s default`.
 """
 import json
+import os
 import sys
 
-sys.path.insert(0, "/home/igou/.ansible/collections")
+sys.path.insert(0, os.path.expanduser("~/.ansible/collections"))
 from ansible_collections.community.routeros.plugins.module_utils import _api_data as m  # noqa: E402
 from librouteros import connect  # noqa: E402
 
@@ -34,7 +35,12 @@ def writable(vd):
 
 
 def main():
-    api = connect(username="admin", password="molecule", host="127.0.0.1", port=8728)
+    api = connect(
+        username=os.environ.get("ROS_USERNAME", "admin"),
+        password=os.environ.get("ROS_PASSWORD", "molecule"),
+        host=os.environ.get("ROS_HOST", "127.0.0.1"),
+        port=int(os.environ.get("ROS_PORT", "8728")),
+    )
     configurable, readonly, absent = [], [], []
     for tup in sorted(m.PATHS):
         path = " ".join(tup)
