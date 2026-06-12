@@ -41,12 +41,12 @@ Connection comes from the shared `routeros_api_*` vars (see `defaults/main.yml`)
 | Var | Default | Meaning |
 | --- | --- | --- |
 | `routeros_export_vars_dir` | `./routeros-vars` | controller output directory |
-| `routeros_export_vars_paths` | full `rcfg_path_order` (508) | slash paths to capture |
+| `routeros_export_vars_paths` | full `rcfg_path_order` | slash paths to capture |
 | `routeros_export_vars_redact` | `false` | replace secret values with `REDACTED` |
 | `routeros_export_vars_handle_disabled` | `omit` | how unset fields are captured: `omit` / `exclamation` / `null-value` |
 | `routeros_export_vars_exclude_paths` | curated list | runtime/state/hardware paths to skip |
 | `routeros_export_vars_ordered_paths` | firewall/routing/queue chains | paths captured with `order` + `purge` |
-| `routeros_export_vars_volatile_fields` | `{/system/clock: [date, time], /ip/ipsec/policy: [group]}` | per-path fields to strip (volatile, or round-trip-breaking) |
+| `routeros_export_vars_volatile_fields` | `date`/`time` under `/system/clock`, `group` under `/ip/ipsec/policy` | per-path fields to strip (volatile, or round-trip-breaking) |
 
 **Only configure-modifiable paths are captured.** The role loads the `configure`
 role's canonical `rcfg_path_order` — every path `api_modify` can write
@@ -56,10 +56,13 @@ that the `configure` role cannot modify is dropped before querying and reported
 in a debug message.
 
 **Runtime/state paths are excluded.** `api_modify` "understands" some paths that
-are really device state, not configuration — `/file`, `/system/script/environment`,
-`/ip/pool/used`, `/system/resource/*`, `/partitions`, `/queue/interface`, `/ip/cloud`,
-and `/certificate` (metadata only, no key material). `routeros_export_vars_exclude_paths`
-drops these so the baseline stays declarative; set it to `[]` to capture everything.
+are really device state, not configuration. `routeros_export_vars_exclude_paths`
+drops these so the baseline stays declarative — by default `/file` (filesystem
+listing), `/certificate` (metadata only, no key material), `/ip/cloud`,
+`/queue/interface` (auto-generated per interface), and `/system/resource/irq/rps`
+(hardware state). Set it to `[]` to capture everything. (Most other state-like
+paths — `/system/script/environment`, `/ip/pool/used`, `/partitions` — are not
+in `rcfg_path_order` at all, so they are never queried in the first place.)
 To drop a few *more* paths without re-listing the defaults, use
 `routeros_export_vars_exclude_paths_extra` (merged onto the default list):
 
@@ -124,5 +127,7 @@ against unchanged device config reports `ok`.
 
 **Best-effort equivalent:** `api_info` fields do not always map 1:1 to the
 `api_modify` input the `configure` role uses (some computed/normalised values).
-Review a captured file before re-applying. The output uses plain `data:` lists;
-add per-path `purge`/`order`/`content` yourself where you want exact-state.
+Review a captured file before re-applying. Ordered paths (firewall chains,
+routing filters, queues) are captured with `purge`/`order`/`content` set
+automatically; every other path gets a plain `data:` list — add `purge` (and
+friends) yourself where you want exact-state on those.

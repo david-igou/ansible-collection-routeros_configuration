@@ -1,3 +1,19 @@
 # Contributing
 
 Refer to the [Ansible community guide](https://docs.ansible.com/ansible/devel/community/index.html).
+
+## This repository
+
+- **Run the tests.** Unit tests: `pytest` (from the repo root). Molecule:
+  `make molecule` for the full suite, `make molecule SCENARIO=<name>` for one
+  scenario (boots a QEMU RouterOS CHR — see `extensions/molecule/README.md`).
+  CI runs the same make targets.
+- **Add a changelog fragment.** Every user-facing PR needs a fragment in
+  `changelogs/fragments/` ([antsibull-changelog
+  format](https://ansible.readthedocs.io/projects/antsibull-changelog/changelogs/));
+  the `changelog` CI job gates the merge on it.
+- **Keep code and release PRs separate.** Version bumps (`galaxy.yml`,
+  changelog regeneration) ship in their own `chore(release)` PR, not with the
+  change itself.
+- **Pure block-style YAML everywhere** — no inline `{}`/`[]` flow collections
+  (see `AGENTS.md`).

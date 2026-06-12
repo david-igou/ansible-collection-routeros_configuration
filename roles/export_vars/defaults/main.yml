@@ -45,8 +45,8 @@ routeros_export_vars_exclude_paths:
   - /system/resource/irq/rps    # hardware RPS
 
 # Extra paths to exclude, MERGED onto routeros_export_vars_exclude_paths (rather
-# than replacing it). Use this to drop a few more paths without re-listing the
-# defaults, e.g. routeros_export_vars_exclude_paths_extra: [/system/script, /ip/tftp].
+# than replacing it). Use this to drop a few more paths (e.g. /system/script,
+# /ip/tftp) without re-listing the defaults.
 routeros_export_vars_exclude_paths_extra: []
 
 # Slash paths whose entry ORDER is significant — firewall chains, routing

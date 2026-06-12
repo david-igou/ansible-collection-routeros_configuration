@@ -25,7 +25,7 @@ via Ansible Vault.
 | `routeros_certificates` | no | `[]` | | Certificates to create and sign (see item keys below). |
 | `routeros_certificates_export` | no | `[]` | | Certificates to export to files (see item keys below). |
 | `routeros_certificates_import` | no | `[]` | | Certificates to import from files (see item keys below). |
-| `routeros_acme` | no | `[]` | | ACME (Let's Encrypt) requests; each `{ args: "<add-acme args>" }`. Gated; not exercised in CI. |
+| `routeros_acme` | no | `[]` | | ACME (Let's Encrypt) requests; each item carries an `args` string (the `add-acme` arguments). Gated; not exercised in CI. |
 | `routeros_api_hostname` | no | `{{ inventory_hostname }}` | | API host/IP of the device. |
 | `routeros_api_username` | no | `admin` | | API username. |
 | `routeros_api_password` | yes | _(undefined)_ | | API password — secret; supply via Vault. |

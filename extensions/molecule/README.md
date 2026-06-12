@@ -80,6 +80,7 @@ the full suite.
 | `export_vars` | Captures device config into a replayable `routeros_config` vars file (no `.id` leakage); asserts `/ip/address` + `/system/identity` capture. |
 | `fetch` | `/tool fetch` onto the device, then the `routeros_fetch_remove` delete branch. |
 | `ping` | `/tool ping` reachability (received > 0). |
+| `poe` | PoE-out validation and monitor paths on a CHR (no PoE hardware): bad-interface/bad-mode rejection, gated power actions, monitor tolerated where the menu is absent. |
 | `reboot` | `/system reboot` + reconnect; asserts uptime reset. |
 | `reset` | The **safety gate**: with `routeros_reset_confirm` unset, the destructive reset does **not** run (a marker identity survives). |
 | `restore` | Binary backup save → mutate → `/system backup load` (real reboot) → identity reverted. |
