@@ -91,4 +91,4 @@ routeros_export_vars_volatile_fields:
 # routeros_export_vars_paths is intentionally NOT defaulted here: when it is
 # undefined, tasks/main.yml loads the configure role's canonical rcfg_path_order
 # (every configurable path). Set it to a subset (slash paths) to capture only
-# certain paths — much faster than querying all 508.
+# certain paths — much faster than querying the full set.

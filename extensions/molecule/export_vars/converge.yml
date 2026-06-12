@@ -20,7 +20,7 @@
     routeros_export_vars_exclude_paths_extra:
       - /ip/tftp
       - /system/script
-    # Small path set for a fast, focused test (the default is all 508 paths).
+    # Small path set for a fast, focused test (the default is the full rcfg_path_order).
     routeros_export_vars_paths:
       - /ip/address
       - /system/identity

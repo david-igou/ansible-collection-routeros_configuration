@@ -176,3 +176,7 @@ docs/superpowers/
 # Claude Code session state (lock files, scheduled-task state) — local only,
 # and build_ignored in galaxy.yml so it never ships in the artifact.
 .claude/
+
+# ansible-lint (ansible-compat) materializes a collections/ symlink farm in
+# the cwd on some setups — a local cache, never content.
+collections/

@@ -14,7 +14,7 @@ capture, commit to version control, then re-apply with `configure`.
     - role: david_igou.routeros_configuration.export_vars
       vars:
         routeros_export_vars_dir: ./host_vars-captured
-        # Capture only some paths (faster than all 508):
+        # Capture only some paths (faster than the full set):
         routeros_export_vars_paths:
           - /ip/address
           - /ip/firewall/filter
@@ -102,7 +102,7 @@ Empty entries (all-default singletons, `.id`-only) are dropped and empty paths
 omitted regardless.
 
 When `routeros_export_vars_paths` is unset, the role captures every configurable
-path (omitting empty ones) from `rcfg_path_order`. Querying all 508 paths takes a
+path (omitting empty ones) from `rcfg_path_order`. Querying the full set takes a
 while — pass a subset for speed.
 No device implements every path, so paths this device doesn't expose (wireless,
 CAPsMAN, container, etc.) are skipped rather than fatal — `api_info` errors

@@ -1,0 +1,38 @@
+---
+minor_changes:
+  - export_vars role - ``routeros_export_vars_redact=true`` now redacts any
+    field whose name ends in ``key``, ``secret``, ``password`` or
+    ``passphrase`` (plus known non-suffix secrets such as the WEP
+    ``static-key-0..3``), with reviewed public fields like a WireGuard peer's
+    ``public-key`` exempted. The previous seven-name exact-match list missed
+    e.g. ``pre-shared-key``, ``l2tp-secret`` and ``eap-password``, so a
+    redacted capture was not actually safe to publish. A unit test now pins
+    the heuristic against the installed ``community.routeros`` field metadata.
+    Passing ``sensitive_fields`` still selects exact names only.
+  - to_routeros_config filter plugin - malformed input now raises clear
+    errors naming the offending element (non-dict entries and duplicate paths
+    are rejected instead of crashing with a raw traceback or silently
+    overwriting an earlier capture).
+  - internal ``_wait_api`` role - the reboot, reset, restore and upgrade
+    roles now share one implementation of the "wait for the device to come
+    back" logic (API port wait + login retry) with documented, overridable
+    retry budgets, instead of five copy-pasted blocks with hardcoded values.
+bugfixes:
+  - restore role - the ``/import`` command now quotes
+    ``routeros_restore_import_file``, so file names containing spaces or
+    quotes can no longer break or alter the command.
+  - backup role - the volatile-header filter is anchored to the actual
+    ``# <date> by RouterOS <ver>`` header line; previously any exported line
+    containing the text "by RouterOS" (for example a script source) was
+    silently dropped from the saved export.
+  - certificate role - the sign gate no longer fails with ``No first item``
+    when a requested certificate name is missing from the device read-back.
+trivial:
+  - corrected ``version_added`` on both filter plugins (1.0.0 was never
+    released), refreshed stale export_vars documentation, documented the
+    filter plugins in the README, deduplicated molecule connection
+    boilerplate via the ``community.routeros.api`` action group, shared the
+    CHR bootstrap between prepares (restoring the boot-race retry the chr
+    scenario had lost), pinned mutable CI workflow refs to SHAs, and added a
+    CI guard that fails when a molecule scenario is not wired into the
+    Makefile's scenario lists.
