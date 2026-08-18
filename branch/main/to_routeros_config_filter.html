@@ -284,16 +284,16 @@ example: <code class="docutils literal notranslate"><span class="pre">input</spa
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">Examples</a><a class="headerlink" href="#examples" title="Link to this heading"></a></h2>
 <div class="highlight-yaml+jinja notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Capture paths</span>
 <span class="w">  </span><span class="nt">community.routeros.api_info</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">item</span> <span class="o">|</span> <span class="nf">replace</span><span class="o">(</span><span class="s1">&#39;/&#39;</span><span class="o">,</span> <span class="s1">&#39; &#39;</span><span class="o">)</span> <span class="o">|</span> <span class="nf">trim</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">item</span> <span class="o">|</span> <span class="nf">replace</span><span class="o">(</span><span class="s1">'/'</span><span class="o">,</span> <span class="s1">' '</span><span class="o">)</span> <span class="o">|</span> <span class="nf">trim</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">    </span><span class="nt">hide_defaults</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">    </span><span class="nt">include_dynamic</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">    </span><span class="nt">include_read_only</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">routeros_export_vars_paths</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">  </span><span class="nt">loop</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">routeros_export_vars_paths</span> <span class="cp">}}</span><span class="s">"</span>
 <span class="w">  </span><span class="nt">register</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">captured</span>
 
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Assemble routeros_config</span>
 <span class="w">  </span><span class="nt">ansible.builtin.set_fact</span><span class="p">:</span>
-<span class="w">    </span><span class="nt">routeros_config</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;</span><span class="cp">{{</span> <span class="nv">captured.results</span> <span class="o">|</span> <span class="nf">david_igou</span><span class="nv">.routeros_configuration.to_routeros_config</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">    </span><span class="nt">routeros_config</span><span class="p">:</span><span class="w"> </span><span class="s">"</span><span class="cp">{{</span> <span class="nv">captured.results</span> <span class="o">|</span> <span class="nf">david_igou</span><span class="nv">.routeros_configuration.to_routeros_config</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 </section>

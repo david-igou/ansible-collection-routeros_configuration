@@ -320,9 +320,9 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">      </span><span class="nt">vars</span><span class="p">:</span>
 <span class="w">        </span><span class="nt">routeros_reset_confirm</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">        </span><span class="nt">routeros_reset_keep_users</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-<span class="w">        </span><span class="nt">routeros_reset_run_after_reset</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/ip</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">enable</span><span class="nv"> </span><span class="s">api-ssl&quot;</span>
+<span class="w">        </span><span class="nt">routeros_reset_run_after_reset</span><span class="p">:</span><span class="w"> </span><span class="s">"/ip</span><span class="nv"> </span><span class="s">service</span><span class="nv"> </span><span class="s">enable</span><span class="nv"> </span><span class="s">api-ssl"</span>
 
-<span class="c1"># Reset to a bare configuration (skip RouterOS&#39; default config).</span>
+<span class="c1"># Reset to a bare configuration (skip RouterOS' default config).</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
 <span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 <span class="w">  </span><span class="nt">roles</span><span class="p">:</span>

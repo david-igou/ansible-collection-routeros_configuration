@@ -303,7 +303,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
 
 <span class="c1"># Ping from a source interface and use the registered result. Results are</span>
-<span class="c1"># in _routeros_ping; .results aligns with routeros_ping and each entry&#39;s</span>
+<span class="c1"># in _routeros_ping; .results aligns with routeros_ping and each entry's</span>
 <span class="c1"># final row carries the running totals.</span>
 <span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">hosts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">routers</span>
 <span class="w">  </span><span class="nt">gather_facts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
@@ -318,7 +318,7 @@ To check whether it is installed, run <code class="code docutils literal notrans
 <span class="w">            </span><span class="nt">count</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span>
 <span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Show how many replies came back</span>
 <span class="w">      </span><span class="nt">ansible.builtin.debug</span><span class="p">:</span>
-<span class="w">        </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;received</span><span class="nv"> </span><span class="cp">{{</span> <span class="o">(</span><span class="nv">_routeros_ping.results</span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="nv">.msg</span> <span class="o">|</span> <span class="nf">last</span><span class="o">)</span><span class="nv">.received</span> <span class="cp">}}</span><span class="s">&quot;</span>
+<span class="w">        </span><span class="nt">msg</span><span class="p">:</span><span class="w"> </span><span class="s">"received</span><span class="nv"> </span><span class="cp">{{</span> <span class="o">(</span><span class="nv">_routeros_ping.results</span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="nv">.msg</span> <span class="o">|</span> <span class="nf">last</span><span class="o">)</span><span class="nv">.received</span> <span class="cp">}}</span><span class="s">"</span>
 </pre></div>
 </div>
 <section id="collection-links">
