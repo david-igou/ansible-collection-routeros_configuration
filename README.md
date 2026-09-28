@@ -56,8 +56,12 @@ Declared in `galaxy.yml` and auto-resolved by Galaxy on install:
 
 | Collection | Required for | Version |
 |---|---|---|
-| `community.routeros` | the RouterOS API / network_cli modules every role uses | >= 3.0.0 |
+| `community.routeros` | the RouterOS API / network_cli modules every role uses | >= 3.22.0 |
 | `ansible.netcommon` | the `network_cli` connection (the `backup` role) | >= 8.0.0 |
+
+`community.routeros` 3.22.0 understands the `/ip/service` `available-from`
+field introduced in RouterOS 7.24. Earlier releases reject that field during
+configuration reconciliation.
 
 ## Installation
 

@@ -27,7 +27,7 @@ tags:
 # it directly. Test-only deps (the molecule provisioners) are NOT here — see
 # extensions/molecule/requirements-test.yml.
 dependencies:
-  "community.routeros": ">=3.0.0"
+  "community.routeros": ">=3.22.0"
   "ansible.netcommon": ">=8.0.0"
 
 repository: https://github.com/david-igou/ansible-collection-routeros_configuration

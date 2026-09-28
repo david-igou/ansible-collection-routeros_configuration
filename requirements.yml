@@ -11,6 +11,6 @@
 # consumers installing this collection never auto-pull test tooling.
 collections:
   - name: community.routeros
-    version: ">=3.0.0"
+    version: ">=3.22.0"
   - name: ansible.netcommon
     version: ">=8.0.0"
