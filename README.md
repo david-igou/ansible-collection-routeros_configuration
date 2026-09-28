@@ -216,9 +216,11 @@ make molecule-shared           # just the shared pass (what CI's `shared` job ru
 make molecule SCENARIO=poe     # a single scenario against the shared CHR
 ```
 
-CI runs these same make targets on every pull request and on a monthly
-schedule (which also catches drift in the floating `community.routeros` /
-`ansible.netcommon` dependencies). See
+Renovate tracks MikroTik's long-term CHR image and updates both Molecule image
+pins in one pull request. CI runs these same make targets on every pull request,
+including image updates, and on a monthly schedule. The monthly run also
+catches drift in the floating `community.routeros` / `ansible.netcommon`
+dependencies. See
 [`extensions/molecule/README.md`](https://github.com/david-igou/ansible-collection-routeros_configuration/blob/main/extensions/molecule/README.md)
 (absolute link — `extensions/` does not ship in the Galaxy artifact) for the
 scenario catalogue and provisioner wiring. Hardware-specific operations that a

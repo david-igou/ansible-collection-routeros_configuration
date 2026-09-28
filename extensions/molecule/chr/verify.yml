@@ -24,12 +24,22 @@
       delay: 10
       until: chr_resource is succeeded
 
-    - name: Assert the response identifies RouterOS
+    - name: Assert the booted RouterOS version matches the image pin
+      vars:
+        expected_chr_version: "{{ mp.qemu.image.split('/')[-2] }}"
+        actual_chr_version: >-
+          {{
+            chr_resource.stdout[0]
+            | regex_findall('version:\s*([0-9.]+)')
+            | first
+            | default('')
+          }}
       ansible.builtin.assert:
         that:
           - chr_resource.stdout | length > 0
-          - chr_resource.stdout[0] is search('version')
+          - actual_chr_version == expected_chr_version
         success_msg: >-
-          RouterOS reachable via qemu provider:
-          {{ chr_resource.stdout[0] | regex_search('version:[^\\n]*') | trim }}
-        fail_msg: "Did not get a RouterOS resource response: {{ chr_resource.stdout | default('<none>') }}"
+          RouterOS {{ actual_chr_version }} reachable via qemu provider
+        fail_msg: >-
+          Expected RouterOS {{ expected_chr_version }} from {{ mp.qemu.image }};
+          got {{ chr_resource.stdout | default('<none>') }}

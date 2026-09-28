@@ -1,0 +1,31 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "customDatasources": {
+    "routeros-long-term": {
+      "defaultRegistryUrlTemplate": "https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term",
+      "format": "plain",
+      "transformTemplates": [
+        "{\"releases\":[{\"version\":$split(releases[0].version, \" \")[0]}]}"
+      ]
+    }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Keep both Molecule CHR images on RouterOS long-term",
+      "managerFilePatterns": [
+        "/^extensions\\/molecule\\/(chr|utils)\\/inventory\\/hosts\\.yml$/"
+      ],
+      "matchStrings": [
+        "image: \"https://download\\.mikrotik\\.com/routeros/(?<currentValue>7\\.[0-9.]+)/chr-7\\.[0-9.]+\\.img\\.zip\""
+      ],
+      "depNameTemplate": "mikrotik/chr-long-term",
+      "datasourceTemplate": "custom.routeros-long-term",
+      "versioningTemplate": "semver-coerced",
+      "autoReplaceStringTemplate": "image: \"https://download.mikrotik.com/routeros/{{{newValue}}}/chr-{{{newValue}}}.img.zip\""
+    }
+  ]
+}

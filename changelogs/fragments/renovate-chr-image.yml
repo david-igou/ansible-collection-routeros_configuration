@@ -1,0 +1,4 @@
+---
+trivial:
+  - Track the long-term MikroTik CHR image with Renovate, exercise image updates
+    through pull-request Molecule CI, and verify the booted RouterOS version.
