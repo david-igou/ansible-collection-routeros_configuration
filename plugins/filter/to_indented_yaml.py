@@ -1,6 +1,6 @@
 # Copyright (c) 2026, David Igou
-# GNU General Public License v3.0+ (see LICENSES/GPL-3.0-or-later.txt)
-# SPDX-License-Identifier: GPL-3.0-or-later
+# MIT License (see LICENSES/MIT.txt)
+# SPDX-License-Identifier: MIT
 """Serialize data to YAML with indented block sequences (ansible-lint clean)."""
 
 from __future__ import absolute_import, annotations, division, print_function

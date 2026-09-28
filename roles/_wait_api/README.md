@@ -22,4 +22,4 @@ role in this collection.
 
 ## License
 
-GPL-3.0-or-later
+MIT. See [LICENSE](../../LICENSE).
