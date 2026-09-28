@@ -27,7 +27,7 @@ MOLECULE_GLOB="extensions/molecule/*/molecule.yml" molecule test -s chr
 `verify.yml` runs `/system resource print` over `community.routeros` (network_cli)
 and asserts on the RouterOS version. A green run ends with, e.g.:
 
-> `RouterOS 7.23.7 reachable via qemu provider`
+> `RouterOS <version> reachable via qemu provider`
 
 ## How it works
 
@@ -62,8 +62,8 @@ and asserts on the RouterOS version. A green run ends with, e.g.:
 
 ## Pinned image
 
-CHR `7.23.7` from <https://mikrotik.com/download/chr>. Renovate reads MikroTik's
-long-term release endpoint and updates the `image:` URL here and in
+The pinned CHR comes from <https://mikrotik.com/download/chr>. Renovate reads
+MikroTik's long-term release endpoint and updates the `image:` URL here and in
 `../utils/inventory/hosts.yml` together. Each image update runs the complete
 Molecule suite on its pull request; the scheduled CI run retests the pinned
 image on the first day of every month. The verify playbook checks that the

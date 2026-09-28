@@ -26,7 +26,7 @@
 
     - name: Assert the booted RouterOS version matches the image pin
       vars:
-        expected_chr_version: "{{ mp.qemu.image.split('/')[-2] }}"
+        expected_chr_version: "{{ mp['qemu']['image'].split('/')[-2] }}"
         actual_chr_version: >-
           {{
             chr_resource.stdout[0]
@@ -41,5 +41,5 @@
         success_msg: >-
           RouterOS {{ actual_chr_version }} reachable via qemu provider
         fail_msg: >-
-          Expected RouterOS {{ expected_chr_version }} from {{ mp.qemu.image }};
+          Expected RouterOS {{ expected_chr_version }} from {{ mp['qemu']['image'] }};
           got {{ chr_resource.stdout | default('<none>') }}
