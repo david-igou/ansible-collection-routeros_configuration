@@ -14,9 +14,11 @@ on: # yamllint disable-line rule:truthy
     branches:
       - main
   workflow_dispatch:
-  # Every PR, including a Renovate CHR image update, runs the Molecule suite.
-  # Monthly runs retest the pinned image and catch dependency drift:
-  # community.routeros / ansible.netcommon resolve to their latest releases.
+  # Monthly full-suite run against a real CHR. PR runs prove a change didn't
+  # break the collection; this run catches the world changing around it —
+  # community.routeros / ansible.netcommon resolve to their LATEST releases at
+  # run time (requirements.yml floats >=), so upstream breakage surfaces here
+  # instead of mid-PR.
   schedule:
     - cron: '0 6 1 * *'
 
