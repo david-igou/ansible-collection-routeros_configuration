@@ -1,4 +1,5 @@
 ---
 trivial:
   - Tracked the long-term MikroTik CHR image with Renovate, exercised image
-    updates through pull-request Molecule CI, and verified the booted version.
+    updates through pull-request Molecule CI, and verified the booted version
+    (https://github.com/david-igou/ansible-collection-routeros_configuration/pull/52).
