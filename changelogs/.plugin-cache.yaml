@@ -4,6 +4,10 @@ objects:
       description: Reconcile one RouterOS config path declaratively via the API.
       name: _reconcile
       version_added: null
+    _wait_api:
+      description: Wait for a RouterOS device to come back after a reboot.
+      name: _wait_api
+      version_added: null
     backup:
       description: Back up RouterOS configuration over network_cli.
       name: backup
@@ -80,4 +84,4 @@ plugins:
   strategy: {}
   test: {}
   vars: {}
-version: 0.0.8-alpha
+version: 0.0.9-alpha

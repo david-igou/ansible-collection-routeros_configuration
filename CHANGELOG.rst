@@ -1,8 +1,44 @@
-============================================================
-David\_igou Routeros\_configuration Collection Release Notes
-============================================================
+===============================================
+RouterOS Configuration Collection Release Notes
+===============================================
 
 .. contents:: Topics
+
+v0.0.9-alpha
+============
+
+Release Summary
+---------------
+
+This alpha release relicenses the collection under MIT and raises the
+minimum community.routeros version to 3.22.0 for RouterOS 7.24 support.
+It also hardens captured secret redaction, improves backup, restore, and
+certificate behavior, and validates the Renovate-managed CHR image in
+the shared Molecule suite.
+
+Major Changes
+-------------
+
+- Relicensed the collection under MIT. Earlier published releases retain their GPL-3.0-or-later grants.
+
+Minor Changes
+-------------
+
+- export_vars role - ``routeros_export_vars_redact=true`` now redacts any field whose name ends in ``key``, ``secret``, ``password`` or ``passphrase`` (plus known non-suffix secrets such as the WEP ``static-key-0..3``), with reviewed public fields like a WireGuard peer's ``public-key`` exempted. The previous seven-name exact-match list missed e.g. ``pre-shared-key``, ``l2tp-secret`` and ``eap-password``, so a redacted capture was not actually safe to publish. A unit test now pins the heuristic against the installed ``community.routeros`` field metadata. Passing ``sensitive_fields`` still selects exact names only.
+- internal ``_wait_api`` role - the reboot, reset, restore and upgrade roles now share one implementation of the "wait for the device to come back" logic (API port wait + login retry) with documented, overridable retry budgets, instead of five copy-pasted blocks with hardcoded values.
+- to_routeros_config filter plugin - malformed input now raises clear errors naming the offending element (non-dict entries and duplicate paths are rejected instead of crashing with a raw traceback or silently overwriting an earlier capture).
+
+Breaking Changes / Porting Guide
+--------------------------------
+
+- The minimum ``community.routeros`` version is now 3.22.0, which supports RouterOS 7.24's ``/ip/service`` ``available-from`` field. Upgrade the dependency before installing this collection release.
+
+Bugfixes
+--------
+
+- backup role - the volatile-header filter is anchored to the actual ``# <date> by RouterOS <ver>`` header line; previously any exported line containing the text "by RouterOS" (for example a script source) was silently dropped from the saved export.
+- certificate role - the sign gate no longer fails with ``No first item`` when a requested certificate name is missing from the device read-back.
+- restore role - the ``/import`` command now quotes ``routeros_restore_import_file``, so file names containing spaces or quotes can no longer break or alter the command.
 
 v0.0.8-alpha
 ============

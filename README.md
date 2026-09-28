@@ -77,7 +77,7 @@ Or pin a version in `requirements.yml`:
 ---
 collections:
   - name: david_igou.routeros_configuration
-    version: 0.0.8-alpha
+    version: 0.0.9-alpha
 ```
 
 Upgrade to the latest:

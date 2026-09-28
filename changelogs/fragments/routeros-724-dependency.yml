@@ -1,5 +1,0 @@
----
-breaking_changes:
-  - The minimum ``community.routeros`` version is now 3.22.0, which supports
-    RouterOS 7.24's ``/ip/service`` ``available-from`` field. Upgrade the
-    dependency before installing this collection release.

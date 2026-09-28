@@ -1,5 +1,0 @@
----
-trivial:
-  - Removed the dedicated CHR feasibility scenario; the shared suite now
-    verifies the booted RouterOS version against its pinned image
-    (https://github.com/david-igou/ansible-collection-routeros_configuration/pull/54).
