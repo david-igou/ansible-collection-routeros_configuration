@@ -1,5 +1,5 @@
 ---
-# Shared CHR bootstrap (utils/playbooks/prepare.yml and chr/prepare.yml):
+# Shared CHR bootstrap (utils/playbooks/prepare.yml):
 # TCP-wait on the forwarded SSH port, then set a known admin password over the
 # fresh CHR's empty-password login. CHR has no POSIX shell, so everything runs
 # from the controller (wait_for + sshpass), never as a remote Python module.

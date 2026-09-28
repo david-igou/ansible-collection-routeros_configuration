@@ -1,0 +1,31 @@
+---
+- name: Verify the shared CHR runs the pinned RouterOS version
+  hosts: molecule
+  gather_facts: false
+  module_defaults:
+    group/community.routeros.api:
+      hostname: "{{ routeros_api_hostname }}"
+      username: "{{ routeros_api_username }}"
+      password: "{{ routeros_api_password }}"
+      tls: "{{ routeros_api_tls }}"
+      validate_certs: "{{ routeros_api_validate_certs }}"
+      port: "{{ routeros_api_port | default(omit, true) }}"
+  tasks:
+    - name: Read RouterOS system resource
+      community.routeros.api:
+        path: system resource
+      delegate_to: localhost
+      connection: local
+      register: chr_resource
+
+    - name: Assert the booted version matches the image pin
+      vars:
+        expected_chr_version: "{{ mp['qemu']['image'].split('/')[-2] }}"
+        actual_chr_version: "{{ (chr_resource.msg | first)['version'].split(' ')[0] }}"
+      ansible.builtin.assert:
+        that:
+          - actual_chr_version == expected_chr_version
+        success_msg: "RouterOS {{ actual_chr_version }} matches the CHR image pin"
+        fail_msg: >-
+          Expected RouterOS {{ expected_chr_version }} from {{ mp['qemu']['image'] }};
+          got {{ actual_chr_version }}

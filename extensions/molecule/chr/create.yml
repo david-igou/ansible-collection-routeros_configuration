@@ -1,7 +1,0 @@
----
-# CHR's zipped raw .img is ingested directly by the qemu role's image cache
-# (download -> unzip -> qemu-img convert raw->qcow2), driven by the .img.zip
-# URL in inventory/hosts.yml. No pre-staging step needed (requires
-# david_igou.molecule_provisioners >= 0.0.2-alpha).
-- name: Provision molecule instances
-  import_playbook: david_igou.molecule_provisioners.create

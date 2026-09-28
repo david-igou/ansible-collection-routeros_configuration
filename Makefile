@@ -7,7 +7,7 @@ COLLECTION_VERSION   := $(shell grep '^version:' galaxy.yml | awk '{print $$2}')
 # test_sequence) run standalone; every other (shared-state) scenario relies on
 # the `default` scenario to boot the shared CHR, so a single-scenario run must
 # prepend it (see the `molecule` target's SCENARIO= branch).
-SELF_OWNING := chr lifecycle default
+SELF_OWNING := lifecycle default
 
 # The shared-state pass — the SINGLE source of truth for which scenarios run
 # against the one shared CHR and in what order (CI consumes it via
@@ -32,9 +32,8 @@ SHARED_SCENARIOS := default ping fetch configure_lists configure_singletons \
 SHARED_SCENARIO_ARGS := $(foreach s,$(SHARED_SCENARIOS),-s $(s))
 
 # PROVISIONER picks which mp.<backend> block a scenario uses when its inventory
-# declares more than one. The chr scenario declares only qemu, so leaving this
-# unset is correct — molecule_provisioners auto-selects. Override only for
-# multi-backend scenarios (e.g. `PROVISIONER=qemu make molecule SCENARIO=chr`).
+# declares more than one. The current inventories declare only qemu, so leaving
+# this unset is correct — molecule_provisioners auto-selects.
 
 # Scenarios live at extensions/molecule/<scenario>/molecule.yml — point molecule
 # at that layout via MOLECULE_GLOB so the `molecule` target works from the
@@ -71,13 +70,11 @@ molecule-shared: install ## Run the shared-state pass (one CHR, all SHARED_SCENA
 
 # With no SCENARIO: the full suite — the shared-state pass (all subsystem-role
 # scenarios on a single CHR via the `default` scenario — see
-# extensions/molecule/config.yml), then the dedicated-CHR scenarios (`chr`
-# over network_cli, `lifecycle` for the destructive end-to-end), each booting
-# its own VM after the shared CHR has torn down.
+# extensions/molecule/config.yml), then the dedicated `lifecycle` scenario
+# for the destructive end-to-end on its own VM.
 molecule: install ## Run molecule test (SCENARIO=<name> for one; omit for the full suite)
 ifeq ($(SCENARIO),)
 	molecule test $(SHARED_SCENARIO_ARGS)
-	molecule test -s chr
 	molecule test -s lifecycle
 else ifeq ($(filter $(SCENARIO),$(SELF_OWNING)),$(SCENARIO))
 	molecule test -s $(SCENARIO)

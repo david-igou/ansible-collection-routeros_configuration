@@ -9,4 +9,5 @@ scenario:
     - create
     - prepare
     - converge
+    - verify
     - destroy

@@ -2,8 +2,7 @@
 - name: Converge — back up the device, with a known service secret present
   hosts: molecule
   gather_facts: false
-  # network_cli at play level (the chr/verify.yml pattern) so the backup role's
-  # /export runs over SSH.
+  # network_cli at play level so the backup role's /export runs over SSH.
   vars_files:
     # Shared network_cli connection vars (host-forwarded SSH on 127.0.0.1:2223).
     - ../utils/vars/network_cli.yml
