@@ -3,6 +3,9 @@
   "extends": [
     "config:recommended"
   ],
+  "enabledManagers": [
+    "custom.regex"
+  ],
   "customDatasources": {
     "routeros-long-term": {
       "defaultRegistryUrlTemplate": "https://upgrade.mikrotik.com/routeros/NEWESTa7.long-term",
