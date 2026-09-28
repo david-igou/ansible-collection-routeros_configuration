@@ -207,20 +207,20 @@ Both render full documentation via
 [Molecule](https://ansible.readthedocs.io/projects/molecule/) scenarios live in
 `extensions/molecule/`. Most share a single QEMU **CHR** (Cloud Hosted Router)
 instance, exercising the roles against a real RouterOS over the API (and
-`network_cli` for `backup`); two dedicated-CHR scenarios cover `network_cli`
-feasibility (`chr`) and the destructive end-to-end (`lifecycle`).
+`network_cli` for `backup`); a dedicated `lifecycle` scenario covers the
+destructive end-to-end.
 
 ```bash
-make molecule                  # full suite: the shared pass + the chr/lifecycle VMs
+make molecule                  # full suite: shared pass + lifecycle VM
 make molecule-shared           # just the shared pass (what CI's `shared` job runs)
 make molecule SCENARIO=poe     # a single scenario against the shared CHR
 ```
 
-Renovate tracks MikroTik's long-term CHR image and updates both Molecule image
-pins in one pull request. CI runs these same make targets on every pull request,
-including image updates, and on a monthly schedule. The monthly run also
-catches drift in the floating `community.routeros` / `ansible.netcommon`
-dependencies. See
+Renovate tracks MikroTik's long-term CHR image in the shared inventory. The
+shared suite verifies the booted RouterOS version. CI runs these make targets
+on every pull request, including image updates, and on a monthly schedule.
+The monthly run also catches drift in the floating `community.routeros` /
+`ansible.netcommon` dependencies. See
 [`extensions/molecule/README.md`](https://github.com/david-igou/ansible-collection-routeros_configuration/blob/main/extensions/molecule/README.md)
 (absolute link — `extensions/` does not ship in the Galaxy artifact) for the
 scenario catalogue and provisioner wiring. Hardware-specific operations that a

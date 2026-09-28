@@ -11,7 +11,7 @@ Invoke from the **collection root**:
 
 ```bash
 # Full suite: the shared pass (one CHR for all the shared scenarios), then the
-# two dedicated-CHR scenarios (chr, lifecycle):
+# dedicated lifecycle scenario:
 make molecule
 
 # Just the shared pass (what CI's `shared` matrix job runs; the scenario list
@@ -45,15 +45,13 @@ A single shared scenario has **no `create` step of its own**, so
 `make molecule SCENARIO=<name>` automatically prepends `default` (which boots and
 tears down the CHR around it) — see the Makefile's `SELF_OWNING` logic.
 
-**Tier 2 — dedicated opt-out CHRs.** Some scenarios cannot share the device:
-`chr` verifies over `network_cli` (its own runtime inventory), and `lifecycle`
-performs a real `reset-configuration` that would sever the shared device's
-management plane. These set `shared_state: false`, own their create/prepare/
-destroy, and run as **separate** `molecule test -s <name>` invocations (after the
-shared pass has torn its CHR down, so the `8728/2223` hostfwd is free).
+**Tier 2 — dedicated CHR.** `lifecycle` performs a real
+`reset-configuration` that would sever the shared device's management plane.
+It sets `shared_state: false`, owns its create/prepare/destroy, and runs as a
+separate `molecule test -s lifecycle` invocation after the shared pass has
+torn its CHR down, so the `8728/2223` hostfwd is free.
 
-**Boot budget:** shared (1) + `chr` (1) + `lifecycle` (1) = **3 CHR boots** for
-the full suite.
+**Boot budget:** shared (1) + `lifecycle` (1) = **2 CHR boots** for the full suite.
 
 ## Scenario catalogue
 
@@ -61,7 +59,7 @@ the full suite.
 
 | Scenario | Proves |
 | --- | --- |
-| `default` | Shared-state owner: boots + prepares the one CHR; its converge is a no-op. |
+| `default` | Shared-state owner: boots + prepares the one CHR; verifies its RouterOS version matches the image pin. |
 | `configure_lists` | Keyed-path apply (`/ip/pool`, `/ip/dns/static`), in-place **update** of a non-key field (matched by key), and `purge`. |
 | `configure_singletons` | Singleton paths (`/system/identity`, `/ip/dns`, `/ip/settings`) — asserts servers, `allow-remote-requests`, `tcp-syncookies`. |
 | `configure_ordered` | Keyless ordered firewall with `purge`+`order`; in-place update matched by `comment` (no duplicate). |
@@ -97,7 +95,6 @@ the full suite.
 
 | Scenario | Backend | Proves |
 | --- | --- | --- |
-| `chr` | qemu (network_cli) | A CHR boots via the qemu provider and RouterOS is reachable over `community.routeros` (CLI). |
 | `lifecycle` | qemu (API + CLI) | The destructive end-to-end on a throwaway CHR: configure a baseline → binary backup → wrong-password restore is rejected → restore round-trip (real reboot, identity reverts) → `/import` of a set-based partial script → real `reset-configuration` wipe (proven by the device going unreachable on the managed interface). |
 
 ## What is and isn't covered

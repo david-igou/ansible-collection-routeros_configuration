@@ -55,20 +55,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Three jobs instead of one-per-scenario, each delegating to the
+        # Two jobs instead of one-per-scenario, each delegating to the
         # Makefile so the scenario list, ordering invariants, and dependency
         # resolution live in ONE place (SHARED_SCENARIOS / the `install`
         # prerequisite — see the Makefile). `shared` boots ONE CHR (the
         # `default` scenario owns create/prepare/destroy via molecule's
         # shared_state) and runs every shared scenario against it in a single
-        # sequential pass; `chr` (network_cli feasibility) and `lifecycle`
-        # (destructive end-to-end: restore round-trip, /import, real reset
-        # wipe) opt out of shared_state and each boot their own VM.
+        # sequential pass; `lifecycle` opts out of shared_state and boots
+        # its own VM for the destructive restore, import, and reset tests.
         include:
           - name: shared
             cmd: make molecule-shared
-          - name: chr
-            cmd: make molecule SCENARIO=chr
           - name: lifecycle
             cmd: make molecule SCENARIO=lifecycle
     steps:
@@ -94,7 +91,7 @@ jobs:
 
       - name: Expose Ubuntu OVMF firmware at the path molecule_provisioners expects
         # Ubuntu ships OVMF at /usr/share/OVMF/; molecule_provisioners defaults
-        # to /usr/share/edk2/ovmf/ (Fedora/RHEL path). The chr scenario is BIOS,
+        # to /usr/share/edk2/ovmf/ (Fedora/RHEL path). Current CHR VMs use BIOS,
         # so this only matters if a scenario sets firmware: uefi — wired up
         # defensively so adding a UEFI scenario doesn't silently break.
         run: |
