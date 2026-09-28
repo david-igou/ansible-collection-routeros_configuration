@@ -109,7 +109,7 @@ Example Playbook
 License
 -------
 
-GPL-3.0-or-later. See [LICENSE](../../LICENSE).
+MIT. See [LICENSE](../../LICENSE).
 
 Author Information
 ------------------
