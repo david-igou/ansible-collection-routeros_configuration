@@ -1,3 +1,5 @@
 ---
 minor_changes:
-  - Standardized the collection license and license metadata on MIT.
+  - >-
+    Standardized the collection license and license metadata on MIT
+    (https://github.com/david-igou/ansible-collection-routeros_configuration/pull/55).
