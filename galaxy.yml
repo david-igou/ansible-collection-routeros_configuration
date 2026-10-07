@@ -13,7 +13,8 @@ authors:
 description: >-
   Ansible collection for declaratively managing the state of MikroTik RouterOS
   devices. Early-stage 0.0.x — expect breaking changes between releases.
-license_file: LICENSE
+license:
+  - MIT
 
 tags:
   - networking
